@@ -1,2 +1,1 @@
-# readies
-Library cluster of common Redis Modules code
+# Library cluster of common Redis Modules code
