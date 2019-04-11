@@ -4,6 +4,8 @@ from .utils import *
 from .files import *
 # from .docopt import docopt
 from .log import *
+from .platform import *
+from .setup import *
 
 #----------------------------------------------------------------------------------------------
 
