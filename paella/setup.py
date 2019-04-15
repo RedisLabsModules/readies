@@ -28,24 +28,32 @@ class Setup:
         os = self.os = self.platform.os
         dist = self.dist = self.platform.dist
         self.ver = self.platform.os_ver
+        
+        if self.platform.is_debian_compat():
+            run("apt-get update -y")
+
+        self.common_first()
+
         for stage in self.stages:
             self.stage = stage
             self.common()
             if os == 'linux':
                 self.linux()
+                
+                if self.platform.is_debian_compat():
+                    self.debian_compat()
+                if self.platform.is_redhat_compat():
+                    self.redhat_compat()
+                
                 if dist == 'fedora':
                     self.fedora()
                 elif dist == 'ubuntu':
-                    self.debian_compat()
                     self.ubuntu()
                 elif dist == 'debian':
-                    self.debian_compat()
                     self.debian()
                 elif dist == 'centos':
-                    self.redhat_compat()
                     self.centos()
                 elif dist == 'redhat':
-                    self.redhat_compat()
                     self.redhat()
                 elif dist == 'suse':
                     self.suse()
@@ -56,7 +64,15 @@ class Setup:
             elif os == 'macosx':
                 self.osx()
 
+        self.common_last()
+
     def common(self):
+        pass
+
+    def common_first(self):
+        pass
+
+    def common_last(self):
         pass
 
     def linux(self):

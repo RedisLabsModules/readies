@@ -38,5 +38,11 @@ class Platform:
         if self.arch == 'amd64' or self.arch == 'x86_64':
             self.arch = 'x64'
 
+    def is_debian_compat(self):
+        return self.dist == 'debian' or self.dist == 'ubuntu'
+    
+    def is_redhat_compat(self):
+        return self.dist == 'redhat' or self.dist == 'centos'
+    
     def report(self):
         print("This system is " + self.distname + " " + self.distver + ".\n")
