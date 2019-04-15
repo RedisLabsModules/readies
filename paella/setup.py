@@ -1,152 +1,86 @@
 
-import paella
 import os
 import sys
+from .platform import OnPlatform, Platform
 
 #----------------------------------------------------------------------------------------------
 
-def run(cmd):
-    # rc = os.system(cmd)
-    print(cmd)
-    rc = 0
-    if rc > 0:
-        eprint("command failed: " + cmd)
-        sys.exit(1)
+class Runner:
+    def __init__(self, nop=False):
+        self.nop = nop
 
-def has_command(cmd):
-    return os.system("command -v " + cmd + " > /dev/null") == 0
-
-#----------------------------------------------------------------------------------------------
-
-class Setup:
-    def __init__(self):
-        bb()
-        self.stages = [0]
-        self.platform = paella.Platform()
-
-    def setup(self):
-        os = self.os = self.platform.os
-        dist = self.dist = self.platform.dist
-        self.ver = self.platform.os_ver
-        
-        if self.platform.is_debian_compat():
-            run("apt-get update -y")
-
-        self.common_first()
-
-        for stage in self.stages:
-            self.stage = stage
-            self.common()
-            if os == 'linux':
-                self.linux()
-                
-                if self.platform.is_debian_compat():
-                    self.debian_compat()
-                if self.platform.is_redhat_compat():
-                    self.redhat_compat()
-                
-                if dist == 'fedora':
-                    self.fedora()
-                elif dist == 'ubuntu':
-                    self.ubuntu()
-                elif dist == 'debian':
-                    self.debian()
-                elif dist == 'centos':
-                    self.centos()
-                elif dist == 'redhat':
-                    self.redhat()
-                elif dist == 'suse':
-                    self.suse()
-                elif dist == 'arch':
-                    self.arch()
-                else:
-                    Assert(False), "Cannot determine installer"
-            elif os == 'macosx':
-                self.osx()
-
-        self.common_last()
-
-    def common(self):
-        pass
-
-    def common_first(self):
-        pass
-
-    def common_last(self):
-        pass
-
-    def linux(self):
-        pass
-
-    def arch(self):
-        pass
-
-    def debian_compat(self): # debian, ubuntu, etc
-        pass
-    
-    def debian(self):
-        pass
-    
-    def centos(self):
-        pass
-        
-    def fedora(self):
-        pass
-
-    def redhat_compat(self): # centos, rhel
-        pass
-
-    def redhat(self):
-        pass
-        
-    def ubuntu(self):
-        pass
-
-    def suse(self):
-        pass
-
-    def macosx(self):
-        pass
-
-    def windows(self):
-        pass
-
-    def bsd_compat(self):
-        pass
-
-    def freebsd(self):
-        pass
-
-    #------------------------------------------------------------------------------------------
+    def run(self, cmd):
+        if self.nop:
+            print(cmd)
+            return
+        rc = os.system(cmd)
+        if rc > 0:
+            eprint("command failed: " + cmd)
+            sys.exit(1)
 
     def has_command(self, cmd):
         return os.system("command -v " + cmd + " > /dev/null") == 0
 
+#----------------------------------------------------------------------------------------------
+
+class RepoRefresh(OnPlatform):
+    def __init__(self, runner):
+        OnPlatform.__init__(self)
+        self.runner = runner
+
+    def redhat_compat(self):
+        pass
+    
+    def debian_compat(self):
+        self.runner.run("apt-get update -y")
+
+#----------------------------------------------------------------------------------------------
+
+class Setup(OnPlatform):
+    def __init__(self, nop=False):
+        OnPlatform.__init__(self)
+        self.runner = Runner(nop)
+        self.stages = [0]
+        self.platform = Platform()
+        self.os = self.platform.os
+        self.dist = self.platform.dist
+        self.ver = self.platform.os_ver
+
+    def setup(self):
+        RepoRefresh(self.runner).invoke()
+        self.invoke()
+
+    def run(self, cmd):
+        return self.runner.run(cmd)
+
+    def has_command(self, cmd):
+        return self.runner.has_command(cmd)
+
     #------------------------------------------------------------------------------------------
 
     def apt_install(self, packs, group=False):
-        run("apt-get install -q -y " + packs)
+        self.run("apt-get install -q -y " + packs)
 
     def yum_install(self, packs, group=False):
         if not group:
-            run("yum install -q -y " + packs)
+            self.run("yum install -q -y " + packs)
         else:
-            run("yum groupinstall -y " + packs)
+            self.run("yum groupinstall -y " + packs)
 
     def dnf_install(self, packs, group=False):
         if not group:
-            run("dnf install -y " + packs)
+            self.run("dnf install -y " + packs)
         else:
-            run("dnf groupinstall -y " + packs)
+            self.run("dnf groupinstall -y " + packs)
 
     def zypper_install(self, packs, group=False):
-        run("zipper --non-interactive install " + packs)
+        self.run("zipper --non-interactive install " + packs)
 
     def pacman_install(self, packs, group=False):
-        run("pacman --noconfirm -S " + packs)
+        self.run("pacman --noconfirm -S " + packs)
 
     def brew_install(self, packs, group=False):
-        run('brew install -y ' + cmd)
+        self.run('brew install -y ' + cmd)
 
     def install(self, packs, group=False):
         if self.os == 'linux':
@@ -173,16 +107,16 @@ class Setup:
     #------------------------------------------------------------------------------------------
 
     def pip_install(self, cmd):
-        run("pip install " + cmd)
+        self.run("pip install " + cmd)
 
     def pip3_install(self, cmd):
-        run("pip3 install " + cmd)
+        self.run("pip3 install " + cmd)
 
     def setup_pip(self):
         get_pip = "set -e; cd /tmp; curl -s https://bootstrap.pypa.io/get-pip.py -o get-pip.py"
-        if not has_command("pip"):
+        if not self.has_command("pip"):
             install("curl")
-            run(get_pip + "; python2 get-pip.py")
+            self.run(get_pip + "; python2 get-pip.py")
         ## fails on ubuntu 18:
         # if not has_command("pip3") and has_command("python3"):
         #     run(get_pip + "; python3 get-pip.py")

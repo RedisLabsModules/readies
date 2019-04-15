@@ -2,6 +2,8 @@
 from __future__ import absolute_import
 import platform
 
+#----------------------------------------------------------------------------------------------
+
 class Platform:
     def __init__(self):
         self.os = platform.system().lower()
@@ -46,3 +48,99 @@ class Platform:
     
     def report(self):
         print("This system is " + self.distname + " " + self.distver + ".\n")
+
+#----------------------------------------------------------------------------------------------
+
+class OnPlatform:
+    def __init__(self):
+        self.stages = [0]
+        self.platform = Platform()
+
+    def invoke(self):
+        os = self.os = self.platform.os
+        dist = self.dist = self.platform.dist
+        self.ver = self.platform.os_ver
+        self.common_first()
+
+        for stage in self.stages:
+            self.stage = stage
+            self.common()
+            if os == 'linux':
+                self.linux()
+                
+                if self.platform.is_debian_compat():
+                    self.debian_compat()
+                if self.platform.is_redhat_compat():
+                    self.redhat_compat()
+                
+                if dist == 'fedora':
+                    self.fedora()
+                elif dist == 'ubuntu':
+                    self.ubuntu()
+                elif dist == 'debian':
+                    self.debian()
+                elif dist == 'centos':
+                    self.centos()
+                elif dist == 'redhat':
+                    self.redhat()
+                elif dist == 'suse':
+                    self.suse()
+                elif dist == 'arch':
+                    self.arch()
+                else:
+                    Assert(False), "Cannot determine installer"
+            elif os == 'macosx':
+                self.osx()
+
+        self.common_last()
+
+    def common(self):
+        pass
+
+    def common_first(self):
+        pass
+
+    def common_last(self):
+        pass
+
+    def linux(self):
+        pass
+
+    def arch(self):
+        pass
+
+    def debian_compat(self): # debian, ubuntu, etc
+        pass
+    
+    def debian(self):
+        pass
+    
+    def centos(self):
+        pass
+        
+    def fedora(self):
+        pass
+
+    def redhat_compat(self): # centos, rhel
+        pass
+
+    def redhat(self):
+        pass
+        
+    def ubuntu(self):
+        pass
+
+    def suse(self):
+        pass
+
+    def macosx(self):
+        pass
+
+    def windows(self):
+        pass
+
+    def bsd_compat(self):
+        pass
+
+    def freebsd(self):
+        pass
