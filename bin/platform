@@ -4,7 +4,8 @@ import sys
 import os
 import argparse
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../readies"))
+READIES_PATH = os.path.realpath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, READIES_PATH)
 from paella import Platform
 
 parser = argparse.ArgumentParser(description='Report platform characteristics.')
@@ -17,15 +18,23 @@ parser.add_argument('--glibc', action="store_true", help='GLIBC version (if appl
 args = parser.parse_args()
 
 platform = Platform()
+ret = ""
 if args.os:
-	print platform.os
-if args.version:
-	print platform.os_ver
-if args.arch:
-	print platform.arch
+	ret += " " + platform.os
 if args.dist:
-	print platform.dist
+	ret += " " + platform.dist
+if args.version:
+	ret += " " + platform.os_ver
+if args.arch:
+	ret += " " + platform.arch
 if args.kernel:
-	print 'N/A'
+	pass
 if args.glibc:
-	print 'N/A'
+	pass
+if ret == "":
+    os = platform.os
+    dist = platform.dist
+    if dist != "":
+        os = dist + " " + os
+    ret = os + " " + platform.os_ver + " " + platform.arch
+print(ret.strip())

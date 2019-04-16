@@ -24,7 +24,7 @@ class Platform:
             self.dist = distname
         elif self.os == 'darwin':
             self.os = 'macosx'
-            self.dist = self.os
+            self.dist = ''
             mac_ver = platform.mac_ver()
             self.full_os_ver = mac_ver[0] # e.g. 10.14, but also 10.5.8
             self.os_ver = '.'.join(self.full_os_ver.split('.')[:2]) # major.minor
