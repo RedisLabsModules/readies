@@ -80,7 +80,7 @@ class Setup(OnPlatform):
         self.run("pacman --noconfirm -S " + packs)
 
     def brew_install(self, packs, group=False):
-        self.run('brew install -y ' + cmd)
+        self.run('brew install -y ' + packs)
 
     def install(self, packs, group=False):
         if self.os == 'linux':
@@ -115,7 +115,7 @@ class Setup(OnPlatform):
     def setup_pip(self):
         get_pip = "set -e; cd /tmp; curl -s https://bootstrap.pypa.io/get-pip.py -o get-pip.py"
         if not self.has_command("pip"):
-            install("curl")
+            self.install("curl")
             self.run(get_pip + "; python2 get-pip.py")
         ## fails on ubuntu 18:
         # if not has_command("pip3") and has_command("python3"):

@@ -90,7 +90,7 @@ class OnPlatform:
                 else:
                     Assert(False), "Cannot determine installer"
             elif os == 'macosx':
-                self.osx()
+                self.macosx()
 
         self.common_last()
 
