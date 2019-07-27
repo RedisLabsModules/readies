@@ -1,5 +1,5 @@
 
-MK=$(ROOT)/build/mk
+MK=$(ROOT)/deps/readies/mk
 
 include $(MK)/common.defs
 include $(MK)/variant.defs

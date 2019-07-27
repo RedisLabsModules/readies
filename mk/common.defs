@@ -1,4 +1,5 @@
 
+_SHOW:=$(SHOW)
 ifeq ($(SHOW),1)
 override SHOW:=
 else
