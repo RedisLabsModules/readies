@@ -209,3 +209,7 @@ class Setup(OnPlatform):
         if self.os == 'linux':
             self.install("ca-certificates")
         self.install("curl wget")
+
+    def install_git_lfs_on_linux(self):
+        self.run("curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash")
+        self.install("git-lfs")
