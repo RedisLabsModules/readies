@@ -26,7 +26,7 @@ def flines(fname, mode = 'rb'):
 
 def tempfilepath():
     fd, path = tempfile.mkstemp()
-    os.close(fd) 
+    os.close(fd)
     return path
 
 #----------------------------------------------------------------------------------------------

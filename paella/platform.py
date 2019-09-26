@@ -16,10 +16,10 @@ class Platform:
                         self.defs[k] = v.strip('"').strip("'")
                     except:
                         pass
-        
+
         def distname(self):
             return self.defs["ID"].lower()
-        
+
         def version(self):
             return self.defs["VERSION_ID"]
 
@@ -30,7 +30,7 @@ class Platform:
 
     def __init__(self, strict=False):
         self.os = self.dist = self.os_ver = self.full_os_ver = self.osnick = self.arch = '?'
-    
+
         self.os = platform.system().lower()
         if self.os == 'linux':
             if False:
@@ -42,7 +42,6 @@ class Platform:
                     os_release = Platform.OSRelease()
                     distname = os_release.distname()
                     self.os_ver = self.full_os_ver = os_release.version()
-                    print(self.os_ver)
                 except:
                     if strict:
                         assert(False), "Cannot determine distribution"
@@ -93,7 +92,7 @@ class Platform:
 
     def is_debian_compat(self):
         return self.dist == 'debian' or self.dist == 'ubuntu'
-    
+
     def is_redhat_compat(self):
         return self.dist == 'redhat' or self.dist == 'centos'
 
@@ -125,12 +124,12 @@ class OnPlatform:
             self.common()
             if os == 'linux':
                 self.linux()
-                
+
                 if self.platform.is_debian_compat():
                     self.debian_compat()
                 if self.platform.is_redhat_compat():
                     self.redhat_compat()
-                
+
                 if dist == 'fedora':
                     self.fedora()
                 elif dist == 'ubuntu':
@@ -169,13 +168,13 @@ class OnPlatform:
 
     def debian_compat(self): # debian, ubuntu, etc
         pass
-    
+
     def debian(self):
         pass
-    
+
     def centos(self):
         pass
-        
+
     def fedora(self):
         pass
 
@@ -184,7 +183,7 @@ class OnPlatform:
 
     def redhat(self):
         pass
-        
+
     def ubuntu(self):
         pass
 
