@@ -120,11 +120,11 @@ class Setup(OnPlatform):
 
     def install(self, packs, group=False, _try=False):
         if self.os == 'linux':
-            if self.dist == 'fedora':
+            if self.dist == 'fedora': # also include centos 8
                 self.dnf_install(packs, group=group, _try=_try)
-            elif self.dist == 'ubuntu' or self.dist == 'debian':
+            elif self.is_debian_compat():
                 self.apt_install(packs, group=group, _try=_try)
-            elif self.dist == 'centos' or self.dist == 'redhat':
+            elif self.is_redhat_compat():
                 self.yum_install(packs, group=group, _try=_try)
             elif self.dist == 'suse':
                 self.zypper_install(packs, group=group, _try=_try)
