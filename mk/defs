@@ -9,3 +9,7 @@ endif
 ifneq ($(MK.configure),)
 include $(MK)/configure.defs
 endif
+
+ifeq ($(COV),1)
+include $(MK)/coverage.defs
+endif

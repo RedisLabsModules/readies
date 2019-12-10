@@ -1,4 +1,8 @@
 
+ifeq ($(COV),1)
+export DEBUG ?= 1
+endif
+
 ifeq ($(DEBUG),1)
 FLAVOR=debug
 else
@@ -6,6 +10,10 @@ FLAVOR=release
 endif
 
 #----------------------------------------------------------------------------------------------
+
+ifeq ($(COV),1)
+VARIANT.list:=$(sort $(VARIANT.list) cov)
+endif
 
 VARIANT.file:=$(shell if [ -f $(ROOT)/VARIANT ]; then cat $(ROOT)/VARIANT; fi)
 
