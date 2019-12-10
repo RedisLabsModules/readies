@@ -24,6 +24,8 @@ endif
 
 MK_ALL_TARGETS:=bindirs build
 
+SUDO:=$(shell [ $$( command -v sudo >/dev/null 2>&1; echo $$? ) = 0 ] && echo sudo)
+
 include $(MK)/functions
 include $(MK)/common.defs
 include $(MK)/platform.defs
