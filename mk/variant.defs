@@ -19,7 +19,7 @@ VARIANT.file:=$(shell if [ -f $(ROOT)/VARIANT ]; then cat $(ROOT)/VARIANT; fi)
 
 # if VARIANT not specified and we're the not in submake, use one from file, if present
 ifeq ($(origin VARIANT),undefined)
- ifneq ($(VARIANT.primary),)
+ ifeq ($(VARIANT.primary),)
   ifneq ($(VARIANT.file),)
    VARIANT:=$(VARIANT.file)
   endif

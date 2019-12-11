@@ -4,14 +4,15 @@ import sys
 import os
 import argparse
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+HERE=os.path.join(os.path.dirname(__file__)
+sys.path.insert(0, HERE, ".."))
 import paella
 
 os.environ["PYTHONWARNINGS"] = 'ignore:DEPRECATION::pip._internal.cli.base_command'
 
 #----------------------------------------------------------------------------------------------
 
-class Redis5Setup(paella.Setup):
+class RedisSetup(paella.Setup):
     def __init__(self, nop=False):
         paella.Setup.__init__(self, nop)
 
@@ -50,8 +51,38 @@ class Redis5Setup(paella.Setup):
 
 #----------------------------------------------------------------------------------------------
 
+class RedisSourceSetup(paella.Setup):
+    def __init__(self, nop=False):
+        paella.Setup.__init__(self, nop)
+
+    def common_first(self):
+        pass
+
+    def debian_compat(self):
+        self.install("build-essential")
+
+    def redhat_compat(self):
+        self.group_install("'Development Tools'")
+
+    def fedora(self):
+        self.group_install("'Development Tools'")
+
+    def macosx(self):
+        if sh('xcode-select -p') == '':
+            fatal("Xcode tools are not installed. Please run xcode-select --install.")
+
+    def common_last(self):
+        self.run("cd /tmp; git clone https://github.com/antirez/redis.git --branch 5.0")
+        self.run("cd /tmp/redis && make -j $({}/nproc) && make install".format(HERE))
+
+#----------------------------------------------------------------------------------------------
+
 parser = argparse.ArgumentParser(description='Set up system for build.')
 parser.add_argument('-n', '--nop', action="store_true", help='no operation')
+parser.add_argument('-s', '--source', action="store_true", help="Build from source")
 args = parser.parse_args()
 
-Redis5Setup(nop = args.nop).setup()
+if args.source:
+    RedisSourceSetup(nop = args.nop).setup()
+else:
+    RedisSetup(nop = args.nop).setup()
