@@ -39,6 +39,7 @@ class RedisSetup(paella.Setup):
         
         self.install("https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm")
         self.install("--allowerasing https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm")
+        # self.install("epel-release")
         self.install("http://rpms.remirepo.net/enterprise/remi-release-7.rpm")
         self.run("dnf config-manager -y --set-enabled remi")
         self.install("redis")
