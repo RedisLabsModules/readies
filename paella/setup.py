@@ -217,11 +217,11 @@ class Setup(OnPlatform):
             self.run(cmd.format('deb'), _try=_try)
         self.install("git-lfs", _try=_try)
 
-    def install_macos_gnu_utis(self, _try=False):
+    def install_macos_gnu_utils(self, _try=False):
         self.install("make findutils gnu-sed")
         for x in ['make', 'find', 'sed']:
             p = "/usr/local/bin/{}".format(x)
-            if not os.path.exists(p)
+            if not os.path.exists(p):
                 self.run("ln -sf /usr/local/g{} {}".format(x, p))
             else:
                 eprint("Warning: {} exists - not replaced".format(p))
