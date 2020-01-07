@@ -1,6 +1,7 @@
 
 from __future__ import absolute_import
 import platform
+import re
 
 #----------------------------------------------------------------------------------------------
 
@@ -84,6 +85,12 @@ class Platform:
             self.os = 'solaris'
             self.os_ver = ''
             self.dist = ''
+        elif self.os == 'freebsd':
+            self.dist = ''
+            ver = sh('freebsd-version')
+            m = re.search(r'([^-]*)-(.*)', ver)
+            self.os_ver = self.full_os_ver = m.group(1)
+            self.osnick = self.os + self.os_ver
         else:
             if strict:
                 assert(False), "Cannot determine OS"

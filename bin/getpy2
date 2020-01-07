@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 
@@ -10,8 +10,16 @@ if [ ! -z $(command -v python) ]; then
 	[ "$(python --version 2>&1 | cut -d" " -f2 | cut -d. -f1)" = "2" ] && exit 0
 fi
 
-[ ! -z $(command -v python2) ] && exit 0
-[ ! -z $(command -v python2.7) ] && exit 0
+if [ ! -z $(command -v python2) ]; then
+	[ -z $(command -v python) ] && ln -s /usr/local/bin/python2 /usr/local/bin/python
+	exit 0
+fi
+
+if [ ! -z $(command -v python2.7) ]; then
+	[ -z $(command -v python2) ] && ln -s /usr/local/bin/python2.7 /usr/local/bin/python2
+	[ -z $(command -v python) ]  && ln -s /usr/local/bin/python2.7 /usr/local/bin/python
+	exit 0
+fi
 
 [[ $CHECK == 1 ]] && exit 1
 
@@ -27,6 +35,8 @@ elif [ ! -z $(command -v apk) ]; then
 	runn apk add python2
 elif [ ! -z $(command -v brew) ]; then
 	runn brew install python2
+elif [ ! -z $(command -v pkg) ]; then
+	runn pkg install -y python2
 fi
 
 if [ -z $(command -v python) ]; then
