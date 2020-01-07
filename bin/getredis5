@@ -84,6 +84,6 @@ parser.add_argument('-s', '--source', action="store_true", help="Build from sour
 args = parser.parse_args()
 
 if args.source:
-    RedisSourceSetup(nop = args.nop).setup()
+    RedisSourceSetup(nop=args.nop).setup()
 else:
-    RedisSetup(nop = args.nop).setup()
+    RedisSetup(nop=args.nop).setup()

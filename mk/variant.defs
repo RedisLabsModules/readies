@@ -22,6 +22,7 @@ ifeq ($(origin VARIANT),undefined)
  ifeq ($(VARIANT.primary),)
   ifneq ($(VARIANT.file),)
    VARIANT:=$(VARIANT.file)
+   $(info VARIANT is $(VARIANT))
   endif
  endif
 else # VARIANT specified
