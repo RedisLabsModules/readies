@@ -10,14 +10,16 @@ if [ ! -z $(command -v python) ]; then
 	[ "$(python --version 2>&1 | cut -d" " -f2 | cut -d. -f1)" = "2" ] && exit 0
 fi
 
-if [ ! -z $(command -v python2) ]; then
-	[ -z $(command -v python) ] && ln -s /usr/local/bin/python2 /usr/local/bin/python
+PYTHON2=$(command -v python2)
+if [ ! -z $PYTHON2 ]; then
+	[ -z $(command -v python) ] && ln -s $PYTHON2 /usr/local/bin/python
 	exit 0
 fi
 
-if [ ! -z $(command -v python2.7) ]; then
-	[ -z $(command -v python2) ] && ln -s /usr/local/bin/python2.7 /usr/local/bin/python2
-	[ -z $(command -v python) ]  && ln -s /usr/local/bin/python2.7 /usr/local/bin/python
+PYTHON27=$(command -v python2.7)
+if [ ! -z $PYTHON27 ]; then
+	[ -z $(command -v python2) ] && ln -s $PYTHON27 /usr/local/bin/python2
+	[ -z $(command -v python) ]  && ln -s $PYTHON27 /usr/local/bin/python
 	exit 0
 fi
 
