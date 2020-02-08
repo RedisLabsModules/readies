@@ -1,0 +1,60 @@
+#!/usr/bin/env python
+
+import argparse
+import os
+import sys
+import jinja2
+import re
+import string
+
+parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+                                 description='Template text formatter')
+
+parser.add_argument('-d', '--define', action='append', metavar=('VAR=value'), help='define variable')
+parser.add_argument('-e', '--env', action='append', metavar=('VAR'), help='read variable from environment')
+parser.add_argument('-f', '--file', action='append', metavar=('VARFILE'), help='read variables from file')
+parser.add_argument('template', metavar='FILE', nargs='?', help='template file')
+args = parser.parse_args()
+
+vars = {}
+
+def add_env_var(n):
+    n = string.strip(n)
+    v = os.environ.get(n)
+    if not v is None:
+        vars[n] = v
+
+def add_var_exp(exp):
+    m = re.match(r'^([^=\s]+)=(.*)', exp)
+    if not m is None:
+        n = m.group(1)
+        v = m.group(2)
+        vars[n] = v
+    else:
+        add_env_var(exp)
+
+if not args.file is None:
+    for f in args.file:
+        with open(f, 'r') as file:
+            for line in file.readlines():
+                if line.startswith('#'):
+                    continue
+                add_var_exp(line)
+
+if not args.define is None:
+    for d in args.define:
+        add_var_exp(d)
+
+if not args.env is None:
+    for n in args.env:
+        add_env_var(n)
+
+if args.template is None:
+    t = sys.stdin.read()
+    print(jinja2.Template(t).render(vars))
+else:
+    with open(args.template, 'r') as file:
+        t = file.read()
+        print(jinja2.Template(t).render(vars))
+
+exit(0)
