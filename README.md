@@ -1,4 +1,4 @@
-# Library cluster of common Redis Modules code
+# Library cluster of common Redis Modules automation code
 
 Cetara: C/C++
 
