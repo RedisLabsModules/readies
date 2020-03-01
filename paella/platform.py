@@ -168,6 +168,7 @@ class OnPlatform:
             self.stage = stage
             self.common()
             if os == 'linux':
+                self.linux_first()
                 self.linux()
 
                 if self.platform.is_debian_compat():
@@ -195,6 +196,8 @@ class OnPlatform:
                     self.amzn()
                 else:
                     assert(False), "Cannot determine installer"
+
+                self.linux_last()
             elif os == 'macosx':
                 self.macosx()
             elif os == 'freebsd':
@@ -212,6 +215,12 @@ class OnPlatform:
         pass
 
     def linux(self):
+        pass
+
+    def linux_first(self):
+        pass
+
+    def linux_last(self):
         pass
 
     def arch(self):
