@@ -1,6 +1,5 @@
 
-# SHELL=/bin/bash
-SHELL:=$(shell command -v bash)
+SHELL:=$(shell sh -c "command -v bash")
 
 ifeq ($(ROOT),)
 $(error ROOT is undefined)
