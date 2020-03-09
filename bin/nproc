@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+
+os=$($HERE/platform --os)
+if [[ $os == linux ]]; then
+	nproc
+elif [[ $os == macosx ]]; then
+	sysctl -n hw.physicalcpu
+elif [[ $os == freebsd ]]; then
+	sysctl -n hw.ncpu
+else
+	echo 4
+fi 
