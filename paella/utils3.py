@@ -6,5 +6,7 @@ def eprint(*args, **kwargs):
 	print(*args, file = sys.stderr, **kwargs)
 
 def sh(cmd):
-    return " ".join(Popen(cmd.split(), stdout=PIPE).communicate()[0].decode('utf-8').split("\n"))
+    if not isinstance(cmd, list):
+        cmd = cmd.split()
+    return " ".join(Popen(cmd, stdout=PIPE).communicate()[0].decode('utf-8').split("\n"))
 

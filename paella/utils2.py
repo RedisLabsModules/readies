@@ -6,4 +6,6 @@ def eprint(*args, **kwargs):
 	print >> sys.stderr, ' '.join(map(lambda x: "%s" % x, args))
 
 def sh(cmd):
-    return " ".join(Popen(cmd.split(), stdout=PIPE).communicate()[0].split("\n"))
+    if not isinstance(cmd, list):
+        cmd = cmd.split()
+    return " ".join(Popen(cmd stdout=PIPE).communicate()[0].split("\n"))
