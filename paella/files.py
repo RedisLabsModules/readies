@@ -10,7 +10,7 @@ except:
 
 #----------------------------------------------------------------------------------------------
 
-def fread(fname, mode='rb'):
+def fread(fname, mode='r'):
 	with open(fname, mode) as file:
 		return file.read()
 
