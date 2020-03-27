@@ -25,6 +25,7 @@
 
 # Python
 *.pyc
+*.pyo
 
 # CMake
 CMakeFiles/
