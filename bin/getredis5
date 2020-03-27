@@ -4,8 +4,8 @@ import sys
 import os
 import argparse
 
-HERE=os.path.join(os.path.dirname(__file__)
-sys.path.insert(0, HERE, ".."))
+HERE=os.path.join(os.path.dirname(__file__), "..")
+sys.path.insert(0, HERE)
 import paella
 
 os.environ["PYTHONWARNINGS"] = 'ignore:DEPRECATION::pip._internal.cli.base_command'
