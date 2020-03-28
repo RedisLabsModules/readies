@@ -34,11 +34,13 @@ runn() {
 
 #----------------------------------------------------------------------------------------------
 
-export BOLD=$(tput bold)
-export NOCOLOR=$(tput sgr0)
-export RED=$(tput setaf 1)
-export GREEN=$(tput setaf 2)
-export BRED=$(tput bold; tput setaf 1)
-export GREEN=$(tput bold; tput setaf 2)
+if [[ $NO_ANSI != 1 ]]; then
+	export BOLD=$(tput bold)
+	export NOCOLOR=$(tput sgr0)
+	export RED=$(tput setaf 1)
+	export GREEN=$(tput setaf 2)
+	export BRED=$(tput bold; tput setaf 1)
+	export BGREEN=$(tput bold; tput setaf 2)
+fi
 
 #----------------------------------------------------------------------------------------------
