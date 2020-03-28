@@ -6,6 +6,8 @@ import os
 pydebug = os.environ.get('PYDEBUG', '')
 if pydebug == '':
 	pydebug = os.environ.get('BB', '')
+    if pydebug != '':
+        os.environ['PYDEBUG'] = pydebug
 if pydebug == '1':
     try:
         from ipdb import set_trace as bb
