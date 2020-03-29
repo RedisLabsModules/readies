@@ -5,7 +5,7 @@ import os
 
 pydebug = os.environ.get('PYDEBUG', '')
 if pydebug == '':
-	pydebug = os.environ.get('BB', '')
+    pydebug = os.environ.get('BB', '')
     if pydebug != '':
         os.environ['PYDEBUG'] = pydebug
 if pydebug == '1':
