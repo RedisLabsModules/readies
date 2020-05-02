@@ -1,9 +1,10 @@
 
+from __future__ import print_function
 import sys
 from subprocess import Popen, PIPE
 
 def eprint(*args, **kwargs):
-	print >> sys.stderr, ' '.join(map(lambda x: "%s" % x, args))
+    print(*args, file=sys.stderr, **kwargs)
 
 def sh(cmd):
     if not isinstance(cmd, list):
