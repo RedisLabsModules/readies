@@ -1,4 +1,5 @@
 
+from .classes import *
 from .debug import *
 from .utils import *
 from .files import *
@@ -31,3 +32,5 @@ Global.eprint = eprint
 Global.fatal = fatal
 Global.cwd = cwd
 Global.sh = sh
+Global.ctor = ctor
+Global.noctor = noctor
