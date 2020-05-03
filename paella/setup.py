@@ -239,11 +239,11 @@ class Setup(OnPlatform):
     def install_gnu_utils(self, _try=False):
         packs = ""
         if self.os == 'macosx':
-            packs= "make findutils gnu-sed gnu-tar gawk"
+            packs= "make coreutils findutils gnu-sed gnu-tar gawk"
         elif self.os == 'freebsd':
-            packs = "gmake findutils gsed gtar gawk"
+            packs = "gmake coreutils findutils gsed gtar gawk"
         self.install(packs)
-        for x in ['make', 'find', 'sed', 'tar']:
+        for x in ['make', 'find', 'sed', 'tar', 'mktemp']:
             p = "/usr/local/bin/{}".format(x)
             if not os.path.exists(p):
                 self.run("ln -sf /usr/local/bin/g{} {}".format(x, p))
