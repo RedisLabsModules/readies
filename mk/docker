@@ -21,11 +21,11 @@ DOCKERFILE_STEM ?= $(ROOT)/Dockerfile
 
 define HELP
 make build     # build Docker images
-  X86=1          # build x64 Docker image
+  X64=1          # build x64 Docker image
   ARM7=1         # build arm32v7 Docker image
   ARM8=1         # build arm64v8 Docker image
 make publish   # build and push multi-arch Docker manifest
-  X86=1          # push x64 Docker image and multi-arch manifest
+  X64=1          # push x64 Docker image and multi-arch manifest
   ARM7=1         # push arm32v7 Docker image and multi-arch manifest
   ARM8=1         # push arm64v8 Docker image and multi-arch manifest
   PUSH=0         # only push multi-arch manifest
