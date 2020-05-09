@@ -11,24 +11,38 @@ export PATH:=$(PATH):$(HOME)/Library/Python/2.7/bin
 ZLIB_PREFIX:=$(shell brew --prefix zlib)
 LIBSSL_PREFIX:=$(shell brew --prefix openssl)
 READLINE_PREFIX:=$(shell brew --prefix readline)
+LIBICONV_PREFIX:=$(shell brew --prefix libiconv)
+
+ifneq ($(wildcard /usr/local/lib/libintl.a),)
+GETTEXT_PREFIX:=/usr/local
+else
+GETTEXT_PREFIX:=$(shell brew --prefix gettext)
+endif
+
 SDK_PREFIX:=$(shell xcrun --show-sdk-path)
 
 export CPPFLAGS:=\
 	-I$(ZLIB_PREFIX)/include \
 	-I$(READLINE_PREFIX)/include \
 	-I$(LIBSSL_PREFIX)/include \
+	-I$(GETTEXT_PREFIX)/include \
+	-I$(LIBICONV_PREFIX)/include \
 	-I$(SDK_PREFIX)/usr/include
 
 export LDFLAGS:=\
 	-L$(ZLIB_PREFIX)/lib \
 	-L$(LIBSSL_PREFIX)/lib \
 	-L$(READLINE_PREFIX)/lib \
+	-L$(GETTEXT_PREFIX)/lib \
+	-L$(LIBICONV_PREFIX)/lib \
 	-L$(SDK_PREFIX)/usr/lib
 
 PKG_CONFIG_DIRS += \
 	$(ZLIB_PREFIX) \
 	$(LIBSSL_PREFIX) \
-	$(READLINE_PREFIX)
+	$(READLINE_PREFIX) \
+	$(GETTEXT_PREFIX) \
+	$(LIBICONV_PREFIX)
 
 export PKG_CONFIG_PATH:=$(subst $(__SPACE),:,$(strip $(addsuffix /lib/pkgconfig,$(PKG_CONFIG_DIRS)))):$(PKG_CONFIG_PATH)
 
