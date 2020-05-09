@@ -194,13 +194,13 @@ class Setup(OnPlatform):
 
     def pip_install(self, cmd, _try=False):
         pip_user = ''
-        if self.os == 'macosx':
+        if self.os == 'macosx' and 'VIRTUAL_ENV' not in os.environ:
             pip_user = '--user '
         self.run(self.python + " -m pip install --disable-pip-version-check " + pip_user + cmd, output_on_error=True, _try=_try)
 
     def pip3_install(self, cmd, _try=False):
         pip_user = ''
-        if self.os == 'macosx':
+        if self.os == 'macosx' and 'VIRTUAL_ENV' not in os.environ:
             pip_user = '--user '
         self.run(self.python + " -m pip install --disable-pip-version-check " + pip_user + cmd, output_on_error=True, _try=_try)
 
