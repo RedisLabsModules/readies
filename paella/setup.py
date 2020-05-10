@@ -13,7 +13,9 @@ class Runner:
 
     def run(self, cmd, output_on_error=False, _try=False):
         if cmd.find('\n') > -1:
-            cmd = str.lstrip(textwrap.dedent(cmd)).replace('\n', '; ')
+            cmds1 = str.lstrip(textwrap.dedent(cmd))
+            cmds = filter(lambda s: str.lstrip(s) != '', cmds1.split("\n"))
+            cmd = "; ".join(cmds)
         print(cmd)
         sys.stdout.flush()
         if self.nop:
@@ -33,7 +35,8 @@ class Runner:
                 sys.exit(1)
         return rc
 
-    def has_command(self, cmd):
+    @staticmethod
+    def has_command(cmd):
         return os.system("command -v " + cmd + " > /dev/null") == 0
 
 #----------------------------------------------------------------------------------------------
@@ -86,8 +89,9 @@ class Setup(OnPlatform):
     def run(self, cmd, output_on_error=False, _try=False):
         return self.runner.run(cmd, output_on_error=output_on_error, _try=_try)
 
-    def has_command(self, cmd):
-        return self.runner.has_command(cmd)
+    @staticmethod
+    def has_command(cmd):
+        return Runner.has_command(cmd)
 
     #------------------------------------------------------------------------------------------
 

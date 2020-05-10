@@ -1,0 +1,205 @@
+#!/usr/bin/env python2
+
+import sys
+import os
+import argparse
+import json
+import urllib
+import shutil
+import tempfile
+
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, ROOT)
+import paella  # noqa: F401
+
+os.environ["PYTHONWARNINGS"] = 'ignore:DEPRECATION::pip._internal.cli.base_command'
+
+DEFAULT_REDIS_VERSION = "6.0"
+
+#----------------------------------------------------------------------------------------------
+
+class RedisSourceSetup(paella.Setup):
+    # version can be of either forms: 5.0.8 or 5.0
+    # the latter will fetch the latest released version on the 5.0 branch
+    # branch can be either 6 (will be mapped to 6.0) or 6.1 or any string
+    # for partial semantic versions branches, we'll fetch HEAD of the given branch from github
+    def __init__(self, nop=False, version=None, branch=None, valgrind=False):
+        paella.Setup.__init__(self, nop)
+
+        if version is not None and branch is not None:
+            raise RuntimeError('conflicting arguments: version, branch')
+        self.version = version
+        self.branch = branch
+        self.valgrind = valgrind
+
+    def get_redis_versions(self):
+        r = urllib.urlopen('https://api.github.com/repos/antirez/redis/tags')
+        if r.code != 200:
+            raise RuntimeError('cannot read Redis version list from guthub')
+        t = r.read()
+        j = json.loads(t)
+        self.redis_versions = map(lambda v: v['name'], j)
+
+    def wget(self, url, file):
+        self.run('wget -O {} {}'.format(file, url), output_on_error=True)
+
+    def download_redis(self):
+        from semantic_version import Version
+        self.base_dir = tempfile.mkdtemp(prefix='redis.')
+
+        if self.version is None and self.branch is None:
+            self.branch = 'unstable'
+        if self.version is not None:
+            self.get_redis_versions()
+            if self.version in self.redis_versions:
+                version = self.version
+            else:
+                sv = Version(self.version, partial=True)
+                if sv.patch is not None:
+                    # this would fail, as the fully qualified self.version is not in self.redis_versions
+                    version = str(sv)
+                else:
+                    if sv.minor is None:
+                        sv.minor = 0
+                    br = '{}.{}'.format(sv.major, sv.minor)
+                    # select the latest version of the major.minor branch
+                    version = list(filter(lambda v: v.startswith(br + '.'), self.redis_versions))[0]
+
+            file = os.path.join(self.base_dir, 'redis-{}.tgz'.format(str(version)))
+            self.wget('https://github.com/antirez/redis/archive/{}.tar.gz'.format(str(version)), file)
+            self.run('tar -C {} -xzf {}'.format(self.base_dir, file), output_on_error=True)
+            self.redis_dir = os.path.join(self.base_dir, 'redis-{}'.format(version))
+        if self.branch is not None:
+            try:
+                sv = Version(self.branch, partial=True)
+                if sv.patch is not None:
+                    raise RuntimeError('branch can only include major/minor numbers')
+                if sv.minor is None:
+                    sv.minor = 0
+                branch = '{}.{}'.format(sv.major, sv.minor)
+            except:
+                branch = self.branch
+            self.run('cd {}; git clone https://github.com/antirez/redis.git --branch {}'.format(self.base_dir, branch), output_on_error=True)
+            self.redis_dir = os.path.join(self.base_dir, 'redis')
+
+    def build_redis(self):
+        BB()
+        build_args = ''
+        build_args += 'valgrind' if self.valgrind else ''
+        self.run("""
+            set -e
+            cd {}
+            make -j `{}/bin/nproc`  {}
+            make install
+            """.format(self.redis_dir, ROOT, build_args), output_on_error=True)
+        shutil.rmtree(self.base_dir)
+    
+    def common_first(self):
+        self.install_downloaders()
+        self.install("git")
+
+        self.setup_pip()
+        self.pip_install("wheel")
+        self.pip_install("setuptools --upgrade")
+        self.pip_install("semantic_version")
+        
+        self.download_redis()
+
+    def debian_compat(self):
+        self.install("build-essential")
+
+    def redhat_compat(self):
+        self.group_install("'Development Tools'")
+
+    def fedora(self):
+        self.redhat_compat()
+
+    def macosx(self):
+        if sh('xcode-select -p') == '':
+            fatal("Xcode tools are not installed. Please run xcode-select --install.")
+
+    def common_last(self):
+        self.build_redis()
+        self.run("redis-server --version")
+
+#----------------------------------------------------------------------------------------------
+
+class RedisRepoSetup(paella.Setup):
+    def __init__(self, nop=False):
+        paella.Setup.__init__(self, nop)
+
+    def common_first(self):
+        pass
+
+    def debian_compat(self):
+        # https://chilts.org/installing-redis-from-chris-leas-ppa/
+        self.add_repo("ppa:chris-lea/redis-server")
+        self.install("redis-server")
+        # if not removed, might break apt-get update
+        self.run("add-apt-repository -r -y ppa:chris-lea/redis-server")
+
+    def redhat_compat(self):
+        # https://linuxize.com/post/how-to-install-and-configure-redis-on-centos-7/
+        self.install("epel-release yum-utils")
+
+        self.install("http://rpms.remirepo.net/enterprise/remi-release-7.rpm")
+        self.run("yum-config-manager -y --enable remi")
+        self.install("redis")
+
+    def fedora(self):
+        self.install("dnf-plugins-core")
+        
+        self.install("https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm")
+        self.install("--allowerasing https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm")
+        # self.install("epel-release")
+        self.install("http://rpms.remirepo.net/enterprise/remi-release-7.rpm")
+        self.run("dnf config-manager -y --set-enabled remi")
+        self.install("redis")
+
+    def macosx(self):
+        self.install("redis")
+
+    def common_last(self):
+        pass
+
+#----------------------------------------------------------------------------------------------
+
+parser = argparse.ArgumentParser(description='Set up system for build.')
+parser.add_argument('-n', '--nop', action="store_true", help='no operation')
+parser.add_argument('-s', '--source', action="store_true", help="Build from source")
+parser.add_argument('--version', type=str, default=DEFAULT_REDIS_VERSION, help='Redis version (e.g. 6, 6.0, 6.0.1')
+parser.add_argument('--branch', type=str, help='Redis branch (e.g. 6, 6.0)')
+parser.add_argument('--valgrind', action="store_true", help="Build a Valgdind-compatible Redis")
+parser.add_argument('--repo', action="store_true", help='Install from package repo')
+parser.add_argument('--force', action="store_true", help="Install even if redis-server is present")
+# parser.add_argument('--strict', action="store_true", help="Verify we get the Redis version we ask for")
+args = parser.parse_args()
+
+if args.source and args.repo:
+    fatal('conflicting options: --source, --repo. Aborting.')
+if args.valgrind and args.repo:
+    fatal('--valgrind and --repo are incompatible. Aborting.')
+if not args.source and not args.repo:
+    args.source = True
+
+if args.branch and args.repo:
+    fafal('--branch and --repo are incompatible. Aborting.')
+if args.version and args.repo:
+    fatal('--version and --repo are incompatible. Aborting.')
+if args.version and args.branch:
+    fatal('conflicting options: --version, --branch. Aborting.')
+
+if paella.Setup.has_command("redis-server") and not args.force:
+    vermsg = sh('redis-server --version')
+    eprint("redis-server is present:\n{}".format(vermsg))
+    exit(0)
+
+try:
+    if args.source:
+        RedisSourceSetup(version=args.version, branch=args.branch, valgrind=args.valgrind, nop=args.nop).setup()
+    else:
+        RedisRepoSetup(nop=args.nop).setup()
+except Exception as x:
+    fatal(str(x))
+
+exit(0)

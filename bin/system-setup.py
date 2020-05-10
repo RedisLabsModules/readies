@@ -42,7 +42,7 @@ parser = argparse.ArgumentParser(description='Set up system for build.')
 parser.add_argument('-n', '--nop', action="store_true", help='no operation')
 # parser.add_argument('--bool', action="store_true", help="flag")
 # parser.add_argument('--int', type=int, default=1, help='number')
-# parser.add_argument('--str', type=str, default='str', help='number')
+# parser.add_argument('--str', type=str, default='str', help='string')
 args = parser.parse_args()
 
 SystemSetup(nop = args.nop).setup()
