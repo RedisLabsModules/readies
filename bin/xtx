@@ -7,8 +7,8 @@ import jinja2
 import re
 import string
 
-parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-                                 description='Template text formatter')
+parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
+                                 description='Template text Jinja2-style formatter.\nUse {{VAR}} syntax to insert variables.')
 
 parser.add_argument('-d', '--define', action='append', metavar=('VAR=value'), help='define variable')
 parser.add_argument('-e', '--env', action='append', metavar=('VAR'), help='read variable from environment')
