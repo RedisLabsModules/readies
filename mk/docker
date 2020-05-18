@@ -5,6 +5,10 @@ MK.nobindir=1
 
 MK_ALL_TARGETS=build publish
 
+ifeq ($(STEM),)
+$(error STEM is undefined. Aborting.)
+endif
+
 ifeq ($(VERSION),)
 VERSION:=$(patsubst v%,%,$(shell git describe --tags `git rev-list --tags --max-count=1`))
 endif
@@ -17,26 +21,58 @@ BUILD_OPT=--rm
 
 DOCKERFILE_STEM ?= $(ROOT)/Dockerfile
 
+REDIS_VER ?= 6.0.1
+
+OSNICK ?= debian
+
+OS.centos7=centos:7.6.1810
+OS.fedora=fedora:32
+OS.focal=ubuntu:focal
+OS.bionic=ubuntu:bionic
+OS.xenial=ubuntu:xenial
+OS.buster=debian:buster
+OS.stretch=debian:stretch
+
+OS=$(OS.$(OSNICK))
+ifeq ($(OS),)
+$(error Invalid OSNICK. Aborting.)
+endif
+
+PACK ?= 0
+TEST ?= 0
+
 #----------------------------------------------------------------------------------------------
 
 define HELP
-make build     # build Docker images
-  X64=1          # build x64 Docker image
-  ARM7=1         # build arm32v7 Docker image
-  ARM8=1         # build arm64v8 Docker image
-make publish   # build and push multi-arch Docker manifest
-  X64=1          # push x64 Docker image and multi-arch manifest
-  ARM7=1         # push arm32v7 Docker image and multi-arch manifest
-  ARM8=1         # push arm64v8 Docker image and multi-arch manifest
+make build      # build Docker images
+  REDIS_VER=ver   # use Redis version `ver`
+  TEST=1          # test aftar build
+  PACK=1          # create packages
+  ARTIFACTS=1     # copy artifacts from docker image
+
+make publish   # push Docker image to Dockerhub
   PUSH=0         # only push multi-arch manifest
+  MULTI=1        # build and push multi-arch Docker manifest
+
 make show      # display registry information from Docker repo
 
-Other arguments:
-  VERSION=x.y.z   # build and publish version x.y.z
-  OSNICK=nick     # nick=buster|stretch|bionic
+Common arguments:
+  OSNICK=nick    # nick=buster|stretch|bionic|centos7
+  VERSION=ver    # build and publish version x.y.z
+  X64=1          # build and publish x64 arch
+  ARM7=1         # build and publish arm32v7 arch
+  ARM8=1         # build and publish arm64v8 arch
 endef
 
 #----------------------------------------------------------------------------------------------
+
+DOCKER_BUILD_ARGS += \
+	VERSION=$(VERSION) \
+	OSNICK=$(OSNICK) \
+	OS=$(OS) \
+	REDIS_VER=$(REDIS_VER) \
+	TEST=$(TEST) \
+	PACK=$(PACK)
 
 define targets # (1=OP, 2=op)
 $(1)_TARGETS :=
@@ -54,7 +90,7 @@ $(eval $(call targets,PUSH,push))
 
 define build_x64 # (1=arch)
 build_$(1):
-	@docker build $(BUILD_OPT) -t $(STEM)-$(OSNICK):$(VERSION)-x64 -f $(DOCKERFILE_STEM) \
+	@docker build $(BUILD_OPT) -t $(STEM):$(VERSION)-x64-$(OSNICK) -f $(DOCKERFILE_STEM) \
 		$(foreach A,$(DOCKER_BUILD_ARGS),--build-arg $(A)) \
 		$(ROOT)
 
@@ -63,7 +99,7 @@ endef
 
 define build_arm  # (1=arch)
 build_$(1):
-	@docker build $(BUILD_OPT) -t $(STEM)-$(OSNICK):$(VERSION)-$(1) -f $(DOCKERFILE_STEM).arm \
+	@docker build $(BUILD_OPT) -t $(STEM):$(VERSION)-$(1)-$(OSNICK) -f $(DOCKERFILE_STEM).arm \
 		$(foreach A,$(DOCKER_BUILD_ARGS),--build-arg $(A)) \
 		--build-arg ARCH=$(1) \
 		$(ROOT)
@@ -73,19 +109,19 @@ endef
 
 define push # (1=arch)
 push_$(1):
-	@docker push $(STEM)-$(OSNICK):$(VERSION)-$(1)
+	@docker push $(STEM):$(VERSION)-$(1)-$(OSNICK)
 
 .PHONY: push_$(1)
 endef
 
 define create_manifest # (1=version)
-@docker manifest create -a $(STEM)-$(OSNICK):$(1) \
-	-a $(STEM)-$(OSNICK):$(VERSION)-x64 \
-	-a $(STEM)-$(OSNICK):$(VERSION)-arm64v8 \
-	-a $(STEM)-$(OSNICK):$(VERSION)-arm32v7
-@docker manifest annotate $(STEM)-$(OSNICK):$(1) $(STEM)-$(OSNICK):$(VERSION)-arm32v7 --os linux --arch arm --variant v7
-@docker manifest annotate $(STEM)-$(OSNICK):$(1) $(STEM)-$(OSNICK):$(VERSION)-arm64v8 --os linux --arch arm64 --variant v8
-@docker manifest push -p $(STEM)-$(OSNICK):$(1)
+@docker manifest create -a $(STEM):$(1)-$(OSNICK) \
+	-a $(STEM):$(VERSION)-x64-$(OSNICK) \
+	-a $(STEM):$(VERSION)-arm64v8-$(OSNICK) \
+	-a $(STEM):$(VERSION)-arm32v7-$(OSNICK)
+@docker manifest annotate $(STEM):$(1)-$(OSNICK) $(STEM):$(VERSION)-arm32v7-$(OSNICK) --os linux --arch arm --variant v7
+@docker manifest annotate $(STEM):$(1)-$(OSNICK) $(STEM):$(VERSION)-arm64v8-$(OSNICK) --os linux --arch arm64 --variant v8
+@docker manifest push -p $(STEM):$(1)-$(OSNICK)
 endef
 
 #----------------------------------------------------------------------------------------------
@@ -104,20 +140,28 @@ $(eval $(call push,x64))
 $(eval $(call push,arm64v8))
 $(eval $(call push,arm32v7))
 
+ifeq ($(MULTI),1)
+
 ifneq ($(PUSH),0)
-publish: $(PUSH_TARGETS)
+publish: $(PUSH_TARGETS) ;
 else
 publish:
 endif
 	$(call create_manifest,$(VERSION))
 	$(call create_manifest,latest)
 
-show:
-	@echo "$(STEM)-$(OSNICK):"
-ifeq ($(INSPECT),1)
-	@docker manifest inspect $(STEM)-$(OSNICK):$(VERSION) | jq
 else
-	@curl -s -X "GET" https://cloud.docker.com/v2/repositories/$(STEM)-$(OSNICK)/tags/ | jq
+
+publish: $(PUSH_TARGETS) ;
+
+endif # MULTI
+
+show:
+	@echo "$(STEM):"
+ifeq ($(INSPECT),1)
+	@docker manifest inspect $(STEM):$(VERSION)-$(OSNICK) | jq
+else
+	@curl -s -X "GET" https://cloud.docker.com/v2/repositories/$(STEM)/tags/ | jq
 endif
 
 .PHONY: build publish show
