@@ -30,12 +30,6 @@ check_variants() {
 }
 
 install_python() {
-	[ ! -z $PYTHON3 ] && return 0
-
-	if [ ! -z $PYTHON ]; then
-		[ "$PYTHON_VER" = "3" ] && return 0
-	fi
-
 	if [ ! -z $(command -v apt-get) ]; then
 		runn apt-get -qq update
 		runn apt-get -qq install -y python3
@@ -82,6 +76,8 @@ install_pip() {
 }
 
 check_variants
+
+[[ ! -z "$MYPY" ]] && exit 0
 [[ $CHECK == 1 ]] && exit 1
 
 install_python
