@@ -156,7 +156,7 @@ class Setup(OnPlatform):
         self.run("yum-config-manager -y --add-repo {}".format(repourl), _try=_try)
 
     def apt_add_repo(self, repourl, repo="", _try=False):
-        if not self.has_command("yum-config-manager"):
+        if not self.has_command("add-apt-repository"):
             self.install("software-properties-common")
         self.run("add-apt-repository -y {}".format(repourl), _try=_try)
         self.run("apt-get -qq update", _try=_try)
@@ -212,10 +212,11 @@ class Setup(OnPlatform):
         get_pip = "set -e; wget -q https://bootstrap.pypa.io/get-pip.py -O /tmp/get-pip.py"
         if self.run(self.python + " -m pip --version", _try=True, output_on_error=False) != 0:
             if sys.version_info.major == 3:
-                self.install("python3-distutils")
+                # required for python >= 3.6, may not exist in prior versions
+                self.install("python3-distutils", _try=True)
             self.install_downloaders()
             pip_user = ' --user' if self.os == 'macosx' else ''
-            self.run(get_pip + "; " + self.python + " /tmp/get-pip.py" + pip_user + " 'pip==19.3.1'", output_on_error=True, _try=_try)
+            self.run(get_pip + "; " + self.python + " /tmp/get-pip.py" + pip_user, output_on_error=True, _try=_try)
 
     def install_downloaders(self, _try=False):
         if self.os == 'linux':
