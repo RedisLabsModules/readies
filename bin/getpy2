@@ -8,16 +8,16 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 
 . $HERE/../shibumi/functions
 
-[ "$VERBOSE" = "1" ] && set -x
+[[ "$VERBOSE" == "1" ]] && set -x
 
 fix_variants() {
-	if [ ! -z $PYTHON2 ]; then
-		[ -z $PYTHON && "$PYTHON_VER" == "2"  ] && ln -s $PYTHON2 /usr/local/bin/python
+	if [[ ! -z $PYTHON2 ]]; then
+		[[ -z $PYTHON && "$PYTHON_VER" == "2"  ]] && ln -s $PYTHON2 /usr/local/bin/python
 	fi
 
-	if [ ! -z $PYTHON27 ]; then
-		[ -z $PYTHON2 ] && ln -s $PYTHON27 /usr/local/bin/python2
-		[ -z $PYTHON && "$PYTHON_VER" == "2" ]  && ln -s $PYTHON27 /usr/local/bin/python
+	if [[ ! -z $PYTHON27 ]]; then
+		[[ -z $PYTHON2 ]] && ln -s $PYTHON27 /usr/local/bin/python2
+		[[ -z $PYTHON && "$PYTHON_VER" == "2" ]]  && ln -s $PYTHON27 /usr/local/bin/python
 	fi
 }
 
@@ -29,54 +29,54 @@ check_variants() {
 	MYPY=""
 	PYTHON_VER=""
 	
-	if [ ! -z $PYTHON ]; then
+	if [[ ! -z $PYTHON ]]; then
 		PYTHON_VER="$(python --version 2>&1 | cut -d" " -f2 | cut -d. -f1)"
-		[ "$PYTHON_VER" = "2" ] && MYPY=$PYTHON
+		[[ "$PYTHON_VER" == "2" ]] && MYPY=$PYTHON
 	fi
 	
-	[ ! -z $PYTHON2 ]  && MYPY=$PYTHON2
-	[ ! -z $PYTHON27 ] && MYPY=$PYTHON27
+	[[ ! -z $PYTHON2 ]]  && MYPY=$PYTHON2
+	[[ ! -z $PYTHON27 ]] && MYPY=$PYTHON27
 	
-	[ ! -z $FIX ] && fix_variants
+	[[ ! -z $FIX ]] && fix_variants
 }
 
 install_python() {
-	if [ ! -z $(command -v apt-get) ]; then
+	if [[ ! -z $(command -v apt-get) ]]; then
 		runn apt-get -qq update
 		runn apt-get -qq install -y python
-	elif [ ! -z $(command -v dnf) ]; then
+	elif [[ ! -z $(command -v dnf) ]]; then
 		runn dnf install -y python2
-	elif [ ! -z $(command -v yum) ]; then
+	elif [[ ! -z $(command -v yum) ]]; then
 		runn yum install -y python2
-	elif [ ! -z $(command -v apk) ]; then
+	elif [[ ! -z $(command -v apk) ]]; then
 		runn apk update
 		runn apk add python2
-	elif [ ! -z $(command -v brew) ]; then
+	elif [[ ! -z $(command -v brew) ]]; then
 		runn brew install python2
-	elif [ ! -z $(command -v pkg) ]; then
+	elif [[ ! -z $(command -v pkg) ]]; then
 		runn pkg install -y python2
 	fi
 }
 
 install_pip() {
-	[ "$PIP" != "1" ] && return
-	[ $($MYPY -m pip --version > /dev/null 2>&1; echo $?) == 0 ] && return
+	[[ "$PIP" != "1" ]] && return
+	[[ $($MYPY -m pip --version > /dev/null 2>&1; echo $?) == 0 ]] && return
 
 	local packs="ca-certificates wget"
 
-	if [ ! -z $(command -v apt-get) ]; then
+	if [[ ! -z $(command -v apt-get) ]]; then
 		runn apt-get -qq update
 		runn apt-get -qq install -y $packs
-	elif [ ! -z $(command -v dnf) ]; then
+	elif [[ ! -z $(command -v dnf) ]]; then
 		runn dnf install -y $packs
-	elif [ ! -z $(command -v yum) ]; then
+	elif [[ ! -z $(command -v yum) ]]; then
 		runn yum install -y $packs
-	elif [ ! -z $(command -v apk) ]; then
+	elif [[ ! -z $(command -v apk) ]]; then
 		runn apk update
 		runn apk add $packs
-	elif [ ! -z $(command -v brew) ]; then
+	elif [[ ! -z $(command -v brew) ]]; then
 		runn brew install wget
-	elif [ ! -z $(command -v pkg) ]; then
+	elif [[ ! -z $(command -v pkg) ]]; then
 		runn pkg install -y $packs
 	fi
 
@@ -93,7 +93,7 @@ check_variants
 install_python
 
 check_variants
-if [ -z $(command -v $MYPY) ]; then
+if [[ -z $(command -v $MYPY) ]]; then
 	>&2 echo "Cannot install Python2. Aborting."
 	exit 1
 fi
