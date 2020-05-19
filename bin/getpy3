@@ -56,7 +56,10 @@ install_pip() {
 
 	if [[ ! -z $(command -v apt-get) ]]; then
 		runn apt-get -qq update
-		runn apt-get -qq install -y $packs python3-distutils
+		runn apt-get -qq install -y $packs
+		if [[ -z $(apt-cache search --names-only '^python3-distutils$')  ]]; then
+			runn apt-get -qq install -y python3-distutils
+		fi
 	elif [[ ! -z $(command -v dnf) ]]; then
 		runn dnf install -y $packs
 	elif [[ ! -z $(command -v yum) ]]; then
