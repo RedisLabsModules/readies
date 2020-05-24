@@ -13,15 +13,22 @@ if [[ ! -z $1 ]]; then
 	shift
 fi
 
-redis-server $args > /dev/null 2>&1 &
+server_log=$(mktemp /tmp/redis-server.XXXXX)
+redis-server $args > $server_log 2>&1 &
 redis-cli $cli_args ping > /dev/null 2>&1
+e=$?
 n=0
-while [[ $? != 0 && $n < 10 ]]; do
+while [[ $e != 0 && $n < 10 ]]; do
 	n=$((n+1))
 	sleep 0.1
 	redis-cli $cli_args ping > /dev/null 2>&1
+	e=$?
 done
-[[ $? != 0 ]] && { echo "Cannot run redis-server. Aborting."; exit 1; }
+if [[ $e != 0 ]]; then
+	>&2 cat $server_log
+	rm -f $server_log
+	exit 1
+fi
 
 #if [[ ! -z $* ]]; then
 	file=$(mktemp /tmp/redis.XXXXXX)
@@ -36,4 +43,5 @@ done
 #fi
 
 kill -TERM $!
+rm -f $server_log
 exit 0
