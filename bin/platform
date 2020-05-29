@@ -10,6 +10,7 @@ sys.path.insert(0, READIES_PATH)
 import paella
 
 parser = argparse.ArgumentParser(description='Report platform characteristics.')
+parser.add_argument('-t', '--triplet', action="store_true", help='os-nick-arch triplet')
 parser.add_argument('--os', action="store_true", help='Operating system')
 parser.add_argument('--version', action="store_true", help='OS/Distribution version')
 parser.add_argument('--dist', action="store_true", help='Linux distribution (if applicable)')
@@ -18,6 +19,9 @@ parser.add_argument('--arch', action="store_true", help='CPU Architecture')
 parser.add_argument('--kernel', action="store_true", help='Kernel version (if applicable)')
 parser.add_argument('--glibc', action="store_true", help='GLIBC version (if applicable)')
 parser.add_argument('--strict', action="store_true", help='Fail if cannot identify platform')
+parser.add_argument('--debian?', action="store_true", help='is Debian-like distribution?')
+parser.add_argument('--redhat?', action="store_true", help='is Redhat-like distribution?')
+
 args = parser.parse_args()
 
 try:
@@ -25,7 +29,17 @@ try:
 except:
     eprint("platform: cannot identify")
     exit(1)
+
+BB()
+if args.__dict__['debian?']:
+	sys.exit(0 if platform.is_debian_compat() else 1)
+
+if args.__dict__['redhat?']:
+	sys.exit(0 if platform.is_redhat_compat() else 1)
+
 ret = ""
+if args.triplet:
+	ret += " " + platform.triplet()
 if args.os:
 	ret += " " + platform.os
 if args.osnick:
