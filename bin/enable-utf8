@@ -1,0 +1,14 @@
+#!/bin/bash
+
+if [[ ! -z $(command -v yum) && -f /etc/yum.conf ]]; then
+	if [[ -z $(grep '^override_install_langs=' /etc/yum.conf) ]]; then
+		sed -i 's/^\(override_install_langs=\)/# \1/' /etc/yum.conf
+		yum reinstall -y glibc-common
+	fi
+	
+	export LC_ALL=en_US.UTF-8
+	export LANG=en_US.UTF-8
+else
+	export LC_ALL=C.UTF-8
+	export LANG=C.UTF-8
+fi
