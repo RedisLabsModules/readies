@@ -5,9 +5,12 @@ import sys
 import os
 import argparse
 import json
-import urllib
 import shutil
 import tempfile
+try:
+    from urllib2 import urlopen
+except:
+    from urllib.request import urlopen
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
@@ -24,7 +27,7 @@ class RedisSourceSetup(paella.Setup):
     # the latter will fetch the latest released version on the 5.0 branch
     # branch can be either 6 (will be mapped to 6.0) or 6.1 or any string
     # for partial semantic versions branches, we'll fetch HEAD of the given branch from github
-    def __init__(self, nop=False, version=None, branch=None, valgrind=False):
+    def __init__(self, nop=False, version=None, branch=None, valgrind=False, no_tls=False):
         paella.Setup.__init__(self, nop)
 
         if version is not None and branch is not None:
@@ -32,14 +35,15 @@ class RedisSourceSetup(paella.Setup):
         self.version = version
         self.branch = branch
         self.valgrind = valgrind
+        self.tls = not no_tls
 
     def get_redis_versions(self):
-        r = urllib.urlopen('https://api.github.com/repos/antirez/redis/tags')
+        r = urlopen('https://api.github.com/repos/antirez/redis/tags')
         if r.code != 200:
             raise RuntimeError('cannot read Redis version list from guthub')
         t = r.read()
         j = json.loads(t)
-        self.redis_versions = map(lambda v: v['name'], j)
+        self.redis_versions = list(map(lambda v: v['name'], j))
 
     def wget(self, url, file):
         self.run('wget -O {} {}'.format(file, url), output_on_error=True)
@@ -84,15 +88,19 @@ class RedisSourceSetup(paella.Setup):
             self.redis_dir = os.path.join(self.base_dir, 'redis')
 
     def build_redis(self):
-        BB()
         build_args = ''
-        build_args += 'valgrind' if self.valgrind else ''
+        build_args += ' valgrind' if self.valgrind else ''
+        build_args += ' BUILD_TLS=yes' if self.tls else ''
+        
+        install_args = ''
+        install_args += ' BUILD_TLS=yes' if self.tls else ''
+        
         self.run("""
             set -e
             cd {}
             make -j `{}/bin/nproc`  {}
-            make install
-            """.format(self.redis_dir, ROOT, build_args), output_on_error=True)
+            make install {}
+            """.format(self.redis_dir, ROOT, build_args, install_args), output_on_error=True)
         shutil.rmtree(self.base_dir)
     
     def common_first(self):
@@ -103,17 +111,20 @@ class RedisSourceSetup(paella.Setup):
         self.pip_install("wheel")
         self.pip_install("setuptools --upgrade")
         self.pip_install("semantic_version")
-        
+        BB()
         self.download_redis()
 
     def debian_compat(self):
         self.install("build-essential")
+        self.install("libssl-dev")
 
     def redhat_compat(self):
         self.group_install("'Development Tools'")
+        self.install("openssl-devel")
 
     def fedora(self):
         self.redhat_compat()
+        self.install("openssl-devel")
 
     def macosx(self):
         if sh('xcode-select -p') == '':
@@ -171,6 +182,7 @@ parser.add_argument('-s', '--source', action="store_true", help="Build from sour
 parser.add_argument('--version', type=str, default=DEFAULT_REDIS_VERSION, help='Redis version (e.g. 6, 6.0, 6.0.1')
 parser.add_argument('--branch', type=str, help='Redis branch (e.g. 6, 6.0)')
 parser.add_argument('--valgrind', action="store_true", help="Build a Valgdind-compatible Redis")
+parser.add_argument('--no-tls', action="store_true", help="Do not support TLS")
 parser.add_argument('--repo', action="store_true", help='Install from package repo')
 parser.add_argument('--force', action="store_true", help="Install even if redis-server is present")
 # parser.add_argument('--strict', action="store_true", help="Verify we get the Redis version we ask for")
@@ -197,7 +209,8 @@ if paella.Setup.has_command("redis-server") and not args.force:
 
 try:
     if args.source:
-        RedisSourceSetup(version=args.version, branch=args.branch, valgrind=args.valgrind, nop=args.nop).setup()
+        RedisSourceSetup(version=args.version, branch=args.branch, valgrind=args.valgrind,
+                         no_tls=args.no_tls, nop=args.nop).setup()
     else:
         RedisRepoSetup(nop=args.nop).setup()
 except Exception as x:
