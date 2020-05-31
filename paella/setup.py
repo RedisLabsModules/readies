@@ -65,6 +65,7 @@ class Setup(OnPlatform):
         self.stages = [0]
         self.platform = Platform()
         self.os = self.platform.os
+        self.osnick = self.platform.osnick
         self.dist = self.platform.dist
         self.ver = self.platform.os_ver
 
