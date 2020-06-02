@@ -1,0 +1,13 @@
+
+__sourced() {
+	local d=$1
+	[[ ! -d $d ]] && return
+	local f
+	for f in $d/*; do
+			. $f
+	done
+}
+
+__sourced $1
+
+unset -f __sourced
