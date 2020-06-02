@@ -51,8 +51,8 @@ class RedisSourceSetup(paella.Setup):
             if r.headers["link"] == "":
                 break
             links0 = r.headers["link"].split(",")
-            links1 = map(lambda a: map(lambda b: str.strip(b), a.split(';')), links0)
-            next_link = filter(lambda x: x[1] == 'rel="next"', links1)
+            links1 = list(map(lambda a: list(map(lambda b: str.strip(b), a.split(';'))), links0))
+            next_link = list(filter(lambda x: x[1] == 'rel="next"', links1))
             if next_link == []:
                 break
             url = next_link[0][0][1:-1]
