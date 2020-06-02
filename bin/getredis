@@ -1,5 +1,5 @@
 #!/bin/sh
-''''command -v python3 > /dev/null && exec python3 -u -- "$0" ${1+"$@"}; exec python2 -u -- "$0" ${1+"$@"} # '''
+''''[ ! -z $VIRTUAL_ENV ] && exec python -u -- "$0" ${1+"$@"}; command -v python3 > /dev/null && exec python3 -u -- "$0" ${1+"$@"}; exec python2 -u -- "$0" ${1+"$@"} # '''
 
 import sys
 import os
@@ -12,7 +12,8 @@ try:
 except:
     from urllib.request import urlopen
 
-ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+HERE = os.path.dirname(__file__)
+ROOT = os.path.abspath(os.path.join(HERE, ".."))
 sys.path.insert(0, ROOT)
 import paella  # noqa: F401
 
@@ -37,17 +38,48 @@ class RedisSourceSetup(paella.Setup):
         self.valgrind = valgrind
         self.tls = not no_tls
 
-    def get_redis_versions(self):
-        r = urlopen('https://api.github.com/repos/antirez/redis/tags')
-        if r.code != 200:
-            raise RuntimeError('cannot read Redis version list from guthub')
-        t = r.read()
-        j = json.loads(t)
+    def read_redis_versions(self):
+        j = []
+        url = 'https://api.github.com/repos/antirez/redis/tags?per_page=100'
+        while True:
+            r = urlopen(url)
+            if r.code != 200:
+                raise RuntimeError('cannot read Redis version list from guthub')
+            t = r.read()
+            j1 = json.loads(t)
+            j += j1
+            if r.headers["link"] == "":
+                break
+            links0 = r.headers["link"].split(",")
+            links1 = map(lambda a: map(lambda b: str.strip(b), a.split(';')), links0)
+            next_link = filter(lambda x: x[1] == 'rel="next"', links1)
+            if next_link == []:
+                break
+            url = next_link[0][0][1:-1]
         self.redis_versions = list(map(lambda v: v['name'], j))
 
     def wget(self, url, file):
         self.run('wget -O {} {}'.format(file, url), output_on_error=True)
 
+    def get_requested_redis_versions(self):
+        from semantic_version import Version
+
+        self.read_redis_versions()
+        if self.version in self.redis_versions:
+            return [self.version]
+
+        sv = Version(self.version, partial=True)
+        if sv.patch is not None:
+            # this would fail, as the fully qualified self.version is not in self.redis_versions
+            version = str(sv)
+            return [version]
+
+        if sv.minor is None:
+            sv.minor = 0
+        br = '{}.{}'.format(sv.major, sv.minor)
+        # select the latest version of the major.minor branch
+        return list(filter(lambda v: v.startswith(br + '.'), self.redis_versions))
+    
     def download_redis(self):
         from semantic_version import Version
         self.base_dir = tempfile.mkdtemp(prefix='redis.')
@@ -55,20 +87,10 @@ class RedisSourceSetup(paella.Setup):
         if self.version is None and self.branch is None:
             self.branch = 'unstable'
         if self.version is not None:
-            self.get_redis_versions()
-            if self.version in self.redis_versions:
-                version = self.version
-            else:
-                sv = Version(self.version, partial=True)
-                if sv.patch is not None:
-                    # this would fail, as the fully qualified self.version is not in self.redis_versions
-                    version = str(sv)
-                else:
-                    if sv.minor is None:
-                        sv.minor = 0
-                    br = '{}.{}'.format(sv.major, sv.minor)
-                    # select the latest version of the major.minor branch
-                    version = list(filter(lambda v: v.startswith(br + '.'), self.redis_versions))[0]
+            versions = self.get_requested_redis_versions()
+            if versions == []:
+                raise RuntimeError('no version matches request')
+            version = versions[0]
 
             file = os.path.join(self.base_dir, 'redis-{}.tgz'.format(str(version)))
             self.wget('https://github.com/antirez/redis/archive/{}.tar.gz'.format(str(version)), file)
@@ -179,12 +201,13 @@ class RedisRepoSetup(paella.Setup):
 parser = argparse.ArgumentParser(description='Set up system for build.')
 parser.add_argument('-n', '--nop', action="store_true", help='no operation')
 parser.add_argument('-s', '--source', action="store_true", help="Build from source")
-parser.add_argument('--version', type=str, default=DEFAULT_REDIS_VERSION, help='Redis version (e.g. 6, 6.0, 6.0.1')
-parser.add_argument('--branch', type=str, help='Redis branch (e.g. 6, 6.0)')
+parser.add_argument('-v', '--version', type=str, default=DEFAULT_REDIS_VERSION, help='Redis version (e.g. 6, 6.0, 6.0.1')
+parser.add_argument('-b', '--branch', type=str, help='Redis branch (e.g. 6, 6.0)')
 parser.add_argument('--valgrind', action="store_true", help="Build a Valgdind-compatible Redis")
 parser.add_argument('--no-tls', action="store_true", help="Do not support TLS")
 parser.add_argument('--repo', action="store_true", help='Install from package repo')
 parser.add_argument('--force', action="store_true", help="Install even if redis-server is present")
+parser.add_argument('-p', '--just-print-version', action="store_true", help="Jump print version, do not install")
 # parser.add_argument('--strict', action="store_true", help="Verify we get the Redis version we ask for")
 args = parser.parse_args()
 
@@ -201,6 +224,13 @@ if args.version and args.repo:
     fatal('--version and --repo are incompatible. Aborting.')
 if args.version and args.branch:
     fatal('conflicting options: --version, --branch. Aborting.')
+
+if args.just_print_version:
+    setup = RedisSourceSetup(version=args.version, nop=args.nop)
+    BB()
+    version = setup.get_requested_redis_versions()[0]
+    print(version)
+    exit(0)
 
 if paella.Setup.has_command("redis-server") and not args.force:
     vermsg = sh('redis-server --version')
