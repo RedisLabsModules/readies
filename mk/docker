@@ -5,6 +5,8 @@ MK.nobindir=1
 
 MK_ALL_TARGETS=build publish
 
+#----------------------------------------------------------------------------------------------
+
 ifeq ($(STEM),)
 $(error STEM is undefined. Aborting.)
 endif
@@ -16,14 +18,29 @@ ifeq ($(VERSION),)
 $(error Cannot determine version. Aborting.)
 endif
 
+ifeq ($(VAR),)
+_VAR=
+else
+_VAR=-$(VAR)
+endif
+
 BUILD_OPT=--rm
 # --squash
 
 DOCKERFILE_STEM ?= $(ROOT)/Dockerfile
 
+#----------------------------------------------------------------------------------------------
+
 REDIS_VER ?= 6.0.1
 
+PACK ?= 0
+TEST ?= 0
+
+#----------------------------------------------------------------------------------------------
+
 OSNICK ?= debian
+
+ifeq ($(OS.custom),)
 
 OS.centos7=centos:7.6.1810
 OS.fedora=fedora:32
@@ -33,13 +50,12 @@ OS.xenial=ubuntu:xenial
 OS.buster=debian:buster
 OS.stretch=debian:stretch
 
+endif # OS
+
 OS=$(OS.$(OSNICK))
 ifeq ($(OS),)
 $(error Invalid OSNICK. Aborting.)
 endif
-
-PACK ?= 0
-TEST ?= 0
 
 #----------------------------------------------------------------------------------------------
 
@@ -66,6 +82,10 @@ endef
 
 #----------------------------------------------------------------------------------------------
 
+define D_NAME # (1=arch)
+$(STEM):$(VERSION)$(_VAR)-$(1)-$(OSNICK)
+endef
+
 DOCKER_BUILD_ARGS += \
 	VERSION=$(VERSION) \
 	OSNICK=$(OSNICK) \
@@ -90,7 +110,7 @@ $(eval $(call targets,PUSH,push))
 
 define build_x64 # (1=arch)
 build_$(1):
-	@docker build $(BUILD_OPT) -t $(STEM):$(VERSION)-x64-$(OSNICK) -f $(DOCKERFILE_STEM) \
+	@docker build $(BUILD_OPT) -t $(call D_NAME,x64) -f $(DOCKERFILE_STEM) \
 		$(foreach A,$(DOCKER_BUILD_ARGS),--build-arg $(A)) \
 		$(ROOT)
 
@@ -99,7 +119,7 @@ endef
 
 define build_arm  # (1=arch)
 build_$(1):
-	@docker build $(BUILD_OPT) -t $(STEM):$(VERSION)-$(1)-$(OSNICK) -f $(DOCKERFILE_STEM).arm \
+	@docker build $(BUILD_OPT) -t $(call D_NAME,$(1)) -f $(DOCKERFILE_STEM).arm \
 		$(foreach A,$(DOCKER_BUILD_ARGS),--build-arg $(A)) \
 		--build-arg ARCH=$(1) \
 		$(ROOT)
@@ -109,7 +129,7 @@ endef
 
 define push # (1=arch)
 push_$(1):
-	@docker push $(STEM):$(VERSION)-$(1)-$(OSNICK)
+	@docker push $(call D_NAME,$(1))
 
 .PHONY: push_$(1)
 endef
