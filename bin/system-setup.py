@@ -1,12 +1,12 @@
 #!/bin/sh
-''''command -v python3 > /dev/null && exec python3 -u -- "$0" ${1+"$@"}; exec python2 -u -- "$0" ${1+"$@"} # '''
+''''[ ! -z $VIRTUAL_ENV ] && exec python -u -- "$0" ${1+"$@"}; command -v python3 > /dev/null && exec python3 -u -- "$0" ${1+"$@"}; exec python2 -u -- "$0" ${1+"$@"} # '''
 
 import sys
 import os
 import argparse
 
 HERE=os.path.join(os.path.dirname(__file__)
-sys.path.insert(0, HERE, ".."))
+ROOT = os.path.abspath(os.path.join(HERE, ".."))
 import paella
 
 #----------------------------------------------------------------------------------------------
