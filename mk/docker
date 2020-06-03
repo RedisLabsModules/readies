@@ -24,7 +24,7 @@ else
 _VAR=-$(VAR)
 endif
 
-BUILD_OPT=--rm
+BUILD_OPT=--rm --pull
 # --squash
 
 DOCKERFILE_STEM ?= $(ROOT)/Dockerfile
@@ -35,6 +35,10 @@ REDIS_VER ?= 6.0.1
 
 PACK ?= 0
 TEST ?= 0
+
+ifeq ($(ARTIFACTS),1)
+PACK:=1
+endif
 
 #----------------------------------------------------------------------------------------------
 
@@ -87,6 +91,10 @@ define D_NAME # (1=arch)
 $(STEM):$(VERSION)$(_VAR)-$(1)-$(OSNICK)
 endef
 
+define D_LATEST_NAME # (1=arch)
+$(STEM):latest$(_VAR)-$(1)-$(OSNICK)
+endef
+
 DOCKER_BUILD_ARGS += \
 	VERSION=$(VERSION) \
 	OSNICK=$(OSNICK) \
@@ -125,9 +133,12 @@ build_$(1):
 	@docker build $(BUILD_OPT) -t $(call D_NAME,x64) -f $(DOCKERFILE_STEM) \
 		$(foreach A,$(DOCKER_BUILD_ARGS),--build-arg $(A)) \
 		$(ROOT)
-	@if [ $(ARTIFACTS) == 1 ]; then \
-		IMAGE=$(call D_NAME,$(1)) $(MK)/docker-collect-artifacts ;\
-	fi
+ifeq ($(ARTIFACTS),1)
+	@IMAGE=$(call D_NAME,$(1)) $(MK)/docker-collect-artifacts
+endif
+ifeq ($(LATEST),1)
+	@docker tag $(call D_NAME,x64) $(call D_LATEST_NAME,$(1))
+endif
 
 .PHONY: build_$(1)
 endef
@@ -138,9 +149,12 @@ build_$(1):
 		$(foreach A,$(DOCKER_BUILD_ARGS),--build-arg $(A)) \
 		--build-arg ARCH=$(1) \
 		$(ROOT)
-	@if [ $(ARTIFACTS) == 1 ]; then \
-		IMAGE=$(call D_NAME,$(1)) $(MK)/docker-collect-artifacts ;\
-	fi
+ifeq ($(ARTIFACTS),1)
+	@IMAGE=$(call D_NAME,$(1)) $(MK)/docker-collect-artifacts
+endif
+ifeq ($(LATEST),1)
+	@docker tag $(call D_NAME,x64) $(call D_LATEST_NAME,$(1))
+endif
 
 .PHONY: build_$(1)
 endef
@@ -148,6 +162,9 @@ endef
 define push # (1=arch)
 push_$(1):
 	@docker push $(call D_NAME,$(1))
+ifeq ($(LATEST),1)
+	@docker tag $(call D_LATEST_NAME,$(1))
+endif
 
 .PHONY: push_$(1)
 endef
