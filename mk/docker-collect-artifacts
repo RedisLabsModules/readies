@@ -11,5 +11,6 @@ set -e
 cid=`$DOCKER create $IMAGE`
 mkdir -p $ART_DIR
 $DOCKER cp $cid:$ART_INT_DIR/. $ART_DIR/
+ls -l $ART_DIR/
 $DOCKER rm -v $cid > /dev/null
 exit 0
