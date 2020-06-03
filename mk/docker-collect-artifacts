@@ -1,0 +1,15 @@
+#!/bin/bash
+
+DOCKER=${DOCKER:-docker}
+
+[[ -z $IMAGE ]] && { >&2 echo "$0: IMAGE is not defined. Aborting."; exit 1; }
+[[ -z $ART_DIR ]] && { >&2 echo "$0: ART_DIR is not defined. Aborting."; exit 1; }
+[[ -z $ART_INT_DIR ]] && { >&2 echo "$0: ART_INT_DIR is not defined. Aborting."; exit 1; }
+
+set -e
+
+cid=`$DOCKER create $IMAGE`
+mkdir -p $ART_DIR
+$DOCKER cp $cid:$ART_INT_DIR/. $ART_DIR/
+$DOCKER rm -v $cid > /dev/null
+exit 0

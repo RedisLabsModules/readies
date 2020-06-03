@@ -67,6 +67,7 @@ make build      # build Docker images
   ARTIFACTS=1     # copy artifacts from docker image
 
 make publish   # push Docker image to Dockerhub
+  LATEST=1       # tag selected version as latest and push it
   PUSH=0         # only push multi-arch manifest
   MULTI=1        # build and push multi-arch Docker manifest
 
@@ -108,11 +109,25 @@ $(eval $(call targets,PUSH,push))
 
 #----------------------------------------------------------------------------------------------
 
+ifeq ($(ARTIFACTS),1)
+ifeq ($(ART_DIR),)
+$(error ART_DIR is not defined.)
+endif
+export ART_DIR
+ifeq ($(ART_INT_DIR),)
+$(error ART_INT_DIR is not defined.)
+endif
+export ART_INT_DIR
+endif
+
 define build_x64 # (1=arch)
 build_$(1):
 	@docker build $(BUILD_OPT) -t $(call D_NAME,x64) -f $(DOCKERFILE_STEM) \
 		$(foreach A,$(DOCKER_BUILD_ARGS),--build-arg $(A)) \
 		$(ROOT)
+	@if [ $(ARTIFACTS) == 1 ]; then \
+		IMAGE=$(call D_NAME,$(1)) $(MK)/docker-collect-artifacts ;\
+	fi
 
 .PHONY: build_$(1)
 endef
@@ -123,6 +138,9 @@ build_$(1):
 		$(foreach A,$(DOCKER_BUILD_ARGS),--build-arg $(A)) \
 		--build-arg ARCH=$(1) \
 		$(ROOT)
+	@if [ $(ARTIFACTS) == 1 ]; then \
+		IMAGE=$(call D_NAME,$(1)) $(MK)/docker-collect-artifacts ;\
+	fi
 
 .PHONY: build_$(1)
 endef
