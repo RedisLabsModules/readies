@@ -130,14 +130,14 @@ endif
 
 define build_x64 # (1=arch)
 build_$(1):
-	@docker build $(BUILD_OPT) -t $(call D_NAME,x64) -f $(DOCKERFILE_STEM) \
+	$(SHOW)docker build $(BUILD_OPT) -t $(call D_NAME,$(1)) -f $(DOCKERFILE_STEM) \
 		$(foreach A,$(DOCKER_BUILD_ARGS),--build-arg $(A)) \
 		$(ROOT)
 ifeq ($(ARTIFACTS),1)
-	@IMAGE=$(call D_NAME,$(1)) $(MK)/docker-collect-artifacts
+	$(SHOW)IMAGE=$(call D_NAME,$(1)) $(MK)/docker-collect-artifacts
 endif
 ifeq ($(LATEST),1)
-	@docker tag $(call D_NAME,x64) $(call D_LATEST_NAME,$(1))
+	$(SHOW)docker tag $(call D_NAME,$(1)) $(call D_LATEST_NAME,$(1))
 endif
 
 .PHONY: build_$(1)
@@ -145,15 +145,15 @@ endef
 
 define build_arm  # (1=arch)
 build_$(1):
-	@docker build $(BUILD_OPT) -t $(call D_NAME,$(1)) -f $(DOCKERFILE_STEM).arm \
+	$(SHOW)docker build $(BUILD_OPT) -t $(call D_NAME,$(1)) -f $(DOCKERFILE_STEM).arm \
 		$(foreach A,$(DOCKER_BUILD_ARGS),--build-arg $(A)) \
 		--build-arg ARCH=$(1) \
 		$(ROOT)
 ifeq ($(ARTIFACTS),1)
-	@IMAGE=$(call D_NAME,$(1)) $(MK)/docker-collect-artifacts
+	$(SHOW)IMAGE=$(call D_NAME,$(1)) $(MK)/docker-collect-artifacts
 endif
 ifeq ($(LATEST),1)
-	@docker tag $(call D_NAME,x64) $(call D_LATEST_NAME,$(1))
+	$(SHOW)docker tag $(call D_NAME,$(1)) $(call D_LATEST_NAME,$(1))
 endif
 
 .PHONY: build_$(1)
@@ -161,22 +161,22 @@ endef
 
 define push # (1=arch)
 push_$(1):
-	@docker push $(call D_NAME,$(1))
+	$(SHOW)docker push $(call D_NAME,$(1))
 ifeq ($(LATEST),1)
-	@docker tag $(call D_LATEST_NAME,$(1))
+	$(SHOW)docker push $(call D_LATEST_NAME,$(1))
 endif
 
 .PHONY: push_$(1)
 endef
 
 define create_manifest # (1=version)
-@docker manifest create -a $(STEM):$(1)-$(OSNICK) \
+$(SHOW)docker manifest create -a $(STEM):$(1)-$(OSNICK) \
 	-a $(STEM):$(VERSION)-x64-$(OSNICK) \
 	-a $(STEM):$(VERSION)-arm64v8-$(OSNICK) \
 	-a $(STEM):$(VERSION)-arm32v7-$(OSNICK)
-@docker manifest annotate $(STEM):$(1)-$(OSNICK) $(STEM):$(VERSION)-arm32v7-$(OSNICK) --os linux --arch arm --variant v7
-@docker manifest annotate $(STEM):$(1)-$(OSNICK) $(STEM):$(VERSION)-arm64v8-$(OSNICK) --os linux --arch arm64 --variant v8
-@docker manifest push -p $(STEM):$(1)-$(OSNICK)
+$(SHOW)docker manifest annotate $(STEM):$(1)-$(OSNICK) $(STEM):$(VERSION)-arm32v7-$(OSNICK) --os linux --arch arm --variant v7
+$(SHOW)docker manifest annotate $(STEM):$(1)-$(OSNICK) $(STEM):$(VERSION)-arm64v8-$(OSNICK) --os linux --arch arm64 --variant v8
+$(SHOW)docker manifest push -p $(STEM):$(1)-$(OSNICK)
 endef
 
 #----------------------------------------------------------------------------------------------
@@ -202,8 +202,8 @@ publish: $(PUSH_TARGETS) ;
 else
 publish:
 endif
-	$(call create_manifest,$(VERSION))
-	$(call create_manifest,latest)
+	$(SHOW)$(call create_manifest,$(VERSION))
+	$(SHOW)$(call create_manifest,latest)
 
 else
 
@@ -214,9 +214,9 @@ endif # MULTI
 show:
 	@echo "$(STEM):"
 ifeq ($(INSPECT),1)
-	@docker manifest inspect $(STEM):$(VERSION)-$(OSNICK) | jq
+	$(SHOW)docker manifest inspect $(STEM):$(VERSION)-$(OSNICK) | jq
 else
-	@curl -s -X "GET" https://cloud.docker.com/v2/repositories/$(STEM)/tags/ | jq
+	$(SHOW)curl -s -X "GET" https://cloud.docker.com/v2/repositories/$(STEM)/tags/ | jq
 endif
 
 .PHONY: build publish show
