@@ -7,6 +7,7 @@ import argparse
 import json
 import shutil
 import tempfile
+import traceback
 try:
     from urllib2 import urlopen
 except:
@@ -28,7 +29,8 @@ class RedisSourceSetup(paella.Setup):
     # the latter will fetch the latest released version on the 5.0 branch
     # branch can be either 6 (will be mapped to 6.0) or 6.1 or any string
     # for partial semantic versions branches, we'll fetch HEAD of the given branch from github
-    def __init__(self, nop=False, version=None, branch=None, valgrind=False, no_tls=False):
+    def __init__(self, version=None, branch=None, valgrind=False, no_tls=False, keep=False,
+                 into=None, nop=False, verbose=False):
         paella.Setup.__init__(self, nop)
 
         if version is not None and branch is not None:
@@ -37,6 +39,11 @@ class RedisSourceSetup(paella.Setup):
         self.branch = branch
         self.valgrind = valgrind
         self.tls = not no_tls
+        self.keep = keep
+        self.into = into
+        self.verbose = verbose
+        self.nop = nop
+        
 
     def read_redis_versions(self):
         j = []
@@ -83,6 +90,7 @@ class RedisSourceSetup(paella.Setup):
     def download_redis(self):
         from semantic_version import Version
         self.base_dir = tempfile.mkdtemp(prefix='redis.')
+        print(self.base_dir)
 
         if self.version is None and self.branch is None:
             self.branch = 'unstable'
@@ -116,6 +124,8 @@ class RedisSourceSetup(paella.Setup):
         
         install_args = ''
         install_args += ' BUILD_TLS=yes' if self.tls else ''
+        if self.into is not None:
+            install_args += ' PREFIX=' + self.into
         
         self.run("""
             set -e
@@ -123,7 +133,8 @@ class RedisSourceSetup(paella.Setup):
             make -j `{}/bin/nproc`  {}
             make install {}
             """.format(self.redis_dir, ROOT, build_args, install_args), output_on_error=True)
-        shutil.rmtree(self.base_dir)
+        if not self.keep:
+            shutil.rmtree(self.base_dir)
     
     def common_first(self):
         self.install_downloaders()
@@ -133,7 +144,6 @@ class RedisSourceSetup(paella.Setup):
         self.pip_install("wheel")
         self.pip_install("setuptools --upgrade")
         self.pip_install("semantic_version")
-        BB()
         self.download_redis()
 
     def debian_compat(self):
@@ -203,11 +213,14 @@ parser.add_argument('-n', '--nop', action="store_true", help='no operation')
 parser.add_argument('-s', '--source', action="store_true", help="Build from source")
 parser.add_argument('-v', '--version', type=str, default=DEFAULT_REDIS_VERSION, help='Redis version (e.g. 6, 6.0, 6.0.1')
 parser.add_argument('-b', '--branch', type=str, help='Redis branch (e.g. 6, 6.0)')
-parser.add_argument('--valgrind', action="store_true", help="Build a Valgdind-compatible Redis")
+parser.add_argument('--valgrind', action="store_true", help="Build a Valgdind-compatible Redis (i.e. with malloc & -O0")
 parser.add_argument('--no-tls', action="store_true", help="Do not support TLS")
 parser.add_argument('--repo', action="store_true", help='Install from package repo')
 parser.add_argument('--force', action="store_true", help="Install even if redis-server is present")
 parser.add_argument('-p', '--just-print-version', action="store_true", help="Jump print version, do not install")
+parser.add_argument('--keep', action="store_true", help="Do not remove source files and build artifacts")
+parser.add_argument('--into', type=str, help='Copy artifacts to DIR')
+parser.add_argument('-V', '--verbose', action="store_true", help="Verbose operation")
 # parser.add_argument('--strict', action="store_true", help="Verify we get the Redis version we ask for")
 args = parser.parse_args()
 
@@ -227,7 +240,6 @@ if args.version and args.branch:
 
 if args.just_print_version:
     setup = RedisSourceSetup(version=args.version, nop=args.nop)
-    BB()
     version = setup.get_requested_redis_versions()[0]
     print(version)
     exit(0)
@@ -240,10 +252,12 @@ if paella.Setup.has_command("redis-server") and not args.force:
 try:
     if args.source:
         RedisSourceSetup(version=args.version, branch=args.branch, valgrind=args.valgrind,
-                         no_tls=args.no_tls, nop=args.nop).setup()
+                         no_tls=args.no_tls, keep=args.keep, nop=args.nop, into=args.into,
+                         verbose=args.verbose).setup()
     else:
         RedisRepoSetup(nop=args.nop).setup()
 except Exception as x:
+    traceback.print_exc()
     fatal(str(x))
 
 exit(0)

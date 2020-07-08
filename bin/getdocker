@@ -21,32 +21,43 @@ class DockerSetup(paella.Setup):
     def debian_compat(self):
         if self.no_install:
             return
-        self.install("apt-transport-https ca-certificates curl gnupg-agent software-properties-common lsb-release")
-        self.run("curl -fsSL https://download.docker.com/linux/{}/gpg | apt-key add -".format(self.dist))
-        self.add_repo("'deb [arch=amd64] https://download.docker.com/linux/debian {} stable'".format(sh("lsb_release -cs")))
-        self.run("apt-get -qq update")
-        self.install("docker-ce docker-ce-cli containerd.io")
+        self.run("bash <(curl -fsSL https://get.docker.com)")
+
+        # self.install("apt-transport-https ca-certificates curl gnupg-agent software-properties-common lsb-release")
+        # self.run("curl -fsSL https://download.docker.com/linux/{}/gpg | apt-key add -".format(self.dist))
+        # self.add_repo("'deb [arch=amd64] https://download.docker.com/linux/debian {} stable'".format(sh("lsb_release -cs")))
+        # self.run("apt-get -qq update")
+        # self.install("docker-ce docker-ce-cli containerd.io")
 
     def redhat_compat(self):
         if self.no_install:
             return   
         self.install("yum-utils device-mapper-persistent-data lvm2")
+        self.install("http://mirror.centos.org/centos/7/extras/x86_64/Packages/container-selinux-2.107-3.el7.noarch.rpm")
         self.add_repo("https://download.docker.com/linux/centos/docker-ce.repo")
         self.install("docker-ce docker-ce-cli containerd.io")
+        self.run("systemctl start docker")
+        self.run("systemctl enable docker")
 
     def fedora(self):
         if self.no_install:
             return
-        self.add_repo("https://download.docker.com/linux/fedora/docker-ce.repo")
-        self.install("docker-ce docker-ce-cli containerd.io")
+        self.run("bash <(curl -fsSL https://get.docker.com)")
+
+        # self.add_repo("https://download.docker.com/linux/fedora/docker-ce.repo")
+        # self.install("docker-ce docker-ce-cli containerd.io")
 
     def common_last(self):
         if self.no_exp:
             return
         self.install("jq moreutils")
+        # client
         self.run("mkdir -p ~/.docker")
         self.run("if [ ! -f ~/.docker/config.json ]; then echo '{}' >  ~/.docker/config.json; fi")
         self.run("jq '.experimental = \"enabled\"' ~/.docker/config.json | sponge ~/.docker/config.json")
+        # server
+        self.run("if [ ! -f /etc/docker/daemon.json ]; then echo '{}' >  /etc/docker/daemon.json; fi")
+        self.run("jq '.experimental = true' /etc/docker/daemon.json | sponge /etc/docker/daemon.json")
         if self.has_command("systemctl"):
             self.run("systemctl restart docker")
         else:
