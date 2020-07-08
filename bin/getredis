@@ -53,6 +53,11 @@ class RedisSourceSetup(paella.Setup):
             if r.code != 200:
                 raise RuntimeError('cannot read Redis version list from guthub')
             t = r.read()
+            # for 3 <= Python < 3.6
+            try:
+                t = t.decode()
+            except (UnicodeDecodeError, AttributeError):
+                pass
             j1 = json.loads(t)
             j += j1
             if r.headers["link"] == "":
