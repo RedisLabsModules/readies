@@ -8,6 +8,7 @@ import json
 import shutil
 import tempfile
 import traceback
+import textwrap
 try:
     from urllib2 import urlopen
 except:
@@ -30,7 +31,7 @@ class RedisSourceSetup(paella.Setup):
     # branch can be either 6 (will be mapped to 6.0) or 6.1 or any string
     # for partial semantic versions branches, we'll fetch HEAD of the given branch from github
     def __init__(self, version=None, branch=None, valgrind=False, no_tls=False, keep=False,
-                 into=None, nop=False, verbose=False):
+                 into=None, info_file=None, nop=False, verbose=False):
         paella.Setup.__init__(self, nop)
 
         if version is not None and branch is not None:
@@ -41,6 +42,7 @@ class RedisSourceSetup(paella.Setup):
         self.tls = not no_tls
         self.keep = keep
         self.into = into
+        self.info_file = info_file
         self.verbose = verbose
         self.nop = nop
         
@@ -95,7 +97,7 @@ class RedisSourceSetup(paella.Setup):
     def download_redis(self):
         from semantic_version import Version
         self.base_dir = tempfile.mkdtemp(prefix='redis.')
-        print(self.base_dir)
+        print('source dir:' + self.base_dir)
 
         if self.version is None and self.branch is None:
             self.branch = 'unstable'
@@ -140,6 +142,13 @@ class RedisSourceSetup(paella.Setup):
             """.format(self.redis_dir, ROOT, build_args, install_args), output_on_error=True)
         if not self.keep:
             shutil.rmtree(self.base_dir)
+        if self.info_file is not None:
+            text = """
+                base_dir {base_dir}
+                redis_dir {redis_dir}
+            """.format(base_dir=self.base_dir, redis_dir=self.redis_dir)
+            text = textwrap.dedent(text).split("\n", 1)[1]
+            paella.fwrite(self.info_file, text)
     
     def common_first(self):
         self.install_downloaders()
@@ -224,6 +233,7 @@ parser.add_argument('--repo', action="store_true", help='Install from package re
 parser.add_argument('--force', action="store_true", help="Install even if redis-server is present")
 parser.add_argument('-p', '--just-print-version', action="store_true", help="Jump print version, do not install")
 parser.add_argument('--keep', action="store_true", help="Do not remove source files and build artifacts")
+parser.add_argument('--info-file', type=str, help='Information file path')
 parser.add_argument('--into', type=str, help='Copy artifacts to DIR')
 parser.add_argument('-V', '--verbose', action="store_true", help="Verbose operation")
 # parser.add_argument('--strict', action="store_true", help="Verify we get the Redis version we ask for")
@@ -258,7 +268,7 @@ try:
     if args.source:
         RedisSourceSetup(version=args.version, branch=args.branch, valgrind=args.valgrind,
                          no_tls=args.no_tls, keep=args.keep, nop=args.nop, into=args.into,
-                         verbose=args.verbose).setup()
+                         info_file=args.info_file, verbose=args.verbose).setup()
     else:
         RedisRepoSetup(nop=args.nop).setup()
 except Exception as x:
