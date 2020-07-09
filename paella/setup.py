@@ -10,12 +10,17 @@ from .platform import OnPlatform, Platform
 class Runner:
     def __init__(self, nop=False):
         self.nop = nop
+        BB()
+        self.has_sudo = sh('command -v sudo') != ''
+        print("")
 
-    def run(self, cmd, output_on_error=False, _try=False):
+    def run(self, cmd, output_on_error=False, _try=False, sudo=False):
         if cmd.find('\n') > -1:
             cmds1 = str.lstrip(textwrap.dedent(cmd))
             cmds = filter(lambda s: str.lstrip(s) != '', cmds1.split("\n"))
             cmd = "; ".join(cmds)
+        if self.has_sudo:
+            cmd = "sudo " + cmd
         print(cmd)
         sys.stdout.flush()
         if self.nop:
@@ -50,7 +55,7 @@ class RepoRefresh(OnPlatform):
         pass
 
     def debian_compat(self):
-        self.runner.run("apt-get -qq update -y")
+        self.runner.run("apt-get -qq update -y", sudo=True)
 
     def macosx(self):
         if os.environ.get('BREW_NO_UPDATE') != '1':
@@ -88,8 +93,8 @@ class Setup(OnPlatform):
         RepoRefresh(self.runner).invoke()
         self.invoke()
 
-    def run(self, cmd, output_on_error=False, _try=False):
-        return self.runner.run(cmd, output_on_error=output_on_error, _try=_try)
+    def run(self, cmd, output_on_error=False, _try=False, sudo=False):
+        return self.runner.run(cmd, output_on_error=output_on_error, _try=_try, sudo=sudo)
 
     @staticmethod
     def has_command(cmd):
@@ -98,25 +103,25 @@ class Setup(OnPlatform):
     #------------------------------------------------------------------------------------------
 
     def apt_install(self, packs, group=False, _try=False):
-        self.run("apt-get -qq install -y " + packs, output_on_error=True, _try=_try)
+        self.run("apt-get -qq install -y " + packs, output_on_error=True, _try=_try, sudo=True)
 
     def yum_install(self, packs, group=False, _try=False):
         if not group:
-            self.run("yum install -q -y " + packs, output_on_error=True, _try=_try)
+            self.run("yum install -q -y " + packs, output_on_error=True, _try=_try, sudo=True)
         else:
-            self.run("yum groupinstall -y " + packs, output_on_error=True, _try=_try)
+            self.run("yum groupinstall -y " + packs, output_on_error=True, _try=_try, sudo=True)
 
     def dnf_install(self, packs, group=False, _try=False):
         if not group:
-            self.run("dnf install -y " + packs, output_on_error=True, _try=_try)
+            self.run("dnf install -y " + packs, output_on_error=True, _try=_try, sudo=True)
         else:
-            self.run("dnf groupinstall -y " + packs, output_on_error=True, _try=_try)
+            self.run("dnf groupinstall -y " + packs, output_on_error=True, _try=_try, sudo=True)
 
     def zypper_install(self, packs, group=False, _try=False):
-        self.run("zipper --non-interactive install " + packs, output_on_error=True, _try=_try)
+        self.run("zipper --non-interactive install " + packs, output_on_error=True, _try=_try, sudo=True)
 
     def pacman_install(self, packs, group=False, _try=False):
-        self.run("pacman --noconfirm -S " + packs, output_on_error=True, _try=_try)
+        self.run("pacman --noconfirm -S " + packs, output_on_error=True, _try=_try, sudo=True)
 
     def brew_install(self, packs, group=False, _try=False):
         # brew will fail if package is already installed
@@ -124,7 +129,7 @@ class Setup(OnPlatform):
             self.run("brew list {} &>/dev/null || brew install {}".format(pack, pack), output_on_error=True, _try=_try)
 
     def pkg_install(self, packs, group=False, _try=False):
-        self.run("pkg install -q -y " + packs, output_on_error=True, _try=_try)
+        self.run("pkg install -q -y " + packs, output_on_error=True, _try=_try, sudo=True)
 
     def install(self, packs, group=False, _try=False):
         if self.os == 'linux':
@@ -155,18 +160,18 @@ class Setup(OnPlatform):
     def yum_add_repo(self, repourl, repo="", _try=False):
         if not self.has_command("yum-config-manager"):
             self.install("yum-utils")
-        self.run("yum-config-manager -y --add-repo {}".format(repourl), _try=_try)
+        self.run("yum-config-manager -y --add-repo {}".format(repourl), _try=_try, sudo=True)
 
     def apt_add_repo(self, repourl, repo="", _try=False):
         if not self.has_command("add-apt-repository"):
             self.install("software-properties-common")
-        self.run("add-apt-repository -y {}".format(repourl), _try=_try)
-        self.run("apt-get -qq update", _try=_try)
+        self.run("add-apt-repository -y {}".format(repourl), _try=_try, sudo=True)
+        self.run("apt-get -qq update", _try=_try, sudo=True)
 
     def dnf_add_repo(self, repourl, repo="", _try=False):
         if self.run("dnf config-manager 2>/dev/null", _try=True):
             self.install("dnf-plugins-core", _try=_try)
-        self.run("dnf config-manager -y --add-repo {}".format(repourl), _try=_try)
+        self.run("dnf config-manager -y --add-repo {}".format(repourl), _try=_try, sudo=True)
 
     def zypper_add_repo(self, repourl, repo="", _try=False):
         pass
