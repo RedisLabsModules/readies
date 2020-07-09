@@ -30,8 +30,10 @@ class RedisSourceSetup(paella.Setup):
     # the latter will fetch the latest released version on the 5.0 branch
     # branch can be either 6 (will be mapped to 6.0) or 6.1 or any string
     # for partial semantic versions branches, we'll fetch HEAD of the given branch from github
-    def __init__(self, version=None, branch=None, valgrind=False, no_tls=False, keep=False,
-                 into=None, info_file=None, nop=False, verbose=False):
+    def __init__(self, version=None, branch=None, valgrind=False, no_tls=False,
+                 keep=False, just_prepare=False, no_prepare=False, 
+                 no_install=False, workdir=None, into=None, info_file=None,
+                 nop=False, verbose=False):
         paella.Setup.__init__(self, nop)
 
         if version is not None and branch is not None:
@@ -40,12 +42,15 @@ class RedisSourceSetup(paella.Setup):
         self.branch = branch
         self.valgrind = valgrind
         self.tls = not no_tls
-        self.keep = keep
+        self.just_prepare = just_prepare
+        self.no_prepare = no_prepare
+        self.no_install = no_install
+        self.keep = keep or workdir is not None
+        self.workdir = workdir
         self.into = into
         self.info_file = info_file
         self.verbose = verbose
         self.nop = nop
-        
 
     def read_redis_versions(self):
         j = []
@@ -96,8 +101,12 @@ class RedisSourceSetup(paella.Setup):
     
     def download_redis(self):
         from semantic_version import Version
-        self.base_dir = tempfile.mkdtemp(prefix='redis.')
-        print('source dir:' + self.base_dir)
+        if self.workdir is not None:
+            paella.mkdir_p(self.workdir)
+            self.base_dir = self.workdir
+        else:
+            self.base_dir = tempfile.mkdtemp(prefix='redis.')
+        print('work dir: ' + self.base_dir)
 
         if self.version is None and self.branch is None:
             self.branch = 'unstable'
@@ -110,7 +119,10 @@ class RedisSourceSetup(paella.Setup):
             file = os.path.join(self.base_dir, 'redis-{}.tgz'.format(str(version)))
             self.wget('https://github.com/antirez/redis/archive/{}.tar.gz'.format(str(version)), file)
             self.run('tar -C {} -xzf {}'.format(self.base_dir, file), output_on_error=True)
-            self.redis_dir = os.path.join(self.base_dir, 'redis-{}'.format(version))
+            with paella.cwd(self.base_dir):
+                shutil.move('redis-{}'.format(version), 'redis')
+            self.redis_dir = 'redis'
+            # self.redis_dir = os.path.join(self.base_dir, 'redis-{}'.format(version))
         if self.branch is not None:
             try:
                 sv = Version(self.branch, partial=True)
@@ -133,24 +145,28 @@ class RedisSourceSetup(paella.Setup):
         install_args += ' BUILD_TLS=yes' if self.tls else ''
         if self.into is not None:
             install_args += ' PREFIX=' + self.into
-        
-        self.run("""
-            set -e
-            cd {}
-            make -j `{}/bin/nproc`  {}
-            make install {}
-            """.format(self.redis_dir, ROOT, build_args, install_args), output_on_error=True)
+
+        with paella.cwd(os.path.join(self.base_dir, self.redis_dir)):
+            self.run("""
+                make -j `{}/bin/nproc` {}
+                """.format(ROOT, build_args), output_on_error=True)
+            if not self.no_install:
+                self.run("""
+                    make install {}
+                    """.format(install_args), output_on_error=True)
         if not self.keep:
             shutil.rmtree(self.base_dir)
         if self.info_file is not None:
-            text = """
+            info = """
                 base_dir {base_dir}
                 redis_dir {redis_dir}
-            """.format(base_dir=self.base_dir, redis_dir=self.redis_dir)
-            text = textwrap.dedent(text).split("\n", 1)[1]
-            paella.fwrite(self.info_file, text)
+            """.format(base_dir=os.path.abspath(self.base_dir), redis_dir=os.path.abspath(self.redis_dir))
+            info = textwrap.dedent(info).split("\n", 1)[1]
+            paella.fwrite(self.info_file, info)
     
     def common_first(self):
+        if self.no_prepare:
+            return
         self.install_downloaders()
         self.install("git")
 
@@ -158,27 +174,36 @@ class RedisSourceSetup(paella.Setup):
         self.pip_install("wheel")
         self.pip_install("setuptools --upgrade")
         self.pip_install("semantic_version")
-        self.download_redis()
 
     def debian_compat(self):
+        if self.no_prepare:
+            return
         self.install("build-essential")
         self.install("libssl-dev")
 
     def redhat_compat(self):
+        if self.no_prepare:
+            return
         self.group_install("'Development Tools'")
         self.install("openssl-devel")
 
     def fedora(self):
+        if self.no_prepare:
+            return
         self.redhat_compat()
         self.install("openssl-devel")
 
     def macosx(self):
+        if self.no_prepare:
+            return
         if sh('xcode-select -p') == '':
             fatal("Xcode tools are not installed. Please run xcode-select --install.")
 
     def common_last(self):
-        self.build_redis()
-        self.run("redis-server --version")
+        if not self.just_prepare:
+            self.download_redis()
+            self.build_redis()
+            self.run("redis-server --version")
 
 #----------------------------------------------------------------------------------------------
 
@@ -231,8 +256,12 @@ parser.add_argument('--valgrind', action="store_true", help="Build a Valgdind-co
 parser.add_argument('--no-tls', action="store_true", help="Do not support TLS")
 parser.add_argument('--repo', action="store_true", help='Install from package repo')
 parser.add_argument('--force', action="store_true", help="Install even if redis-server is present")
+parser.add_argument('--prepare', action="store_true", help="Only install prerequisites, do not build")
+parser.add_argument('--no-prepare', action="store_true", help="Do not install prerequisites, just build")
+parser.add_argument('--no-install', action="store_true", help="Build but don't install")
 parser.add_argument('-p', '--just-print-version', action="store_true", help="Jump print version, do not install")
 parser.add_argument('--keep', action="store_true", help="Do not remove source files and build artifacts")
+parser.add_argument('--workdir', type=str, help='Directory in which to extract and build')
 parser.add_argument('--info-file', type=str, help='Information file path')
 parser.add_argument('--into', type=str, help='Copy artifacts to DIR')
 parser.add_argument('-V', '--verbose', action="store_true", help="Verbose operation")
@@ -259,7 +288,7 @@ if args.just_print_version:
     print(version)
     exit(0)
 
-if paella.Setup.has_command("redis-server") and not args.force:
+if paella.Setup.has_command("redis-server") and not args.force and not args.no_install:
     vermsg = sh('redis-server --version')
     eprint("redis-server is present:\n{}".format(vermsg))
     exit(0)
@@ -268,6 +297,8 @@ try:
     if args.source:
         RedisSourceSetup(version=args.version, branch=args.branch, valgrind=args.valgrind,
                          no_tls=args.no_tls, keep=args.keep, nop=args.nop, into=args.into,
+                         just_prepare=args.prepare, no_prepare=args.no_prepare,
+                         no_install=args.no_install, workdir=args.workdir,
                          info_file=args.info_file, verbose=args.verbose).setup()
     else:
         RedisRepoSetup(nop=args.nop).setup()
