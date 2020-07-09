@@ -10,16 +10,14 @@ from .platform import OnPlatform, Platform
 class Runner:
     def __init__(self, nop=False):
         self.nop = nop
-        BB()
         self.has_sudo = sh('command -v sudo') != ''
-        print("")
 
     def run(self, cmd, output_on_error=False, _try=False, sudo=False):
         if cmd.find('\n') > -1:
             cmds1 = str.lstrip(textwrap.dedent(cmd))
             cmds = filter(lambda s: str.lstrip(s) != '', cmds1.split("\n"))
             cmd = "; ".join(cmds)
-        if self.has_sudo:
+        if self.has_sudo and sudo:
             cmd = "sudo " + cmd
         print(cmd)
         sys.stdout.flush()
