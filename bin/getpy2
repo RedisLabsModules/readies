@@ -31,7 +31,7 @@ check_variants() {
 	
 	if [[ ! -z $PYTHON ]]; then
 		PYTHON_VER="$(python --version 2>&1 | cut -d" " -f2 | cut -d. -f1)"
-		[[ "$PYTHON_VER" == "2" ]] && MYPY=$PYTHON
+		[[ $PYTHON_VER == 2 ]] && MYPY=$PYTHON
 	fi
 	
 	[[ ! -z $PYTHON2 ]]  && MYPY=$PYTHON2
@@ -59,7 +59,6 @@ install_python() {
 }
 
 install_pip() {
-	[[ "$PIP" != "1" ]] && return
 	[[ $($MYPY -m pip --version > /dev/null 2>&1; echo $?) == 0 ]] && return
 
 	local packs="ca-certificates wget"
@@ -87,10 +86,10 @@ install_pip() {
 
 check_variants
 
-[[ ! -z "$MYPY" ]] && exit 0
+[[ ! -z $MYPY && $PIP != 1 ]] && exit 0
 [[ $CHECK == 1 ]] && exit 1
 
-install_python
+[[ -z $MYPY ]] && install_python
 
 check_variants
 if [[ -z $(command -v $MYPY) ]]; then
@@ -98,6 +97,6 @@ if [[ -z $(command -v $MYPY) ]]; then
 	exit 1
 fi
 
-install_pip
+[[ $PIP == 1 ]] && install_pip
 
 exit 0
