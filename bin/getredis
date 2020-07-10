@@ -52,6 +52,8 @@ class RedisSourceSetup(paella.Setup):
         self.verbose = verbose
         self.nop = nop
 
+        self.repo_refresh = not no_prepare
+
     def read_redis_versions(self):
         j = []
         url = 'https://api.github.com/repos/antirez/redis/tags?per_page=100'
@@ -117,7 +119,7 @@ class RedisSourceSetup(paella.Setup):
             version = versions[0]
 
             file = os.path.join(self.base_dir, 'redis-{}.tgz'.format(str(version)))
-            self.wget('https://github.com/antirez/redis/archive/{}.tar.gz'.format(str(version)), file)
+            self.wget('https://github.com/redis/redis/archive/{}.tar.gz'.format(str(version)), file)
             self.run('tar -C {} -xzf {}'.format(self.base_dir, file), output_on_error=True)
             with paella.cwd(self.base_dir):
                 shutil.move('redis-{}'.format(version), 'redis')
@@ -133,7 +135,7 @@ class RedisSourceSetup(paella.Setup):
                 branch = '{}.{}'.format(sv.major, sv.minor)
             except:
                 branch = self.branch
-            self.run('cd {}; git clone https://github.com/antirez/redis.git --branch {}'.format(self.base_dir, branch), output_on_error=True)
+            self.run('cd {}; git clone https://github.com/redis/redis.git --branch {}'.format(self.base_dir, branch), output_on_error=True)
             self.redis_dir = os.path.join(self.base_dir, 'redis')
 
     def build_redis(self):
@@ -150,6 +152,7 @@ class RedisSourceSetup(paella.Setup):
             self.run("""
                 make -j `{}/bin/nproc` {}
                 """.format(ROOT, build_args), output_on_error=True)
+
             if not self.no_install:
                 self.run("""
                     make install {}
@@ -203,7 +206,10 @@ class RedisSourceSetup(paella.Setup):
         if not self.just_prepare:
             self.download_redis()
             self.build_redis()
-            self.run("redis-server --version")
+            if self.no_install:
+                self.run("%s/src/redis-server --version" % os.path.join(self.base_dir, self.redis_dir))
+            else:
+                self.run("redis-server --version")
 
 #----------------------------------------------------------------------------------------------
 

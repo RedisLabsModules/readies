@@ -71,6 +71,7 @@ class Setup(OnPlatform):
         self.osnick = self.platform.osnick
         self.dist = self.platform.dist
         self.ver = self.platform.os_ver
+        self.repo_refresh = True
 
         self.python = sys.executable
 
@@ -88,7 +89,8 @@ class Setup(OnPlatform):
         os.environ["PYTHONWARNINGS"] = 'ignore:DEPRECATION::pip._internal.cli.base_command'
 
     def setup(self):
-        RepoRefresh(self.runner).invoke()
+        if self.repo_refresh:
+            RepoRefresh(self.runner).invoke()
         self.invoke()
 
     def run(self, cmd, output_on_error=False, _try=False, sudo=False):
