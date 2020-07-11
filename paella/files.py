@@ -1,5 +1,6 @@
 
 from contextlib import contextmanager
+import errno
 import os
 import os.path
 import tempfile
@@ -61,8 +62,17 @@ def cwd(path):
 #----------------------------------------------------------------------------------------------
 
 def mkdir_p(dir):
-    if dir != '':
-        os.makedirs(dir, exist_ok=True)
+    if dir == '':
+        return
+    try:
+        return os.makedirs(dir, exist_ok=True)
+    except TypeError:
+        pass
+    try:
+        return os.makedirs(dir)
+    except OSError as e:
+        if e.errno != errno.EEXIST or os.path.isfile(dir):
+            raise
 
 #----------------------------------------------------------------------------------------------
 
