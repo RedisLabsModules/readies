@@ -1,0 +1,28 @@
+#!/bin/bash
+
+set -e
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+. $HERE/../shibumi/functions
+
+OS=`uname`
+if [[ $OS == Linux ]]; then
+	if [[ $(( $BASH_VERSINFO >= 4 )) && $FORCE != 4 ]]; then
+		url=http://redismodules.s3.amazonaws.com/readies/bashdb/bashdb-5.0-1.1.2-linux-bin.tgz
+	elif [[ $BASH_VERSINFO == 4 || $FORCE == 4 ]]; then
+		url=http://redismodules.s3.amazonaws.com/readies/bashdb/bashdb-4.4-1.0.1-linux-bin.tgz
+	else
+		eprint "Unsupported bash version: $BASH_VERSINFO"
+		exit 1
+	fi
+elif [[ $OS == Darwin ]]; then
+	url=http://redismodules.s3.amazonaws.com/readies/bashdb/bashdb-3.1-0.09-macosx-bin.tgz
+else
+	eprint "Unsupported OS"
+	exit 1
+fi
+
+wget -q -O /tmp/bashdb.tgz $url
+tar -C / -xzf /tmp/bashdb.tgz
+rm /tmp/bashdb.tgz
+
+exit 0
