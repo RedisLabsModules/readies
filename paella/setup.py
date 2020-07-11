@@ -211,11 +211,7 @@ class Setup(OnPlatform):
                  output_on_error=True, _try=_try, sudo=True)
 
     def pip3_install(self, cmd, _try=False):
-        pip_user = ''
-        if self.os == 'macosx' and 'VIRTUAL_ENV' not in os.environ:
-            pip_user = '--user '
-        self.run(self.python + " -m pip install --disable-pip-version-check " + pip_user + cmd,
-                 output_on_error=True, _try=_try, sudo=True)
+        self.pip_install(cmd, _try=_try)
 
     def setup_pip(self, _try=False):
         get_pip = "set -e; wget -q https://bootstrap.pypa.io/get-pip.py -O /tmp/get-pip.py"
@@ -227,6 +223,8 @@ class Setup(OnPlatform):
             pip_user = ' --user' if self.os == 'macosx' else ''
             self.run(get_pip + "; " + self.python + " /tmp/get-pip.py" + pip_user, output_on_error=True, _try=_try, sudo=True)
 
+    #------------------------------------------------------------------------------------------
+
     def install_downloaders(self, _try=False):
         if self.os == 'linux':
             self.install("ca-certificates", _try=_try)
@@ -237,18 +235,11 @@ class Setup(OnPlatform):
             set -e
             d=$(mktemp -d /tmp/git-lfs.XXXXXX)
             mkdir -p $d
-            wget -q https://github.com/git-lfs/git-lfs/releases/download/v2.9.2/git-lfs-linux-amd64-v2.9.2.tar.gz -O $d/git-lfs.tar.gz
+            wget -q https://github.com/git-lfs/git-lfs/releases/download/v2.11.0/git-lfs-linux-amd64-v2.11.0.tar.gz -O $d/git-lfs.tar.gz
             (cd $d; tar xf git-lfs.tar.gz)
             $d/install.sh
             rm -rf $d
             """)
-
-#        cmd = "curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.{}.sh | bash"
-#        if self.platform.is_redhat_compat():
-#            self.run(cmd.format('rpm'), _try=_try)
-#        elif self.platform.is_debian_compat():
-#            self.run(cmd.format('deb'), _try=_try)
-#        self.install("git-lfs", _try=_try)
 
     def install_gnu_utils(self, _try=False):
         packs = ""
