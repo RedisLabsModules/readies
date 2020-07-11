@@ -1,2 +1,3 @@
 jinja2
 semantic_version
+six
