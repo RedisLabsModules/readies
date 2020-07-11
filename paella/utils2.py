@@ -9,4 +9,5 @@ def eprint(*args, **kwargs):
 def sh(cmd):
     # if not isinstance(cmd, list):
     #     cmd = cmd.split()
+    # return " ".join(Popen(cmd, stdout=PIPE).communicate()[0].split("\n"))
     return " ".join(Popen(cmd, shell=True, stdout=PIPE).communicate()[0].split("\n"))
