@@ -207,13 +207,15 @@ class Setup(OnPlatform):
         pip_user = ''
         if self.os == 'macosx' and 'VIRTUAL_ENV' not in os.environ:
             pip_user = '--user '
-        self.run(self.python + " -m pip install --disable-pip-version-check " + pip_user + cmd, output_on_error=True, _try=_try)
+        self.run(self.python + " -m pip install --disable-pip-version-check " + pip_user + cmd,
+                 output_on_error=True, _try=_try, sudo=True)
 
     def pip3_install(self, cmd, _try=False):
         pip_user = ''
         if self.os == 'macosx' and 'VIRTUAL_ENV' not in os.environ:
             pip_user = '--user '
-        self.run(self.python + " -m pip install --disable-pip-version-check " + pip_user + cmd, output_on_error=True, _try=_try)
+        self.run(self.python + " -m pip install --disable-pip-version-check " + pip_user + cmd,
+                 output_on_error=True, _try=_try, sudo=True)
 
     def setup_pip(self, _try=False):
         get_pip = "set -e; wget -q https://bootstrap.pypa.io/get-pip.py -O /tmp/get-pip.py"
@@ -223,7 +225,7 @@ class Setup(OnPlatform):
                 self.install("python3-distutils", _try=True)
             self.install_downloaders()
             pip_user = ' --user' if self.os == 'macosx' else ''
-            self.run(get_pip + "; " + self.python + " /tmp/get-pip.py" + pip_user, output_on_error=True, _try=_try)
+            self.run(get_pip + "; " + self.python + " /tmp/get-pip.py" + pip_user, output_on_error=True, _try=_try, sudo=True)
 
     def install_downloaders(self, _try=False):
         if self.os == 'linux':
