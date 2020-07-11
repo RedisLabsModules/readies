@@ -8,7 +8,23 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 
 . $HERE/../shibumi/functions
 
-[[ "$VERBOSE" == "1" ]] && set -x
+if [[ $1 == --help || $1 == help || $HELP == 1 ]]; then
+	cat <<-END
+		[ARGVARS...] getpy2 [--help|help]
+
+		Argument variables:
+		CHECK=1     Only check and report, do not install
+		PIP=1       Also install latest pip
+		FORCE=1     Install even if present
+		FIX=1       Create a /usr/local/bin/python symlink
+		VERBOSE=1   Print commands
+		HELP=1      Print help
+
+	END
+	exit 0
+fi 
+
+[[ $VERBOSE == 1 ]] && { set -x; PS4='$LINENO: '; }
 
 fix_variants() {
 	if [[ ! -z $PYTHON2 ]]; then
@@ -59,7 +75,9 @@ install_python() {
 }
 
 install_pip() {
-	[[ $($MYPY -m pip --version > /dev/null 2>&1; echo $?) == 0 ]] && return
+	if [[ $FORCE != 1 ]]; then
+		[[ $($MYPY -m pip --version > /dev/null 2>&1; echo $?) == 0 ]] && return
+	fi
 
 	local packs="ca-certificates wget"
 
