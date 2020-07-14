@@ -45,10 +45,23 @@ check_variants() {
 	[[ ! -z $FIX ]] && fix_variants
 }
 
+install_on_trusty() {
+	runn apt-get install -y software-properties-common
+	runn add-apt-repository -y ppa:deadsnakes/ppa
+	runn apt-get -qq update
+	runn apt-get install -y python3.6
+	runn ln -sf `which python3.6` /usr/local/bin/python3
+}
+
 install_python() {
 	if [[ ! -z $(command -v apt-get) ]]; then
 		runn apt-get -qq update
-		runn apt-get -qq install -y python3
+		osver=$(source /etc/os-release; echo ${ID}${VERSION_ID})
+		if [[ $osver == ubuntu14.04 ]]; then
+			install_on_trusty
+		else
+			runn apt-get -qq install -y python3
+		fi
 	elif [[ ! -z $(command -v dnf) ]]; then
 		runn dnf install -y python3
 	elif [[ ! -z $(command -v yum) ]]; then
@@ -97,10 +110,10 @@ install_pip() {
 
 check_variants
 
-[[ ! -z $MYPY && $PIP != 1 ]] && exit 0
+[[ ! -z $MYPY && $PIP != 1 && $FORCE != 1 ]] && exit 0
 [[ $CHECK == 1 ]] && exit 1
 
-[[ -z $MYPY ]] && install_python
+[[ -z $MYPY || $FORCE == 1 ]] && install_python
 
 check_variants
 if [[ -z $(command -v $MYPY) ]]; then
