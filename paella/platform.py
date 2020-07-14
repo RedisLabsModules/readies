@@ -62,8 +62,11 @@ class Platform:
                         assert(False), "Cannot determine distribution"
                     distname = 'unknown'
                     self.os_ver = self.full_os_ver = 'unknown'
-            if distname == 'fedora' or distname == 'ubuntu' or  distname == 'debian' or distname == 'arch':
+            if distname == 'fedora' or  distname == 'debian' or distname == 'arch':
                 pass
+            elif distname == 'ubuntu':
+                if self.osnick == 'ubuntu14.04':
+                    self.osnick = 'trusty'
             elif distname.startswith('centos'):
                 distname = 'centos'
             elif distname.startswith('redhat') or distname == 'rhel':

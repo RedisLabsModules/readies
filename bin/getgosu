@@ -17,7 +17,7 @@ gosu_arch={
 	"arm32v7": "armhf"
 }
 
-version = os.environ.get('GOSU_VERSION', '1.11')
+version = os.environ.get('GOSU_VERSION', '1.12')
 
 gosu = "https://github.com/tianon/gosu/releases/download/{}/gosu-{}".format(version, gosu_arch[platform.arch])
 # paella.wget(gosu, dest='/usr/local/bin/gosu')
@@ -36,4 +36,4 @@ sh("wget -q -O /usr/local/bin/gosu {}".format(gosu))
 # gpgconf --kill all
 # rm -r "$GNUPGHOME" /usr/local/bin/gosu.asc
 
-os.chmod('/usr/local/bin/gosu', 0755)
+os.chmod('/usr/local/bin/gosu', 0o755)

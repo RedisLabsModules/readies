@@ -22,7 +22,7 @@ if [[ $1 == --help || $1 == help || $HELP == 1 ]]; then
 
 	END
 	exit 0
-fi 
+fi
 
 [[ $VERBOSE == 1 ]] && { set -x; PS4='$LINENO: '; }
 
