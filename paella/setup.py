@@ -10,7 +10,8 @@ from .platform import OnPlatform, Platform
 class Runner:
     def __init__(self, nop=False):
         self.nop = nop
-        self.has_sudo = sh('command -v sudo') != ''
+        # self.has_sudo = sh('command -v sudo') != ''
+        self.has_sudo = False
 
     def run(self, cmd, output_on_error=False, _try=False, sudo=False):
         if cmd.find('\n') > -1:
