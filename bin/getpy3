@@ -51,6 +51,7 @@ install_on_trusty() {
 	runn apt-get -qq update
 	runn apt-get install -y python3.6
 	runn ln -sf `which python3.6` /usr/local/bin/python3
+	runn apt-get install -y python3.6-venv
 }
 
 install_python() {
