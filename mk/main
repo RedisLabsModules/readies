@@ -19,7 +19,9 @@ MK.pyver ?= 2
 MK.getpy=getpy$(MK.pyver)
 
 ifneq ($(shell { CHECK=1 $(READIES)/bin/$(MK.getpy); echo -n $$?; }),0)
-ifneq ($(filter setup,$(MAKECMDGOALS)),) 
+ifneq ($(filter setup,$(MAKECMDGOALS)),)
+MK.nobindir:=1
+else
 $(error It seems build prerequisites have not been installed: please run 'sudo make setup'.)
 endif
 __NO_PYTHON=1
