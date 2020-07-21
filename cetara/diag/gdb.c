@@ -4,6 +4,8 @@
 
 #include "readies/cetara/diag/gdb.h"
 
+#ifdef __linux__
+
 #include <ctype.h>
 #include <string.h>
 #include <errno.h>
@@ -14,6 +16,16 @@
 #include <sys/ptrace.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
+
+#elif defined(__APPLE__)
+
+#include <assert.h>
+#include <stdbool.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <sys/sysctl.h>
+
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -66,35 +78,33 @@ static inline bool _via_gdb()
     }
 
     if (pid == 0) // child
-	{
+    {
         uint8_t ret = 0;
         int ppid = getppid();
 
         close(from_child[0]); // close parent's side
 
         if (ptrace(PTRACE_ATTACH, ppid, NULL, NULL) == 0) 
-		{
+        {
             waitpid(ppid, NULL, 0); // wait for the parent to stop
             write(from_child[1], &ret, sizeof(ret)); // tell the parent what happened
 
-			ptrace(PTRACE_DETACH, ppid, NULL, NULL);
-            exit(0);
+            ptrace(PTRACE_DETACH, ppid, NULL, NULL);
+            _exit(0);
         }
 
         ret = 1;
         write(from_child[1], &ret, sizeof(ret)); // tell the parent what happened
-
-        exit(0);
-   
+        _exit(0);
     }
-	else // parent
-	{ 
+    else // parent
+    { 
         uint8_t ret = -1;
 
         // child writes a 1 if pattach failed else 0.
         // read may be interrupted by pattach, hence the loop.
         while (read(from_child[0], &ret, sizeof(ret)) < 0 && errno == EINTR)
-			;
+            ;
 
         // ret not updated
         if (ret < 0)
@@ -114,6 +124,23 @@ static inline bool _via_gdb()
 
 static inline bool _via_gdb()
 {
+    struct kinfo_proc info;
+
+    // initialize the flags so that, if sysctl fails for some bizarre reason,
+    // we get a predictable result
+    info.kp_proc.p_flag = 0;
+
+    // initialize mib, which tells sysctl the info we want, in this case 
+    // we're looking for information about a specific process ID
+    int mib[] = { CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid() };
+
+    // call sysctl
+    size_t size = sizeof(info);
+    int junk = sysctl(mib, sizeof(mib) / sizeof(*mib), &info, &size, NULL, 0);
+    assert(!junk);
+
+    // we're being debugged if the P_TRACED flag is set.
+    return (info.kp_proc.p_flag & P_TRACED) != 0;
 }
 
 #endif
