@@ -30,7 +30,7 @@ class RedisSourceSetup(paella.Setup):
     # the latter will fetch the latest released version on the 5.0 branch
     # branch can be either 6 (will be mapped to 6.0) or 6.1 or any string
     # for partial semantic versions branches, we'll fetch HEAD of the given branch from github
-    def __init__(self, version=None, branch=None, valgrind=False, no_tls=False,
+    def __init__(self, version=None, branch=None, valgrind=False, libc=False, no_tls=False,
                  keep=False, just_prepare=False, no_prepare=False, 
                  no_install=False, workdir=None, into=None, info_file=None,
                  nop=False, verbose=False):
@@ -41,6 +41,7 @@ class RedisSourceSetup(paella.Setup):
         self.version = version
         self.branch = branch
         self.valgrind = valgrind
+        self.libc = libc
         self.tls = not no_tls
         self.just_prepare = just_prepare
         self.no_prepare = no_prepare
@@ -141,6 +142,7 @@ class RedisSourceSetup(paella.Setup):
     def build_redis(self):
         build_args = ''
         build_args += ' valgrind' if self.valgrind else ''
+        build_args += ' MALLOC=libc' if self.libc else ''
         build_args += ' BUILD_TLS=yes' if self.tls else ''
         
         install_args = ''
@@ -258,7 +260,8 @@ parser.add_argument('-n', '--nop', action="store_true", help='no operation')
 parser.add_argument('-s', '--source', action="store_true", help="Build from source")
 parser.add_argument('-v', '--version', type=str, default=DEFAULT_REDIS_VERSION, help='Redis version (e.g. 6, 6.0, 6.0.1')
 parser.add_argument('-b', '--branch', type=str, help='Redis branch (e.g. 6, 6.0)')
-parser.add_argument('--valgrind', action="store_true", help="Build a Valgdind-compatible Redis (i.e. with malloc & -O0")
+parser.add_argument('--valgrind', action="store_true", help="Build a Valgdind-compatible Redis (i.e. with libc & -O0)")
+parser.add_argument('--libc', action="store_true", help="Build with libc instead of jemalloc")
 parser.add_argument('--no-tls', action="store_true", help="Do not support TLS")
 parser.add_argument('--repo', action="store_true", help='Install from package repo')
 parser.add_argument('--force', action="store_true", help="Install even if redis-server is present")
@@ -301,8 +304,9 @@ if paella.Setup.has_command("redis-server") and not args.force and not args.no_i
 
 try:
     if args.source:
-        RedisSourceSetup(version=args.version, branch=args.branch, valgrind=args.valgrind,
-                         no_tls=args.no_tls, keep=args.keep, nop=args.nop, into=args.into,
+        RedisSourceSetup(version=args.version, branch=args.branch,
+                         valgrind=args.valgrind, libc=args.libc, no_tls=args.no_tls,
+                         keep=args.keep, nop=args.nop, into=args.into,
                          just_prepare=args.prepare, no_prepare=args.no_prepare,
                          no_install=args.no_install, workdir=args.workdir,
                          info_file=args.info_file, verbose=args.verbose).setup()
