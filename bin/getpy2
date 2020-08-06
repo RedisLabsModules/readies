@@ -13,18 +13,20 @@ if [[ $1 == --help || $1 == help || $HELP == 1 ]]; then
 		[ARGVARS...] getpy2 [--help|help]
 
 		Argument variables:
-		CHECK=1     Only check and report, do not install
-		PIP=1       Also install latest pip
-		FORCE=1     Install even if present
-		FIX=1       Create a /usr/local/bin/python symlink
-		VERBOSE=1   Print commands
-		HELP=1      Print help
+		CHECK=1      Only check and report, do not install
+		PIP=1        Also install latest pip
+		PIP=version  Also install pip of the specified version
+		FORCE=1      Install even if present
+		FIX=1        Create a /usr/local/bin/python symlink
+		VERBOSE=1    Print commands
+		HELP=1       Print help
 
 	END
 	exit 0
 fi
 
 [[ $VERBOSE == 1 ]] && { set -x; PS4='$LINENO: '; }
+[[ -z $PIP ]] && PIP=0
 
 fix_variants() {
 	if [[ ! -z $PYTHON2 ]]; then
@@ -78,7 +80,10 @@ install_pip() {
 	if [[ $FORCE != 1 ]]; then
 		[[ $($MYPY -m pip --version > /dev/null 2>&1; echo $?) == 0 ]] && return
 	fi
-
+	
+	pipspec=""
+	[[ $PIP != 1 ]] && pipspec="pip==$PIP"
+	
 	local packs="ca-certificates wget"
 
 	if [[ ! -z $(command -v apt-get) ]]; then
@@ -98,16 +103,16 @@ install_pip() {
 	fi
 
 	runn wget -q -O /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py
-	runn $MYPY /tmp/get-pip.py
+	runn $MYPY /tmp/get-pip.py "$pipspec"
 	rm -f /tmp/get-pip.py
 }
 
 check_variants
 
-[[ ! -z $MYPY && $PIP != 1 ]] && exit 0
+[[ ! -z $MYPY && $PIP == 0 && $FORCE != 1 ]] && exit 0
 [[ $CHECK == 1 ]] && exit 1
 
-[[ -z $MYPY ]] && install_python
+[[ -z $MYPY || $FORCE == 1 ]] && install_python
 
 check_variants
 if [[ -z $(command -v $MYPY) ]]; then
@@ -115,6 +120,6 @@ if [[ -z $(command -v $MYPY) ]]; then
 	exit 1
 fi
 
-[[ $PIP == 1 ]] && install_pip
+[[ $PIP != 0 ]] && install_pip
 
 exit 0
