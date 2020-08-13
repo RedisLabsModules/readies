@@ -30,7 +30,7 @@ class RedisSourceSetup(paella.Setup):
     # the latter will fetch the latest released version on the 5.0 branch
     # branch can be either 6 (will be mapped to 6.0) or 6.1 or any string
     # for partial semantic versions branches, we'll fetch HEAD of the given branch from github
-    def __init__(self, version=None, branch=None, valgrind=False, libc=False, no_tls=False,
+    def __init__(self, version=None, branch=None, valgrind=False, libc_malloc=False, no_tls=False,
                  keep=False, just_prepare=False, no_prepare=False, 
                  no_install=False, workdir=None, into=None, info_file=None,
                  nop=False, verbose=False):
@@ -41,7 +41,7 @@ class RedisSourceSetup(paella.Setup):
         self.version = version
         self.branch = branch
         self.valgrind = valgrind
-        self.libc = libc
+        self.libc_malloc = libc_malloc
         self.tls = not no_tls
         self.just_prepare = just_prepare
         self.no_prepare = no_prepare
@@ -142,7 +142,7 @@ class RedisSourceSetup(paella.Setup):
     def build_redis(self):
         build_args = ''
         build_args += ' valgrind' if self.valgrind else ''
-        build_args += ' MALLOC=libc' if self.libc else ''
+        build_args += ' MALLOC=libc' if self.libc_malloc else ''
         build_args += ' BUILD_TLS=yes' if self.tls else ''
         
         install_args = ''
@@ -303,7 +303,7 @@ if paella.Setup.has_command("redis-server") and not args.force and not args.no_i
 try:
     if args.source:
         RedisSourceSetup(version=args.version, branch=args.branch,
-                         valgrind=args.valgrind, libc=args.libc, no_tls=args.no_tls,
+                         valgrind=args.valgrind, libc_malloc=args.libc_malloc, no_tls=args.no_tls,
                          keep=args.keep, nop=args.nop, into=args.into,
                          just_prepare=args.prepare, no_prepare=args.no_prepare,
                          no_install=args.no_install, workdir=args.workdir,
