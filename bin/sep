@@ -14,5 +14,12 @@ if args.zero:
     args.pre = 0
     args.post = 0
 
-rows, cols = os.popen('stty size', 'r').read().split()
+try:
+    rows, cols = os.popen('stty size 2> /dev/null', 'r').read().split()
+except:
+    try:
+        rows, cols = os.environ.get("STTY_SIZE", "24 80").split()
+    except:
+        cols = 80
+
 print("\n" * args.pre + "-" * (int(cols) - 1) + "\n" * args.post)
