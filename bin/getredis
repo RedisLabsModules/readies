@@ -240,9 +240,7 @@ class RedisRepoSetup(paella.Setup):
     def fedora(self):
         self.install("dnf-plugins-core")
         
-        self.install("https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm")
         self.install("--allowerasing https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm")
-        # self.install("epel-release")
         self.install("http://rpms.remirepo.net/enterprise/remi-release-7.rpm")
         self.run("dnf config-manager -y --set-enabled remi")
         self.install("redis")
@@ -261,7 +259,7 @@ parser.add_argument('-s', '--source', action="store_true", help="Build from sour
 parser.add_argument('-v', '--version', type=str, default=DEFAULT_REDIS_VERSION, help='Redis version (e.g. 6, 6.0, 6.0.1')
 parser.add_argument('-b', '--branch', type=str, help='Redis branch (e.g. 6, 6.0)')
 parser.add_argument('--valgrind', action="store_true", help="Build a Valgdind-compatible Redis (i.e. with libc & -O0)")
-parser.add_argument('--libc', action="store_true", help="Build with libc instead of jemalloc")
+parser.add_argument('--libc-malloc', action="store_true", help="Build with libc malloc instead of jemalloc")
 parser.add_argument('--no-tls', action="store_true", help="Do not support TLS")
 parser.add_argument('--repo', action="store_true", help='Install from package repo')
 parser.add_argument('--force', action="store_true", help="Install even if redis-server is present")
