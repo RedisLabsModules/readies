@@ -31,7 +31,7 @@ DOCKERFILE_STEM ?= $(ROOT)/Dockerfile
 
 #----------------------------------------------------------------------------------------------
 
-REDIS_VER ?= 6.0.1
+REDIS_VER ?= 6.0.5
 
 PACK ?= 0
 TEST ?= 0
@@ -46,7 +46,7 @@ OSNICK ?= debian
 
 ifeq ($(OS.custom),)
 
-OS.centos7=centos:7.6.1810
+OS.centos7=centos:7.8.2003
 OS.fedora=fedora:32
 OS.focal=ubuntu:focal
 OS.bionic=ubuntu:bionic
