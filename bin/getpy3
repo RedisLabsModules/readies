@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# Check that Python 3 is installed (by checking for python and python3 commands).
+# If so, verify that python3 command is present.
+# If Python 3 is not found on the system, try to install it and repeat the abose checks.
+
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 
 . $HERE/../shibumi/functions
@@ -12,8 +16,10 @@ if [[ $1 == --help || $1 == help || $HELP == 1 ]]; then
 		CHECK=1      Only check and report, do not install
 		PIP=1        Also install latest pip
 		PIP=version  Also install pip of the specified version
+		VENV=1       Install virtualenv
+		VENV=dir     Install virtualenv, create one in `dir` and activate it
 		FORCE=1      Install even if present
-		FIX=1        Create a /usr/local/bin/python symlink
+		FIX=1        Create /usr/local/bin/python3 symlink (default on macOS)
 		VERBOSE=1    Print commands
 		HELP=1       Print help
 
@@ -24,9 +30,26 @@ fi
 [[ $VERBOSE == 1 ]] && { set -x; PS4='$LINENO: '; }
 [[ -z $PIP ]] && PIP=0
 
+# pip 20.x is broken is the sense that it will not respect virtualenv's system-site-packages
+# thus requiring packages to be built from source in order to be installed.
+# Until this is fixed we stick to pip 19.3.1.
+[[ $PIP == 1 ]] && PIP=19.3.1
+
+# the end state should be:
+# in a python2 venv: `python` command (don't fix)
+# in a non-python2 venv or outside venv:
+#   mandatory: `python3` command (fix)
+#   optional: `python` command (don't fix)
+
 fix_variants() {
-	if [[ ! -z $PYTHON3 ]]; then
-		[[ -z $PYTHON && "$PYTHON_VER" == "3"  ]] && ln -s $PYTHON /usr/local/bin/python
+	if [[ ! -z $VIRTUAL_ENV ]]; then
+		[[ ! -z $PYTHON && "$PYTHON_VER" == "3"  ]] && return
+	fi
+
+	if [[ -z $PYTHON3 ]]; then
+		if [[ ! -z $PYTHON && "$PYTHON_VER" == "3"  ]]; then
+			ln -sf $PYTHON /usr/local/bin/python3
+		fi
 	fi
 }
 
@@ -110,7 +133,7 @@ install_pip() {
 	fi
 
 	runn wget -q -O /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py
-	runn $MYPY /tmp/get-pip.py "$pipspec"
+	runn $MYPY /tmp/get-pip.py $pipspec
 	rm -f /tmp/get-pip.py
 }
 
@@ -128,5 +151,10 @@ if [[ -z $(command -v $MYPY) ]]; then
 fi
 
 [[ $PIP != 0 ]] && install_pip
+
+if [[ ! -z $VENV ]]; then
+	$MYPY -m pip install virtualenv
+	[[ $VENV != 1 ]] && $MYPY -m virtualenv $VENV
+fi
 
 exit 0
