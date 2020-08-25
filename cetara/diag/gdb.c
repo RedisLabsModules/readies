@@ -4,6 +4,8 @@
 
 #include "readies/cetara/diag/gdb.h"
 
+#if (defined(DEBUG) || defined(_DEBUG)) && !defined(NDEBUG)
+
 #ifdef __linux__
 
 #include <ctype.h>
@@ -156,3 +158,5 @@ static void initialize(void)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
+
+#endif // DEBUG
