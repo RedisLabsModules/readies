@@ -5,8 +5,9 @@ import sys
 import os
 import argparse
 
-HERE=os.path.join(os.path.dirname(__file__)
+HERE = os.path.dirname(__file__)
 ROOT = os.path.abspath(os.path.join(HERE, ".."))
+sys.path.insert(0, ROOT)
 import paella
 
 #----------------------------------------------------------------------------------------------
@@ -20,22 +21,22 @@ class SystemSetup(paella.Setup):
         # self.group_install("")
         # self.setup_pip()
         # self.pip_install("")
-        pass
+        print("common_first")
 
     def debian_compat(self):
-        pass
+        print("debian_compat")
 
     def redhat_compat(self):
-        pass
+        print("redhat_compat")
 
     def fedora(self):
-        pass
+        print("fedora")
 
     def macosx(self):
-        pass
+        print("macosx")
 
     def common_last(self):
-        pass
+        print("common_last")
 
 #----------------------------------------------------------------------------------------------
 
