@@ -133,6 +133,9 @@ install_pip() {
 	runn wget -q -O /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py
 	runn $MYPY /tmp/get-pip.py $pipspec
 	rm -f /tmp/get-pip.py
+	if [[ $PIP == 19.3.1 ]]; then
+		runn $MYPY -m pip install setuptools==49.3.0
+	fi
 }
 
 check_variants

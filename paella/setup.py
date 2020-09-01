@@ -215,14 +215,18 @@ class Setup(OnPlatform):
         self.pip_install(cmd, _try=_try)
 
     def setup_pip(self, _try=False):
-        get_pip = "set -e; wget -q https://bootstrap.pypa.io/get-pip.py -O /tmp/get-pip.py"
         if self.run(self.python + " -m pip --version", _try=True, output_on_error=False) != 0:
             if sys.version_info.major == 3:
                 # required for python >= 3.6, may not exist in prior versions
                 self.install("python3-distutils", _try=True)
             self.install_downloaders()
+            with_sudo = self.os != 'macosx'
             pip_user = ' --user' if self.os == 'macosx' else ''
-            self.run(get_pip + "; " + self.python + " /tmp/get-pip.py" + pip_user, output_on_error=True, _try=_try, sudo=True)
+            self.run("wget -q https://bootstrap.pypa.io/get-pip.py -O /tmp/get-pip.py",
+                     output_on_error=True, _try=_try)
+            self.run(self.python + " /tmp/get-pip.py pip==19.3.1" + pip_user,
+                     output_on_error=True, _try=_try, sudo=with_sudo)
+            self.pip_install("setuptools==49.3.0")
 
     #------------------------------------------------------------------------------------------
 
