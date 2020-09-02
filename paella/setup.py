@@ -226,7 +226,8 @@ class Setup(OnPlatform):
                      output_on_error=True, _try=_try)
             self.run(self.python + " /tmp/get-pip.py pip==19.3.1" + pip_user,
                      output_on_error=True, _try=_try, sudo=with_sudo)
-            self.pip_install("setuptools==49.3.0")
+            if sys.version_info.major == 3:
+                self.pip_install("setuptools==49.3.0")
 
     #------------------------------------------------------------------------------------------
 
