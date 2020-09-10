@@ -261,3 +261,23 @@ class Setup(OnPlatform):
             else:
                 eprint("Warning: {} exists - not replaced".format(p))
 
+    def install_linux_gnu_tar(self, _try=False):
+        if self.os != 'linux':
+            eprint("Warning: not Linux - tar not installed")
+            return
+        self.run("""
+            dir=$(mktemp -d /tmp/tar.XXXXXX)
+            (cd $dir; wget -q -O tar.tgz http://redismodules.s3.amazonaws.com/gnu/gnu-tar-1.32-x64-centos7.tgz; tar -xzf tar.tgz -C /; )
+            rm -rf $dir
+            """)
+
+    def install_ubuntu_modern_gcc(self, _try=False):
+        if self.dist != 'ubuntu'
+            eprint("Warning: not Ubuntu - modern gcc not installed")
+            return
+        self.install("software-properties-common")
+        self.run("add-apt-repository -y ppa:ubuntu-toolchain-r/test")
+        self.run("apt-get -qq update")
+        self.install("gcc-7 g++-7")
+        self.run("update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 60 --slave /usr/bin/g++ g++ /usr/bin/g++-7")
+        self.run("update-alternatives --config gcc")
