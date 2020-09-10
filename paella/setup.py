@@ -272,7 +272,7 @@ class Setup(OnPlatform):
             """)
 
     def install_ubuntu_modern_gcc(self, _try=False):
-        if self.dist != 'ubuntu'
+        if self.dist != 'ubuntu':
             eprint("Warning: not Ubuntu - modern gcc not installed")
             return
         self.install("software-properties-common")
