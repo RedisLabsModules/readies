@@ -184,6 +184,13 @@ class RedisSourceSetup(paella.Setup):
         if self.no_prepare:
             return
         self.install("build-essential")
+        if self.osnick == 'trusty':
+            self.install("software-properties-common")
+            self.run("add-apt-repository -y ppa:ubuntu-toolchain-r/test")
+            self.run("apt-get -qq update")
+            self.install("gcc-7 g++-7")
+            self.run("update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 60 --slave /usr/bin/g++ g++ /usr/bin/g++-7")
+            self.run("update-alternatives --config gcc")
         self.install("libssl-dev")
 
     def redhat_compat(self):
