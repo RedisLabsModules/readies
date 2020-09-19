@@ -3,6 +3,7 @@ from .classes import *
 from .debug import *
 from .utils import *
 from .files import *
+from .text import *
 # from .docopt import docopt
 from .log import *
 from .platform import *

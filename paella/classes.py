@@ -23,7 +23,6 @@ class CtorDecorator(object):
             self.f(x, *args, **kwargs)
             return x
         def bound_ctor(*args, **kwargs):
-            BB()
             self.f(obj, *args, **kwargs)
         return ctor if obj is None else bound_ctor
 

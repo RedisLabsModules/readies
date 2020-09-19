@@ -56,7 +56,7 @@ class RepoRefresh(OnPlatform):
     def debian_compat(self):
         self.runner.run("apt-get -qq update -y", sudo=True)
 
-    def macosx(self):
+    def macos(self):
         if os.environ.get('BREW_NO_UPDATE') != '1':
             self.runner.run("brew update || true")
 
@@ -76,7 +76,7 @@ class Setup(OnPlatform):
 
         self.python = sys.executable
 
-        if self.os == 'macosx':
+        if self.os == 'macos':
             if 'VIRTUAL_ENV' not in os.environ:
                 # required because osx pip installed are done with --user
                 os.environ["PATH"] = os.environ["PATH"] + ':' + os.environ["HOME"] + '/Library/Python/2.7/bin'
@@ -146,7 +146,7 @@ class Setup(OnPlatform):
                 self.pacman_install(packs, group=group, _try=_try)
             else:
                 Assert(False), "Cannot determine installer"
-        elif self.os == 'macosx':
+        elif self.os == 'macos':
             self.brew_install(packs, group=group, _try=_try)
         elif self.os == 'freebsd':
             self.pkg_install(packs, group=group, _try=_try)
@@ -197,7 +197,7 @@ class Setup(OnPlatform):
                 self.pacman_add_repo(repourl, repo=repo, _try=_try)
             else:
                 Assert(False), "Cannot determine installer"
-        elif self.os == 'macosx':
+        elif self.os == 'macos':
             self.brew_add_repo(packs, group=group, _try=_try)
         else:
             Assert(False), "Cannot determine installer"
@@ -206,7 +206,7 @@ class Setup(OnPlatform):
 
     def pip_install(self, cmd, _try=False):
         pip_user = ''
-        if self.os == 'macosx' and 'VIRTUAL_ENV' not in os.environ:
+        if self.os == 'macos' and 'VIRTUAL_ENV' not in os.environ:
             pip_user = '--user '
         self.run(self.python + " -m pip install --disable-pip-version-check " + pip_user + cmd,
                  output_on_error=True, _try=_try, sudo=True)
@@ -220,8 +220,8 @@ class Setup(OnPlatform):
                 # required for python >= 3.6, may not exist in prior versions
                 self.install("python3-distutils", _try=True)
             self.install_downloaders()
-            with_sudo = self.os != 'macosx'
-            pip_user = ' --user' if self.os == 'macosx' else ''
+            with_sudo = self.os != 'macos'
+            pip_user = ' --user' if self.os == 'macos' else ''
             self.run("wget -q https://bootstrap.pypa.io/get-pip.py -O /tmp/get-pip.py",
                      output_on_error=True, _try=_try)
             self.run(self.python + " /tmp/get-pip.py pip==19.3.1" + pip_user,
@@ -249,7 +249,7 @@ class Setup(OnPlatform):
 
     def install_gnu_utils(self, _try=False):
         packs = ""
-        if self.os == 'macosx':
+        if self.os == 'macos':
             packs= "make coreutils findutils gnu-sed gnu-tar gawk"
         elif self.os == 'freebsd':
             packs = "gmake coreutils findutils gsed gtar gawk"
@@ -261,3 +261,23 @@ class Setup(OnPlatform):
             else:
                 eprint("Warning: {} exists - not replaced".format(p))
 
+    def install_linux_gnu_tar(self, _try=False):
+        if self.os != 'linux':
+            eprint("Warning: not Linux - tar not installed")
+            return
+        self.run("""
+            dir=$(mktemp -d /tmp/tar.XXXXXX)
+            (cd $dir; wget -q -O tar.tgz http://redismodules.s3.amazonaws.com/gnu/gnu-tar-1.32-x64-centos7.tgz; tar -xzf tar.tgz -C /; )
+            rm -rf $dir
+            """)
+
+    def install_ubuntu_modern_gcc(self, _try=False):
+        if self.dist != 'ubuntu':
+            eprint("Warning: not Ubuntu - modern gcc not installed")
+            return
+        self.install("software-properties-common")
+        self.run("add-apt-repository -y ppa:ubuntu-toolchain-r/test")
+        self.run("apt-get -qq update")
+        self.install("gcc-7 g++-7")
+        self.run("update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 60 --slave /usr/bin/g++ g++ /usr/bin/g++-7")
+        self.run("update-alternatives --config gcc")
