@@ -151,8 +151,8 @@ fi
 [[ $PIP != 0 ]] && install_pip
 
 if [[ ! -z $VENV ]]; then
-	$MYPY -m pip install virtualenv
-	[[ $VENV != 1 ]] && $MYPY -m virtualenv $VENV
+	runn $MYPY -m pip install virtualenv
+	[[ $VENV != 1 ]] && runn $MYPY -m virtualenv $VENV
 fi
 
 exit 0
