@@ -5,7 +5,7 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 os=$($HERE/platform --os)
 if [[ $os == linux ]]; then
 	nproc
-elif [[ $os == macosx ]]; then
+elif [[ $os == macos ]]; then
 	sysctl -n hw.physicalcpu
 elif [[ $os == freebsd ]]; then
 	sysctl -n hw.ncpu

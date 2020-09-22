@@ -40,8 +40,8 @@ ifneq ($(__NO_PYTHON),1)
 
 include $(MK)/platform.defs
 
-ifeq ($(OS),macosx)
-include $(MK)/macosx.defs
+ifeq ($(OS),macos)
+include $(MK)/macos.defs
 endif
 
 include $(MK)/git.defs

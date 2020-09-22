@@ -1,5 +1,5 @@
 
-ifeq ($(OS),macosx)
+ifeq ($(OS),macos)
 
 #----------------------------------------------------------------------------------------------
 
@@ -46,11 +46,11 @@ PKG_CONFIG_DIRS += \
 
 export PKG_CONFIG_PATH:=$(subst $(__SPACE),:,$(strip $(addsuffix /lib/pkgconfig,$(PKG_CONFIG_DIRS)))):$(PKG_CONFIG_PATH)
 
-CONFIGURE_FLAGS.macosx += \
+CONFIGURE_FLAGS.macos += \
 	CPPFLAGS='$(CPPFLAGS)' \
 	LDFLAGS='$(LDFLAGS)' \
 	--with-openssl=$(LIBSSL_PREFIX)
 
 #----------------------------------------------------------------------------------------------
 
-endif # macosx
+endif # macos

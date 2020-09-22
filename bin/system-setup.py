@@ -32,8 +32,8 @@ class SystemSetup(paella.Setup):
     def fedora(self):
         print("fedora")
 
-    def macosx(self):
-        print("macosx")
+    def macos(self):
+        print("macos")
 
     def common_last(self):
         print("common_last")

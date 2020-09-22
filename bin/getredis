@@ -205,7 +205,7 @@ class RedisSourceSetup(paella.Setup):
         self.redhat_compat()
         self.install("openssl-devel")
 
-    def macosx(self):
+    def macos(self):
         if self.no_prepare:
             return
         if sh('xcode-select -p') == '':
@@ -252,7 +252,7 @@ class RedisRepoSetup(paella.Setup):
         self.run("dnf config-manager -y --set-enabled remi")
         self.install("redis")
 
-    def macosx(self):
+    def macos(self):
         self.install("redis")
 
     def common_last(self):

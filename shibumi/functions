@@ -5,7 +5,7 @@ platform_os() {
 	case "$OSTYPE" in
 		linux*)   echo "linux" ;;
 		solaris*) echo "solaris" ;;
-		darwin*)  echo "macosx" ;; 
+		darwin*)  echo "macos" ;; 
 		bsd*)     echo "bsd" ;;
 		msys*)    echo "windows" ;;
 		*)        echo "?" ;;
@@ -14,7 +14,7 @@ platform_os() {
 
 #----------------------------------------------------------------------------------------------
 
-if [[ $(platform_os) == macosx ]]; then
+if [[ $(platform_os) == macos ]]; then
 
 realpath() {
 	[[ $1 = /* ]] && echo "$1" || echo "$PWD/${1#./}"
