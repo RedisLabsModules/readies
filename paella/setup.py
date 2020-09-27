@@ -13,7 +13,7 @@ class Runner:
         # self.has_sudo = sh('command -v sudo') != ''
         self.has_sudo = False
 
-    def run(self, cmd, output_on_error=False, _try=False, sudo=False):
+    def run(self, cmd, at=None, output_on_error=False, _try=False, sudo=False):
         if cmd.find('\n') > -1:
             cmds1 = str.lstrip(textwrap.dedent(cmd))
             cmds = filter(lambda s: str.lstrip(s) != '', cmds1.split("\n"))
@@ -28,7 +28,11 @@ class Runner:
             fd, temppath = tempfile.mkstemp()
             os.close(fd)
             cmd = "{{ {}; }} >{} 2>&1".format(cmd, temppath)
-        rc = os.system(cmd)
+        if at is None:
+            rc = os.system(cmd)
+        else:
+            with cwd(at):
+                rc = os.system(cmd)
         if rc > 0:
             if output_on_error:
                 os.system("cat {}".format(temppath))
@@ -94,8 +98,8 @@ class Setup(OnPlatform):
             RepoRefresh(self.runner).invoke()
         self.invoke()
 
-    def run(self, cmd, output_on_error=False, _try=False, sudo=False):
-        return self.runner.run(cmd, output_on_error=output_on_error, _try=_try, sudo=sudo)
+    def run(self, cmd, at=None, output_on_error=False, _try=False, sudo=False):
+        return self.runner.run(cmd, at=at, output_on_error=output_on_error, _try=_try, sudo=sudo)
 
     @staticmethod
     def has_command(cmd):

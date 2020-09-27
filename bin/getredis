@@ -30,34 +30,37 @@ class RedisSourceSetup(paella.Setup):
     # the latter will fetch the latest released version on the 5.0 branch
     # branch can be either 6 (will be mapped to 6.0) or 6.1 or any string
     # for partial semantic versions branches, we'll fetch HEAD of the given branch from github
-    def __init__(self, version=None, branch=None, valgrind=False, libc_malloc=False, no_tls=False,
-                 keep=False, just_prepare=False, no_prepare=False, 
-                 no_install=False, workdir=None, into=None, info_file=None,
-                 nop=False, verbose=False):
-        paella.Setup.__init__(self, nop)
+    def __init__(self, args):
+        paella.Setup.__init__(self, args.nop)
 
-        if version is not None and branch is not None:
+        if args.version is not None and args.branch is not None:
             raise RuntimeError('conflicting arguments: version, branch')
-        self.version = version
-        self.branch = branch
-        self.valgrind = valgrind
-        self.libc_malloc = libc_malloc
-        self.tls = not no_tls
-        self.just_prepare = just_prepare
-        self.no_prepare = no_prepare
-        self.no_install = no_install
-        self.keep = keep or workdir is not None
-        self.workdir = workdir
-        self.into = into
-        self.info_file = info_file
-        self.verbose = verbose
-        self.nop = nop
+        self.version = args.version
+        self.branch = args.branch
+        
+        self.valgrind = args.valgrind
+        self.libc_malloc = args.libc_malloc
+        self.clang_asan = args.clang_asan
+        self.clang_msan = args.clang_msan
+        self.llvm_dir = args.llvm_dir
 
-        self.repo_refresh = not no_prepare
+        self.tls = not args.no_tls
+        self.just_prepare = args.prepare
+        self.no_prepare = args.no_prepare
+        self.no_install = args.no_install
+        self.keep = args.keep or args.workdir is not None
+        self.workdir = args.workdir
+        self.into = args.into
+        self.suffix = args.suffix
+        self.info_file = args.info_file
+        self.verbose = args.verbose
+        self.nop = args.nop
+
+        self.repo_refresh = not args.no_prepare
 
     def read_redis_versions(self):
         j = []
-        url = 'https://api.github.com/repos/antirez/redis/tags?per_page=100'
+        url = 'https://api.github.com/repos/redis/redis/tags?per_page=100'
         while True:
             r = urlopen(url)
             if r.code != 200:
@@ -109,7 +112,7 @@ class RedisSourceSetup(paella.Setup):
             self.base_dir = self.workdir
         else:
             self.base_dir = tempfile.mkdtemp(prefix='redis.')
-        print('work dir: ' + self.base_dir)
+        print('# work dir: ' + self.base_dir)
 
         if self.version is None and self.branch is None:
             self.branch = 'unstable'
@@ -124,8 +127,6 @@ class RedisSourceSetup(paella.Setup):
             self.run('tar -C {} -xzf {}'.format(self.base_dir, file), output_on_error=True)
             with paella.cwd(self.base_dir):
                 shutil.move('redis-{}'.format(version), 'redis')
-            self.redis_dir = 'redis'
-            # self.redis_dir = os.path.join(self.base_dir, 'redis-{}'.format(version))
         if self.branch is not None:
             try:
                 sv = Version(self.branch, partial=True)
@@ -137,43 +138,128 @@ class RedisSourceSetup(paella.Setup):
             except:
                 branch = self.branch
             self.run('cd {}; git clone https://github.com/redis/redis.git --branch {}'.format(self.base_dir, branch), output_on_error=True)
-            self.redis_dir = os.path.join(self.base_dir, 'redis')
+        self.build_dir = os.path.join(self.base_dir, 'redis')
+        if self.suffix:
+            patch = r"""
+diff --git a/src/Makefile b/src/Makefile
+index f6e5f3e3f..eba447dea 100644
+--- a/src/Makefile
++++ b/src/Makefile
+@@ -249,2 +249,5 @@ endif
+-REDIS_SERVER_NAME=redis-server
+-REDIS_SENTINEL_NAME=redis-sentinel
++ifneq ($(PROG_SUFFIX),)
++override PROG_SUFFIX:=-$(PROG_SUFFIX)
++endif
++REDIS_SERVER_NAME=redis-server$(PROG_SUFFIX)
++REDIS_SENTINEL_NAME=redis-sentinel$(PROG_SUFFIX)
+@@ -252 +255 @@ REDIS_SERVER_OBJ=adlist.o quicklist.o ae.o anet.o dict.o server.o sds.o zmalloc.
+-REDIS_CLI_NAME=redis-cli
++REDIS_CLI_NAME=redis-cli$(PROG_SUFFIX)
+@@ -254 +257 @@ REDIS_CLI_OBJ=anet.o adlist.o dict.o redis-cli.o zmalloc.o release.o ae.o crcspe
+-REDIS_BENCHMARK_NAME=redis-benchmark
++REDIS_BENCHMARK_NAME=redis-benchmark$(PROG_SUFFIX)
+@@ -256,2 +259,2 @@ REDIS_BENCHMARK_OBJ=ae.o anet.o redis-benchmark.o adlist.o dict.o zmalloc.o siph
+-REDIS_CHECK_RDB_NAME=redis-check-rdb
+-REDIS_CHECK_AOF_NAME=redis-check-aof
++REDIS_CHECK_RDB_NAME=redis-check-rdb$(PROG_SUFFIX)
++REDIS_CHECK_AOF_NAME=redis-check-aof$(PROG_SUFFIX)
+"""
+            patch_file = os.path.join(self.base_dir, 'redis-prog-sufffix.patch')
+            paella.fwrite(patch_file, patch[1:])
+            self.run("patch -p1 -i %s" % patch_file, at=self.build_dir, output_on_error=True)
 
     def build_redis(self):
-        build_args = ''
-        build_args += ' valgrind' if self.valgrind else ''
-        build_args += ' MALLOC=libc' if self.libc_malloc else ''
-        build_args += ' BUILD_TLS=yes' if self.tls else ''
-        
-        install_args = ''
-        install_args += ' BUILD_TLS=yes' if self.tls else ''
-        if self.into is not None:
-            install_args += ' PREFIX=' + self.into
+        build_args = []
+        build_args += ['valgrind'] if self.valgrind else ''
+        build_args += ['MALLOC=libc'] if self.libc_malloc else ''
+        build_args += ['BUILD_TLS=yes'] if self.tls else ''
+        if self.suffix:
+            build_args += ['PROG_SUFFIX=%s' % self.suffix]
 
-        with paella.cwd(os.path.join(self.base_dir, self.redis_dir)):
+        if args.clang_san_blacklist is not None:
+            blacklist_arg = '-fsanitize-blacklist=%s' % args.clang_san_blacklist
+        else:
+            blacklist_arg = ''
+        if self.clang_asan:
+            build_args += [
+                'CC=clang',
+                'LD=clang',
+                'OPTIMIZATION="-O1"',
+                'MALLOC="libc"',
+                'CFLAGS="-fsanitize=address ' +
+                    '-fno-omit-frame-pointer -fno-optimize-sibling-calls -fsanitize-address-use-after-scope ' +
+                    blacklist_arg + ' ' + 
+                    '"',
+                'LDFLAGS="-fsanitize=address"']
+
+        if self.clang_msan:
+            if self.llvm_dir is None:
+                llvm_dir = '/opt/llvm-project/build-msan'
+            else:
+                llvm_dir = self.llvm_dir
+            build_args += [
+                'CC=clang',
+                'LD=clang',
+                'OPTIMIZATION="-O2"',
+                'MALLOC=libc',
+                'CFLAGS="-fsanitize=memory ' +
+                    '-fno-omit-frame-pointer -pie -fPIC -fsanitize-memory-track-origins ' + 
+                    blacklist_arg + ' ' + 
+#                    '-stdlib=libc++ ' +
+#                     ('-Wl,-rpath=%s/lib ' % llvm_dir) +
+#                     ('-L%s/lib ' % llvm_dir) +
+#                     '-lc++abi ' +
+#                     ('-I{base}/include -I{base}/include/c++/v1 '.format(base=llvm_dir)) +
+                     '"',
+                'LDFLAGS="-fsanitize=memory"']
+
+        install_args = []
+        install_args += ['BUILD_TLS=yes'] if self.tls else ''
+        if self.suffix:
+            install_args += ['PROG_SUFFIX=%s' % self.suffix]
+
+        if self.into:
+            install_args += ['PREFIX=' + self.into]
+
+        with paella.cwd(self.build_dir):
             self.run("""
                 make -j `{}/bin/nproc` {}
-                """.format(ROOT, build_args), output_on_error=True)
+                """.format(ROOT, ' '.join(build_args)), output_on_error=True)
 
-            if not self.no_install:
+            if self.no_install:
+                self.redis_server = os.path.join(self.build_dir, 'src', 'redis-server')
+            else:
                 self.run("""
                     make install {}
-                    """.format(install_args), output_on_error=True)
+                    """.format(' '.join(install_args)), output_on_error=True)
+
+                if self.into:
+                    into_bindir = os.path.join(self.into, 'bin')
+                else:
+                    into_bindir =  '/usr/local/bin'
+                if self.suffix:
+                    self.redis_server = os.path.join(into_bindir, 'redis-server-' + self.suffix)
+                else:
+                    self.redis_server = os.path.join(into_bindir, 'redis-server')
+                    
         if not self.keep:
             shutil.rmtree(self.base_dir)
         if self.info_file is not None:
             info = """
                 base_dir {base_dir}
-                redis_dir {redis_dir}
-            """.format(base_dir=os.path.abspath(self.base_dir), redis_dir=os.path.abspath(self.redis_dir))
+                build_dir {build_dir}
+            """.format(base_dir=os.path.abspath(self.base_dir), build_dir=os.path.abspath(self.build_dir))
             info = textwrap.dedent(info).split("\n", 1)[1]
             paella.fwrite(self.info_file, info)
+    
+    #------------------------------------------------------------------------------------------
     
     def common_first(self):
         if self.no_prepare:
             return
         self.install_downloaders()
-        self.install("git")
+        self.install("git patch")
 
         self.setup_pip()
         self.pip_install("wheel")
@@ -215,10 +301,8 @@ class RedisSourceSetup(paella.Setup):
         if not self.just_prepare:
             self.download_redis()
             self.build_redis()
-            if self.no_install:
-                self.run("%s/src/redis-server --version" % os.path.join(self.base_dir, self.redis_dir))
-            else:
-                self.run("redis-server --version")
+            self.run("%s --version" % self.redis_server)
+                
 
 #----------------------------------------------------------------------------------------------
 
@@ -266,6 +350,10 @@ parser.add_argument('-s', '--source', action="store_true", help="Build from sour
 parser.add_argument('-v', '--version', type=str, default=DEFAULT_REDIS_VERSION, help='Redis version (e.g. 6, 6.0, 6.0.1')
 parser.add_argument('-b', '--branch', type=str, help='Redis branch (e.g. 6, 6.0)')
 parser.add_argument('--valgrind', action="store_true", help="Build a Valgdind-compatible Redis (i.e. with libc & -O0)")
+parser.add_argument('--clang-asan', action="store_true", help="Build with Clang address sanitizer")
+parser.add_argument('--clang-msan', action="store_true", help="Build with Clang memory sanitizer")
+parser.add_argument('--clang-san-blacklist', type=str, help="Clang sanitizer blacklist filename")
+parser.add_argument('--llvm-dir', type=str, help="LLVM directory for memory sanitizer build")
 parser.add_argument('--libc-malloc', action="store_true", help="Build with libc malloc instead of jemalloc")
 parser.add_argument('--no-tls', action="store_true", help="Do not support TLS")
 parser.add_argument('--repo', action="store_true", help='Install from package repo')
@@ -277,6 +365,7 @@ parser.add_argument('-p', '--just-print-version', action="store_true", help="Jum
 parser.add_argument('--keep', action="store_true", help="Do not remove source files and build artifacts")
 parser.add_argument('--workdir', type=str, help='Directory in which to extract and build')
 parser.add_argument('--info-file', type=str, help='Information file path')
+parser.add_argument('--suffix', type=str, help='Add suffix to Redis programs')
 parser.add_argument('--into', type=str, help='Copy artifacts to DIR')
 parser.add_argument('-V', '--verbose', action="store_true", help="Verbose operation")
 # parser.add_argument('--strict', action="store_true", help="Verify we get the Redis version we ask for")
@@ -309,12 +398,7 @@ if paella.Setup.has_command("redis-server") and not args.force and not args.no_i
 
 try:
     if args.source:
-        RedisSourceSetup(version=args.version, branch=args.branch,
-                         valgrind=args.valgrind, libc_malloc=args.libc_malloc, no_tls=args.no_tls,
-                         keep=args.keep, nop=args.nop, into=args.into,
-                         just_prepare=args.prepare, no_prepare=args.no_prepare,
-                         no_install=args.no_install, workdir=args.workdir,
-                         info_file=args.info_file, verbose=args.verbose).setup()
+        RedisSourceSetup(args).setup()
     else:
         RedisRepoSetup(nop=args.nop).setup()
 except Exception as x:
