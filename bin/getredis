@@ -48,6 +48,7 @@ class RedisSourceSetup(paella.Setup):
         self.just_prepare = args.prepare
         self.no_prepare = args.no_prepare
         self.no_install = args.no_install
+        self.no_run = args.no_run
         self.keep = args.keep or args.workdir is not None
         self.workdir = args.workdir
         self.into = args.into
@@ -301,7 +302,8 @@ index f6e5f3e3f..eba447dea 100644
         if not self.just_prepare:
             self.download_redis()
             self.build_redis()
-            self.run("%s --version" % self.redis_server)
+            if not self.no_run:
+                self.run("%s --version" % self.redis_server)
                 
 
 #----------------------------------------------------------------------------------------------
@@ -361,6 +363,7 @@ parser.add_argument('--force', action="store_true", help="Install even if redis-
 parser.add_argument('--prepare', action="store_true", help="Only install prerequisites, do not build")
 parser.add_argument('--no-prepare', action="store_true", help="Do not install prerequisites, just build")
 parser.add_argument('--no-install', action="store_true", help="Build but don't install")
+parser.add_argument('--no-run', action="store_true", help="Do not run redis-server after installation")
 parser.add_argument('-p', '--just-print-version', action="store_true", help="Jump print version, do not install")
 parser.add_argument('--keep', action="store_true", help="Do not remove source files and build artifacts")
 parser.add_argument('--workdir', type=str, help='Directory in which to extract and build')
