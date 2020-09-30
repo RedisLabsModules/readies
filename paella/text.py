@@ -11,6 +11,9 @@ class RegexpMatch:
     def __bool__(self):
         return bool(self.m)
 
+    def __nonzero__(self):
+        return bool(self.m)
+
     def __getitem__(self, k):
         return self.m.group(k)
 

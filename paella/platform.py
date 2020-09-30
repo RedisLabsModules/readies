@@ -127,12 +127,12 @@ class Platform:
                 ver, _ = self.debian_sid_version()
             return ver
 
-        def debian_sid_version(self):
+        def debian_sid_version(self):  # returns version_id, codename
             m = match(r'Debian GNU/Linux ([^/]+)/sid', self.pretty_name())
             if m:
-                return DEBIAN_VERSIONS.get(m[1], "sid"), m[1]
+                return DEBIAN_VERSIONS.get(m[1], ""), m[1]
             else:
-                return "sid", "sid"
+                return "", ""
         
         def version_codename(self):
             if self.brand_id() == 'elementary':
@@ -155,14 +155,14 @@ class Platform:
         #--------------------------------------------------------------------------------------
 
         def name(self):
-            return self.defs.get("NAME")
+            return self.defs.get("NAME", "")
 
         def pretty_name(self):
-            return self.defs.get("PRETTY_NAME")
+            return self.defs.get("PRETTY_NAME", "")
 
         def version(self):
             # text
-            return self.defs.get("VERSION")
+            return self.defs.get("VERSION", "")
 
         #--------------------------------------------------------------------------------------
 
@@ -253,9 +253,16 @@ class Platform:
         return distname
 
     def _identify_linux_osnick(self, os_release):
-        osnick = os_release.version_codename()
+        osnick = ""
+        distname = os_release.id()
+        if distname == 'ubuntu' or distname == 'debian':
+            osnick = os_release.version_codename()
+            if osnick == "":
+                versions = DEBIAN_VERSIONS if distname == 'debian' else UBUNTU_VERSIONS
+                versions_nicks = {v: k for k, v in versions.items()}
+                osnick = versions_nicks.get(os_release.version_id(), "")
         if osnick == "":
-            osnick = os_release.id() + str(os_release.version_id())
+            osnick = distname + str(os_release.version_id())
         return osnick
 
     #------------------------------------------------------------------------------------------
