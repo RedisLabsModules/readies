@@ -389,7 +389,7 @@ if args.version and args.branch:
     fatal('conflicting options: --version, --branch. Aborting.')
 
 if args.just_print_version:
-    setup = RedisSourceSetup(version=args.version, nop=args.nop)
+    setup = RedisSourceSetup(args)
     version = setup.get_requested_redis_versions()[0]
     print(version)
     exit(0)
