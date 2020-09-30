@@ -260,12 +260,15 @@ index f6e5f3e3f..eba447dea 100644
         if self.no_prepare:
             return
         self.install_downloaders()
-        self.install("git patch")
+        self.install("git")
 
         self.setup_pip()
         self.pip_install("wheel")
         self.pip_install("setuptools --upgrade")
         self.pip_install("semantic_version")
+
+    def linux(self):
+        self.install("patch")
 
     def debian_compat(self):
         if self.no_prepare:
