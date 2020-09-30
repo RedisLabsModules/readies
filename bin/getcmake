@@ -1,0 +1,25 @@
+#!/bin/bash
+
+set -e
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+. $HERE/../shibumi/functions
+
+CMAKE_VER=3.18.3
+CMAKE_ARCH=x86_64
+
+OS=`uname`
+if [[ $OS == Linux ]]; then
+	CMAKE_OS=Linux
+	url=https://github.com/Kitware/CMake/releases/download/v${CMAKE_VER}/cmake-${CMAKE_VER}-${CMAKE_OS}-${CMAKE_ARCH}.sh
+	wget -q -O /tmp/cmake.sh  $url
+	runn sh /tmp/cmake.sh --skip-license --prefix=/usr/local
+	rm -f /tmp/cmake.sh
+
+elif [[ $OS == Darwin ]]; then
+	runn brew install cmake
+else
+	eprint "Unsupported OS"
+	exit 1
+fi
+
+exit 0

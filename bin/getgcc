@@ -1,0 +1,49 @@
+#!/bin/sh
+''''[ ! -z $VIRTUAL_ENV ] && exec python -u -- "$0" ${1+"$@"}; command -v python3 > /dev/null && exec python3 -u -- "$0" ${1+"$@"}; exec python2 -u -- "$0" ${1+"$@"} # '''
+
+import sys
+import os
+import argparse
+
+HERE = os.path.dirname(__file__)
+ROOT = os.path.abspath(os.path.join(HERE, ".."))
+sys.path.insert(0, ROOT)
+import paella
+
+#----------------------------------------------------------------------------------------------
+
+class SystemSetup(paella.Setup):
+    def __init__(self, nop=False, modern=False):
+        paella.Setup.__init__(self, nop)
+		self.modern = modern
+
+    def debian_compat(self):
+        self.install("build-essential")
+        if self.modern and self.osnick == 'trusty':
+            self.add_repo("ppa:ubuntu-toolchain-r/test")
+            self.install("gcc-7 g++-7")
+            self.run("update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 60 --slave /usr/bin/g++ g++ /usr/bin/g++-7")
+
+    def redhat_compat(self):
+        self.group_install("'Development Tools'")
+		if self.modern:
+			self.install("centos-release-scl")
+			self.install("devtoolset-9")
+			self.run("cp /opt/rh/devtoolset-9/enable /etc/profile.d/scl-devtoolset-9.sh")
+
+    def fedora(self):
+        self.group_install("'Development Tools'")
+
+    def macos(self):
+        if sh('xcode-select -p') == '':
+            fatal("Xcode tools are not installed. Please run xcode-select --install.")
+
+#----------------------------------------------------------------------------------------------
+
+parser = argparse.ArgumentParser(description='Set up GCC build environemnt.')
+parser.add_argument('-n', '--nop', action="store_true", help='no operation')
+parser.add_argument('--modern', action="store_true", help="Install modern GCC version")
+
+args = parser.parse_args()
+
+SystemSetup(nop = args.nop, modern=args.modern).setup()
