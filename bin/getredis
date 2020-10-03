@@ -143,24 +143,21 @@ class RedisSourceSetup(paella.Setup):
         if self.suffix:
             patch = r"""
 diff --git a/src/Makefile b/src/Makefile
-index f6e5f3e3f..eba447dea 100644
+index f6e5f3e3f..def02b80d 100644
 --- a/src/Makefile
 +++ b/src/Makefile
-@@ -249,2 +249,5 @@ endif
+@@ -249,2 +249,2 @@ endif
 -REDIS_SERVER_NAME=redis-server
 -REDIS_SENTINEL_NAME=redis-sentinel
-+ifneq ($(PROG_SUFFIX),)
-+override PROG_SUFFIX:=-$(PROG_SUFFIX)
-+endif
 +REDIS_SERVER_NAME=redis-server$(PROG_SUFFIX)
 +REDIS_SENTINEL_NAME=redis-sentinel$(PROG_SUFFIX)
-@@ -252 +255 @@ REDIS_SERVER_OBJ=adlist.o quicklist.o ae.o anet.o dict.o server.o sds.o zmalloc.
+@@ -252 +252 @@ REDIS_SERVER_OBJ=adlist.o quicklist.o ae.o anet.o dict.o server.o sds.o zmalloc.
 -REDIS_CLI_NAME=redis-cli
 +REDIS_CLI_NAME=redis-cli$(PROG_SUFFIX)
-@@ -254 +257 @@ REDIS_CLI_OBJ=anet.o adlist.o dict.o redis-cli.o zmalloc.o release.o ae.o crcspe
+@@ -254 +254 @@ REDIS_CLI_OBJ=anet.o adlist.o dict.o redis-cli.o zmalloc.o release.o ae.o crcspe
 -REDIS_BENCHMARK_NAME=redis-benchmark
 +REDIS_BENCHMARK_NAME=redis-benchmark$(PROG_SUFFIX)
-@@ -256,2 +259,2 @@ REDIS_BENCHMARK_OBJ=ae.o anet.o redis-benchmark.o adlist.o dict.o zmalloc.o siph
+@@ -256,2 +256,2 @@ REDIS_BENCHMARK_OBJ=ae.o anet.o redis-benchmark.o adlist.o dict.o zmalloc.o siph
 -REDIS_CHECK_RDB_NAME=redis-check-rdb
 -REDIS_CHECK_AOF_NAME=redis-check-aof
 +REDIS_CHECK_RDB_NAME=redis-check-rdb$(PROG_SUFFIX)
@@ -176,7 +173,7 @@ index f6e5f3e3f..eba447dea 100644
         build_args += ['MALLOC=libc'] if self.libc_malloc else ''
         build_args += ['BUILD_TLS=yes'] if self.tls else ''
         if self.suffix:
-            build_args += ['PROG_SUFFIX=%s' % self.suffix]
+            build_args += ['PROG_SUFFIX="-%s"' % self.suffix]
 
         if args.clang_san_blacklist is not None:
             blacklist_arg = '-fsanitize-blacklist=%s' % args.clang_san_blacklist
@@ -218,7 +215,7 @@ index f6e5f3e3f..eba447dea 100644
         install_args = []
         install_args += ['BUILD_TLS=yes'] if self.tls else ''
         if self.suffix:
-            install_args += ['PROG_SUFFIX=%s' % self.suffix]
+            install_args += ['PROG_SUFFIX="-%s"' % self.suffix]
 
         if self.into:
             install_args += ['PREFIX=' + self.into]
@@ -397,9 +394,15 @@ if args.just_print_version:
     print(version)
     exit(0)
 
+BB()
+redis_server = "redis-server"
+if args.into:
+    redis_server = os.path.join(args.into, "bin", redis_server)
+if args.suffix:
+    redis_server += "-%s" % args.suffix
 if paella.Setup.has_command("redis-server") and not args.force and not args.no_install:
-    vermsg = sh('redis-server --version')
-    eprint("redis-server is present:\n{}".format(vermsg))
+    vermsg = sh('%s --version' % redis_server)
+    eprint("{} is present:\n{}".format(redis_server, vermsg))
     exit(0)
 
 try:
