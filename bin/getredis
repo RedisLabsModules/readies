@@ -394,7 +394,6 @@ if args.just_print_version:
     print(version)
     exit(0)
 
-BB()
 redis_server = "redis-server"
 if args.into:
     redis_server = os.path.join(args.into, "bin", redis_server)

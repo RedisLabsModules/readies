@@ -34,13 +34,11 @@ parser.add_argument('--libstdc++', action="store_true", help='libstdc++ version 
 args = parser.parse_args()
 
 try:
-    BB()
     platform = paella.Platform(strict=args.strict)
 except:
     eprint("platform: cannot identify")
     exit(1)
 
-BB()
 if args.__dict__['debian?']:
     print(1 if platform.is_debian_compat() else 0)
     sys.exit(0)

@@ -1,0 +1,31 @@
+#!/bin/bash
+
+GOLANG_VER=1.15.2
+GOLANG_OS=linux
+GOLANG_ARCH=amd64
+
+OS=`uname -s`
+if [[ $OS == Linux ]]; then
+	GOLANG_OS=linux
+elif [[ $OS == Darwin ]]; then
+	GOLANG_OS=darwin
+fi
+
+ARCH=`uname -m`
+if [[ $ARCH == x86_64 ]]; then
+	GOLANG_ARCH=amd64
+elif [[ $ARCH == aarch64 ]]; then
+	GOLANG_ARCH=arm64
+else
+	exit 1
+fi
+
+tar=$(mktemp /tmp/golang.XXXXX.tag.gz)
+wget -q -O $tar https://dl.google.com/go/go${GOLANG_VER}.${GOLANG_OS}-${GOLANG_ARCH}.tar.gz
+tar -C /usr/local -xzf $tar
+rm -f $tar
+
+echo 'export PATH=$PATH:/usr/local/go/bin' > /etc/profile.d/golang.sh
+echo 'export PATH=$PATH:`/usr/local/go/bin/go env GOPATH`/bin' >> /etc/profile.d/golang.sh
+
+# for immediate results, invoke: source /etc/profile.d/golang.sh
