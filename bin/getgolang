@@ -4,6 +4,8 @@ GOLANG_VER=1.15.2
 GOLANG_OS=linux
 GOLANG_ARCH=amd64
 
+[[ ! -z $(command -v go) && $FORCE != 1 ]] && exit 0
+
 OS=`uname -s`
 if [[ $OS == Linux ]]; then
 	GOLANG_OS=linux
