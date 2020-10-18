@@ -1,0 +1,98 @@
+#!/bin/sh
+''''[ ! -z $VIRTUAL_ENV ] && exec python -u -- "$0" ${1+"$@"}; command -v python3 > /dev/null && exec python3 -u -- "$0" ${1+"$@"}; exec python2 -u -- "$0" ${1+"$@"} # '''
+
+import sys
+import os
+import argparse
+import shutil
+import tempfile
+import traceback
+
+HERE = os.path.dirname(__file__)
+ROOT = os.path.abspath(os.path.join(HERE, ".."))
+sys.path.insert(0, ROOT)
+import paella  # noqa: F401
+
+os.environ["PYTHONWARNINGS"] = 'ignore:DEPRECATION::pip._internal.cli.base_command'
+
+#----------------------------------------------------------------------------------------------
+
+class BazeliskeSetup(paella.Setup):
+    def __init__(self, args):
+        paella.Setup.__init__(self, nop=False)
+
+    def install_bazel(self):
+        if self.run(". /etc/profile.d/golang.sh; bazelisk version > /tmp/bazver 2>&1", _try=True) == 0:
+            self.run(". /etc/profile.d/golang.sh; ln -s `command -v bazelisk` /usr/local/bin/bazel")
+        else:
+            cmd = r"""
+basedir=$(mktemp -p /tmp/bazel.XXXXXX)
+bazver=$(cat /tmp/bazver | head -1 | cut -f4 -d" " | cut -d/ -f4)
+bazfullver=$(cat /tmp/bazver | head -1 | cut -f4 -d" " | cut -d/ -f6 | sed -e 's/\.\.\.$//')
+wget -q -O $basedir/bazel-dist.zip https://github.com/bazelbuild/bazel/releases/download/$bazver/bazel-${bazver}-dist.zip
+unzip -q $basedir/bazel-dist.zip -d bazel-dist
+cd $basedir/bazel-dist
+EXTRA_BAZEL_ARGS="--host_javabase=@local_jdk//:jdk" ./compile.sh
+if [[ $(uname -s) == Darwin ]]; then
+    cachedir=$HOME/Library/Caches
+else
+    cachedir=$HOME/.cache
+fi
+bazdir="$cachedir/bazelisk/downloads/bazelbuild/${bazfullver}/bin/"
+mkdir -p "$bazdir" 
+cp output/bazel "$bazdir" 
+"""
+
+    #------------------------------------------------------------------------------------------
+    
+    def common_first(self):
+        self.install_downloaders()
+        self.install("git unzip zip sudo rsync")
+
+        self.run("%s/bin/getgolang" % ROOT)
+
+    def debian_compat(self):
+        self.install("software-properties-common pkg-config")
+        self.install("build-essential swig libcurl3-dev libfreetype6-dev libhdf5-serial-dev libzmq3-dev zlib1g-dev python3-dev")
+        self.install("openjdk-8-jdk openjdk-8-jre-headless")
+        if self.osnick == 'trusty':
+            self.run("add-apt-repository -y ppa:ubuntu-toolchain-r/test")
+            self.run("apt-get -qq update")
+            self.install("gcc-7 g++-7")
+            self.run("update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 60 --slave /usr/bin/g++ g++ /usr/bin/g++-7")
+            self.run("update-alternatives --config gcc")
+
+    def redhat_compat(self):
+        self.group_install("'Development Tools'")
+        self.install("swig libcurl-devel freetype-devel") # hdf5-serial-devel zmq3-devel zlib1g-devel python3-devel")
+        self.install("java-1.8.0-openjdk java-1.8.0-openjdk-headless")
+
+    def fedora(self):
+        self.redhat_compat()
+
+    def macos(self):
+        if sh('xcode-select -p') == '':
+            fatal("Xcode tools are not installed. Please run xcode-select --install.")
+
+    def common_last(self):
+        self.run(". /etc/profile.d/golang.sh; go get github.com/bazelbuild/bazelisk")
+        self.install_bazel()
+
+#----------------------------------------------------------------------------------------------
+
+parser = argparse.ArgumentParser(description='Install Bazel')
+args = parser.parse_args()
+
+try:
+    BazeliskeSetup(args).setup()
+except Exception as x:
+    traceback.print_exc()
+    fatal(str(x))
+
+#   try:
+#       BazeliskeSetup(args).setup()
+#   except Exception as x:
+#       traceback.print_exc()
+#       fatal(str(x))
+
+exit(0)
