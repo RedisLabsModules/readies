@@ -83,11 +83,12 @@ MACOS_VERSIONS_NICKS = {v: k for k, v in MACOS_VERSIONS.items()}
 class Platform:
 
     class OSRelease():
-        CUSTOM_BRANDS = [ 'elementary' ]
-
+        CUSTOM_BRANDS = [ 'elementary', 'pop' ]
+        UBUNTU_BRANDS = [ 'elementary', 'pop' ]
         
-        def __init__(self):
+        def __init__(self, brand=False):
             self.defs = {}
+            self.brand_mode = brand
             with open("/etc/os-release") as f:
                 for line in f:
                     try:
@@ -107,16 +108,20 @@ class Platform:
 
         def id(self):
             # e.g. "centos"
-            if self.is_custom_brand():
+            if self.is_custom_brand() and not self.brand_mode:
                 return self.id_like()
             return self.defs.get("ID", "")
 
         def id_like(self):
             # possibly list of values, e.g. "rhel fedora"
-            return self.defs.get("ID_LIKE", "")
+            like = self.defs.get("ID_LIKE", "").split()
+            if like == []:
+                return ""
+            return like[0]
 
         def version_id(self):
-            if self.brand_id() == 'elementary':
+            brand = self.brand_id()
+            if brand in self.UBUNTU_BRANDS:
                 ver_id = UBUNTU_VERSIONS.get(self.ubuntu_codename(), "")
                 if ver_id == "":
                     assert(False), "Cannot determine os version"
@@ -135,7 +140,8 @@ class Platform:
                 return "", ""
         
         def version_codename(self):
-            if self.brand_id() == 'elementary':
+            brand = self.brand_id()
+            if brand in self.UBUNTU_BRANDS:
                 return self.ubuntu_codename()
             codename = self.defs.get("VERSION_CODENAME", "")
             if codename == "" and self.id() == 'debian':
@@ -180,6 +186,7 @@ class Platform:
     def __init__(self, strict=False, brand=False):
         self.os = self.dist = self.os_ver = self.os_full_ver = self.osnick = self.arch = '?'
         self.strict = strict
+        self.brand_mode = brand
 
         self.os = platform.system().lower()
         if self.os == 'linux':
@@ -204,7 +211,7 @@ class Platform:
 
     def _identify_linux(self):
         try:
-            os_release = Platform.OSRelease()
+            os_release = Platform.OSRelease(brand=self.brand_mode)
             self.os_ver = os_release.version_id()
             self.osnick = self._identify_linux_osnick(os_release)
             self.dist = self._identify_linux_dist(os_release)
@@ -222,7 +229,8 @@ class Platform:
                 fullver = m[1]
                 return fullver
         elif distname == 'ubuntu':
-            if os_release.brand_id() == 'elementary':
+            brand = os_release.brand_id()
+            if brand in os_release.UBUNTU_BRANDS:
                 return self.os_ver
             m = match(r'([^\s]+)', os_release.version())
             if m:
@@ -248,7 +256,7 @@ class Platform:
         else:
             if self.strict:
                 assert(False), "Cannot determine distribution"
-            else:
+            elif distname == '':
                 distname = 'unknown'
         return distname
 

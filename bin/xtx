@@ -7,6 +7,10 @@ import sys
 import jinja2
 import re
 
+READIES_PATH = os.path.realpath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, READIES_PATH)
+import paella
+
 parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
                                  description='Template text Jinja2-style formatter.\nUse {{VAR}} syntax to insert variables.')
 

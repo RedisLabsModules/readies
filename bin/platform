@@ -34,7 +34,7 @@ parser.add_argument('--libstdc++', action="store_true", help='libstdc++ version 
 args = parser.parse_args()
 
 try:
-    platform = paella.Platform(strict=args.strict)
+    platform = paella.Platform(strict=args.strict, brand=args.brand)
 except:
     eprint("platform: cannot identify")
     exit(1)
