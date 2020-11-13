@@ -201,7 +201,7 @@ endif
 
 include $(MK)/rules
 
-$(eval $(call build_native,$(ARCH))
+$(eval $(call build_native,$(ARCH)))
 ifeq ($(CROSS),1)
 $(eval $(call build_arm,arm64v8))
 $(eval $(call build_arm,arm32v7))
