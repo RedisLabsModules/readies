@@ -107,10 +107,16 @@ DOCKER_BUILD_ARGS += \
 define targets # (1=OP, 2=op)
 $(1)_TARGETS :=
 $(1)_TARGETS += $(if $(findstring $(X64),1),$(2)_native)
+ifeq ($$(CROSS),1)
 $(1)_TARGETS += $(if $(findstring $(ARM7),1),$(2)_arm32v7)
 $(1)_TARGETS += $(if $(findstring $(ARM8),1),$(2)_arm64v8)
+endif
 
+ifeq ($$(CROSS),1)
 $(1)_TARGETS += $$(if $$(strip $$($(1)_TARGETS)),,$(2)_native $(2)_arm32v7 $(2)_arm64v8)
+else
+$(1)_TARGETS += $$(if $$(strip $$($(1)_TARGETS)),,$(2)_native)
+endif
 endef
 
 $(eval $(call targets,BUILD,build))
