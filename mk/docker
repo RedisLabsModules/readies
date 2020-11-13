@@ -31,7 +31,7 @@ DOCKERFILE_STEM ?= $(ROOT)/Dockerfile
 
 #----------------------------------------------------------------------------------------------
 
-REDIS_VER ?= 6.0.5
+REDIS_VER ?= 6.0.9
 
 PACK ?= 0
 TEST ?= 0
@@ -105,11 +105,11 @@ DOCKER_BUILD_ARGS += \
 
 define targets # (1=OP, 2=op)
 $(1)_TARGETS :=
-$(1)_TARGETS += $(if $(findstring $(X64),1),$(2)_x64)
+$(1)_TARGETS += $(if $(findstring $(X64),1),$(2)_native)
 $(1)_TARGETS += $(if $(findstring $(ARM7),1),$(2)_arm32v7)
 $(1)_TARGETS += $(if $(findstring $(ARM8),1),$(2)_arm64v8)
 
-$(1)_TARGETS += $$(if $$(strip $$($(1)_TARGETS)),,$(2)_x64 $(2)_arm32v7 $(2)_arm64v8)
+$(1)_TARGETS += $$(if $$(strip $$($(1)_TARGETS)),,$(2)_native $(2)_arm32v7 $(2)_arm64v8)
 endef
 
 $(eval $(call targets,BUILD,build))
@@ -128,7 +128,7 @@ endif
 export ART_INT_DIR
 endif
 
-define build_x64 # (1=arch)
+define build_native # (1=arch)
 build_$(1):
 	$(SHOW)docker build $(BUILD_OPT) -t $(call D_NAME,$(1)) -f $(DOCKERFILE_STEM) \
 		$(foreach A,$(DOCKER_BUILD_ARGS),--build-arg $(A)) \
@@ -185,15 +185,33 @@ DEFAULT_TARGETS += $(BUILD_TARGETS)
 
 include $(MK)/defs
 
+ifeq ($(ARCH),x64)
+CROSS ?= 1
+else
+ifeq ($(X64),1)
+$(error Cannot build x64 on arm)
+endif
+ifeq ($(CROSS),1)
+$(error Cannot cross-build on arm)
+endif
+endif
+
+
+#----------------------------------------------------------------------------------------------
+
 include $(MK)/rules
 
-$(eval $(call build_x64,x64))
+$(eval $(call build_native,$(ARCH))
+ifeq ($(CROSS),1)
 $(eval $(call build_arm,arm64v8))
 $(eval $(call build_arm,arm32v7))
+endif
 
-$(eval $(call push,x64))
+$(eval $(call push,$(ARCH)))
+ifeq ($(CROSS),1)
 $(eval $(call push,arm64v8))
 $(eval $(call push,arm32v7))
+endif
 
 ifeq ($(MULTI),1)
 
