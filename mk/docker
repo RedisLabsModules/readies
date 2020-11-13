@@ -135,6 +135,8 @@ endif
 export ART_INT_DIR
 endif
 
+#----------------------------------------------------------------------------------------------
+
 define build_native # (1=arch)
 build_native:
 	$(SHOW)docker build $(BUILD_OPT) -t $(call D_NAME,$(1)) -f $(DOCKERFILE_STEM) \
@@ -166,7 +168,19 @@ endif
 .PHONY: build_$(1)
 endef
 
-define push # (1=arch)
+#----------------------------------------------------------------------------------------------
+
+define push_native # (1=arch)
+push_native:
+	$(SHOW)docker push $(call D_NAME,$(1))
+ifeq ($(LATEST),1)
+	$(SHOW)docker push $(call D_LATEST_NAME,$(1))
+endif
+
+.PHONY: push_$(1)
+endef
+
+define push_arm # (1=arch)
 push_$(1):
 	$(SHOW)docker push $(call D_NAME,$(1))
 ifeq ($(LATEST),1)
@@ -175,6 +189,8 @@ endif
 
 .PHONY: push_$(1)
 endef
+
+#----------------------------------------------------------------------------------------------
 
 define create_manifest # (1=version)
 $(SHOW)docker manifest create -a $(STEM):$(1)-$(OSNICK) \
@@ -214,10 +230,10 @@ $(eval $(call build_arm,arm64v8))
 $(eval $(call build_arm,arm32v7))
 endif
 
-$(eval $(call push,$(ARCH)))
+$(eval $(call push_native,$(ARCH)))
 ifeq ($(CROSS),1)
-$(eval $(call push,arm64v8))
-$(eval $(call push,arm32v7))
+$(eval $(call push_arm,arm64v8))
+$(eval $(call push_arm,arm32v7))
 endif
 
 ifeq ($(MULTI),1)

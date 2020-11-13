@@ -9,6 +9,8 @@ ifneq ($(wildcard $(ROOT)/deps/readies),)
 READIES:=$(ROOT)/deps/readies
 else ifneq ($(wildcard $(ROOT)/opt/readies),)
 READIES:=$(ROOT)/opt/readies
+else ifneq ($(wildcard $(ROOT)/readies),)
+READIES:=$(ROOT)/readies
 else
 $(error Cannot find readies root)
 endif
