@@ -5,6 +5,7 @@ import os
 import re
 from .text import match
 from .files import fread
+from .error import *
 
 #----------------------------------------------------------------------------------------------
 
@@ -124,7 +125,7 @@ class Platform:
             if brand in self.UBUNTU_BRANDS:
                 ver_id = UBUNTU_VERSIONS.get(self.ubuntu_codename(), "")
                 if ver_id == "":
-                    assert(False), "Cannot determine os version"
+                    raise Error("Cannot determine os version")
                 return ver_id
                     
             ver = self.defs.get("VERSION_ID", "")
@@ -201,7 +202,7 @@ class Platform:
             self._identify_freebsd()
         else:
             if strict:
-                assert(False), "Cannot determine OS"
+                raise Error("Cannot determine OS")
             self.os_ver = ''
             self.dist = ''
 
@@ -216,9 +217,9 @@ class Platform:
             self.osnick = self._identify_linux_osnick(os_release)
             self.dist = self._identify_linux_dist(os_release)
             self.os_full_ver = self._identify_linux_full_ver(os_release, self.dist)
-        except AssertionError:
+        except:
             if strict:
-                assert(False), "Cannot determine distribution"
+                raise Error("Cannot determine distribution")
             self.os_ver = self.os_full_ver = 'unknown'
 
     def _identify_linux_full_ver(self, os_release, distname):
@@ -255,7 +256,7 @@ class Platform:
             self.osnick = 'amzn' + str(os_release.version_id())
         else:
             if self.strict:
-                assert(False), "Cannot determine distribution"
+                raise Error("Cannot determine distribution"
             elif distname == '':
                 distname = 'unknown'
         return distname

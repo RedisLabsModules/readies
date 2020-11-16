@@ -4,6 +4,7 @@ import sys
 import tempfile
 import textwrap
 from .platform import OnPlatform, Platform
+from .error import *
 
 #----------------------------------------------------------------------------------------------
 
@@ -73,6 +74,7 @@ class Setup(OnPlatform):
         self.stages = [0]
         self.platform = Platform()
         self.os = self.platform.os
+        self.arch = self.platform.arch
         self.osnick = self.platform.osnick
         self.dist = self.platform.dist
         self.ver = self.platform.os_ver
@@ -149,13 +151,13 @@ class Setup(OnPlatform):
             elif self.dist == 'arch':
                 self.pacman_install(packs, group=group, _try=_try)
             else:
-                Assert(False), "Cannot determine installer"
+                raise self.Error("Cannot determine installer")
         elif self.os == 'macos':
             self.brew_install(packs, group=group, _try=_try)
         elif self.os == 'freebsd':
             self.pkg_install(packs, group=group, _try=_try)
         else:
-            Assert(False), "Cannot determine installer"
+            raise Error("Cannot determine installer")
 
     def group_install(self, packs, _try=False):
         self.install(packs, group=True, _try=_try)
@@ -200,11 +202,11 @@ class Setup(OnPlatform):
             elif self.dist == 'arch':
                 self.pacman_add_repo(repourl, repo=repo, _try=_try)
             else:
-                Assert(False), "Cannot determine installer"
+                raise Error("Cannot determine installer")
         elif self.os == 'macos':
             self.brew_add_repo(packs, group=group, _try=_try)
         else:
-            Assert(False), "Cannot determine installer"
+            raise Error("Cannot determine installer")
 
     #------------------------------------------------------------------------------------------
 
@@ -241,15 +243,23 @@ class Setup(OnPlatform):
         self.install("curl wget", _try=_try)
 
     def install_git_lfs_on_linux(self, _try=False):
+        if self.arch == 'x64':
+            lfs_arch = 'amd64'
+        elif self.arch == 'arm64v8':
+            lfs_arch = 'arm64'
+        elif self.arch == 'arm32v7':
+            lfs_arch = 'arm'
+        else:
+            raise Error("Cannot determine platform for git-lfs installation")
         self.run("""
             set -e
             d=$(mktemp -d /tmp/git-lfs.XXXXXX)
             mkdir -p $d
-            wget -q https://github.com/git-lfs/git-lfs/releases/download/v2.11.0/git-lfs-linux-amd64-v2.11.0.tar.gz -O $d/git-lfs.tar.gz
+            wget -q https://github.com/git-lfs/git-lfs/releases/download/v2.12.1/git-lfs-linux-{}-v2.12.1.tar.gz -O $d/git-lfs.tar.gz
             (cd $d; tar xf git-lfs.tar.gz)
             $d/install.sh
             rm -rf $d
-            """)
+            """.format(lfs_arch))
 
     def install_gnu_utils(self, _try=False):
         packs = ""
@@ -269,6 +279,8 @@ class Setup(OnPlatform):
         if self.os != 'linux':
             eprint("Warning: not Linux - tar not installed")
             return
+        if self.arch != 'x64':
+            raise Error("Cannot install gnu tar on non-x64 platform")
         self.run("""
             dir=$(mktemp -d /tmp/tar.XXXXXX)
             (cd $dir; wget -q -O tar.tgz http://redismodules.s3.amazonaws.com/gnu/gnu-tar-1.32-x64-centos7.tgz; tar -xzf tar.tgz -C /; )
