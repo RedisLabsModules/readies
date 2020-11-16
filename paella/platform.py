@@ -256,7 +256,7 @@ class Platform:
             self.osnick = 'amzn' + str(os_release.version_id())
         else:
             if self.strict:
-                raise Error("Cannot determine distribution"
+                raise Error("Cannot determine distribution")
             elif distname == '':
                 distname = 'unknown'
         return distname

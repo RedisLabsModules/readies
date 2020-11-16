@@ -1,4 +1,5 @@
 
+from .error import *
 from .classes import *
 from .debug import *
 from .utils import *
