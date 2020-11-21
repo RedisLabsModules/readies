@@ -22,16 +22,26 @@ class BazeliskeSetup(paella.Setup):
         paella.Setup.__init__(self, nop=False)
 
     def install_bazel(self):
-        if self.run(". /etc/profile.d/golang.sh; bazelisk version > /tmp/bazver 2>&1", _try=True) == 0:
-            self.run(". /etc/profile.d/golang.sh; ln -s `command -v bazelisk` /usr/local/bin/bazel")
-        else:
-            cmd = r"""
-basedir=$(mktemp -p /tmp/bazel.XXXXXX)
-bazver=$(cat /tmp/bazver | head -1 | cut -f4 -d" " | cut -d/ -f4)
-bazfullver=$(cat /tmp/bazver | head -1 | cut -f4 -d" " | cut -d/ -f6 | sed -e 's/\.\.\.$//')
-wget -q -O $basedir/bazel-dist.zip https://github.com/bazelbuild/bazel/releases/download/$bazver/bazel-${bazver}-dist.zip
-unzip -q $basedir/bazel-dist.zip -d bazel-dist
-cd $basedir/bazel-dist
+        cmd = r"""
+#!/bin/bash
+
+. /etc/profile.d/golang.sh
+
+bazverfile=$(mktemp /tmp/bazver.XXXXXX)
+bazelisk version > $bazverfile 2>&1
+if [[ $? == 0 ]]; then
+    rm $bazverfile
+    exec bazelisk "$@"
+fi
+
+curdir="$PWD"
+basedir=$(mktemp -d /tmp/bazel.XXXXXX)
+bazver=$(cat $bazverfile | head -1 | cut -f4 -d" " | cut -d/ -f4)
+bazfullver=$(cat $bazverfile | head -1 | cut -f4 -d" " | cut -d/ -f6 | sed -e 's/\.\.\.$//')
+cd $basedir
+wget -q -O bazel-dist.zip https://github.com/bazelbuild/bazel/releases/download/$bazver/bazel-${bazver}-dist.zip
+unzip -q bazel-dist.zip -d bazel-dist
+cd bazel-dist
 EXTRA_BAZEL_ARGS="--host_javabase=@local_jdk//:jdk" ./compile.sh
 if [[ $(uname -s) == Darwin ]]; then
     cachedir=$HOME/Library/Caches
@@ -41,7 +51,14 @@ fi
 bazdir="$cachedir/bazelisk/downloads/bazelbuild/${bazfullver}/bin/"
 mkdir -p "$bazdir" 
 cp output/bazel "$bazdir" 
+
+cd $curdir
+rm -rf $basedir $bazverfile
+exec bazelisk "$@"
+
 """
+        paella.fwrite('/usr/local/bin/bazel', cmd[1:])
+        self.run("chmod +x /usr/local/bin/bazel")
 
     #------------------------------------------------------------------------------------------
     
@@ -88,11 +105,5 @@ try:
 except Exception as x:
     traceback.print_exc()
     fatal(str(x))
-
-#   try:
-#       BazeliskeSetup(args).setup()
-#   except Exception as x:
-#       traceback.print_exc()
-#       fatal(str(x))
 
 exit(0)
