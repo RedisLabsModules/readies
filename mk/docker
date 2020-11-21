@@ -63,6 +63,10 @@ endif
 
 #----------------------------------------------------------------------------------------------
 
+MACH:=$(shell uname -m)
+
+#----------------------------------------------------------------------------------------------
+
 define HELP
 make build      # build Docker images
   REDIS_VER=ver   # use Redis version `ver`
@@ -100,6 +104,7 @@ DOCKER_BUILD_ARGS += \
 	OSNICK=$(OSNICK) \
 	OS=$(OS) \
 	ARCH=$(ARCH) \
+	MACH=$(MACH) \
 	REDIS_VER=$(REDIS_VER) \
 	TEST=$(TEST) \
 	PACK=$(PACK)
