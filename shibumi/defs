@@ -1,0 +1,20 @@
+
+# Typically invoked with:
+# HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+# ROOT=$(cd $HERE/somewhere; pwd)
+# READIES=$ROOT/deps/readies
+# . $READIES/shibumi/defs
+
+error_trap() {
+	>&2 echo "$0: There are errors."
+	exit 1
+}
+
+# avoid trap with bashdb
+if [[ -z $_Dbg_DEBUGGER_LEVEL ]]; then
+	trap error_trap ERR
+fi
+
+if [[ ! -z $READIES ]]; then
+	. $READIES/shibumi/functions 
+fi
