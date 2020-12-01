@@ -15,6 +15,10 @@ ifeq ($(COV),1)
 VARIANT.list:=$(sort $(VARIANT.list) cov)
 endif
 
+ifeq ($(PROFILE),1)
+VARIANT.list:=$(sort $(VARIANT.list) profile)
+endif
+
 VARIANT.file:=$(shell if [ -f $(ROOT)/VARIANT ]; then cat $(ROOT)/VARIANT; fi)
 
 # if VARIANT not specified and we're the not in submake, use one from file, if present
