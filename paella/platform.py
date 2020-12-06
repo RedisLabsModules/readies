@@ -27,6 +27,7 @@ DEBIAN_VERSIONS = {
     'buster':   '10',
     'bullseye': '11',
     'bookworm': '12',
+    'trixie':   '13',
 }
 
 UBUNTU_VERSIONS = {
@@ -37,6 +38,7 @@ UBUNTU_VERSIONS = {
     'eoan':    '19.10',
     'focal':   '20.04',
     'groovy':  '20.10',
+    'hirsute': '21.04',
 }
 
 MACOS_VERSIONS = {
@@ -56,28 +58,10 @@ MACOS_VERSIONS = {
     "highsierra":   "10.13",
     "mojave":       "10.14",
     "catalina":     "10.15",
+    "bigsur":       "11.0",
 }
 
 MACOS_VERSIONS_NICKS = {v: k for k, v in MACOS_VERSIONS.items()}
-
-# MACOS_VERSION_NICKS = {
-#     "10.15": "catalina",
-#     "10.14": "mojave",
-#     "10.13": "highsierra",
-#     "10.12": "sierra",
-#     "10.11": "elcapitan",
-#     "10.10": "yosemite",
-#     "10.9": "mavericks",
-#     "10.8": "mountainlion",
-#     "10.7": "lion",
-#     "10.6": "snowleopard",
-#     "10.5": "leopard",
-#     "10.4": "tiger",
-#     "10.3": "panther",
-#     "10.2": "jaguar",
-#     "10.1": "puma",
-#     "10.0": "cheetah"
-# }
 
 #----------------------------------------------------------------------------------------------
 
