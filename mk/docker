@@ -24,7 +24,11 @@ else
 _VAR=-$(VAR)
 endif
 
-BUILD_OPT=--rm --pull
+BUILD_OPT += --rm
+ifneq ($(PULL),0)
+BUILD_OPT += --pull
+endif
+
 # --squash
 
 DOCKERFILE_STEM ?= $(ROOT)/Dockerfile
