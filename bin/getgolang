@@ -1,8 +1,15 @@
 #!/bin/bash
 
-GOLANG_VER=1.15.2
+GOLANG_VER=1.15.5
 GOLANG_OS=linux
 GOLANG_ARCH=amd64
+
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+READIES=$(cd $HERE/..; pwd)
+. $READIES/shibumi/defs
+
+OP=""
+[[ $NOP == 1 ]] && OP=echo
 
 [[ ! -z $(command -v go) && $FORCE != 1 ]] && exit 0
 
@@ -23,11 +30,13 @@ else
 fi
 
 tar=$(mktemp /tmp/golang.XXXXX.tag.gz)
-wget -q -O $tar https://dl.google.com/go/go${GOLANG_VER}.${GOLANG_OS}-${GOLANG_ARCH}.tar.gz
-tar -C /usr/local -xzf $tar
-rm -f $tar
+$OP wget -q -O $tar https://dl.google.com/go/go${GOLANG_VER}.${GOLANG_OS}-${GOLANG_ARCH}.tar.gz
+$OP tar -C /usr/local -xzf $tar
+$OP rm -f $tar
 
-echo 'export PATH=$PATH:/usr/local/go/bin' > /etc/profile.d/golang.sh
-echo 'export PATH=$PATH:`/usr/local/go/bin/go env GOPATH`/bin' >> /etc/profile.d/golang.sh
+if [[ $NOP != 1 ]]; then
+	echo 'export PATH=$PATH:/usr/local/go/bin' > /etc/profile.d/golang.sh
+	echo 'export PATH=$PATH:`/usr/local/go/bin/go env GOPATH`/bin' >> /etc/profile.d/golang.sh
+fi
 
 # for immediate results, invoke: source /etc/profile.d/golang.sh

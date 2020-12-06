@@ -2,7 +2,11 @@
 
 set -e
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
-. $HERE/../shibumi/functions
+READIES=$(cd $HERE/..; pwd)
+. $READIES/shibumi/defs
+
+OP=""
+[[ $NOP == 1 ]] && OP=echo
 
 OS=`uname`
 if [[ $OS == Linux ]]; then
@@ -21,8 +25,8 @@ else
 	exit 1
 fi
 
-wget -q -O /tmp/bashdb.tgz $url
-tar -C / -xzf /tmp/bashdb.tgz
-rm /tmp/bashdb.tgz
+$OP wget -q -O /tmp/bashdb.tgz $url
+$OP tar -C / -xzf /tmp/bashdb.tgz
+$OP rm /tmp/bashdb.tgz
 
 exit 0
