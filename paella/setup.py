@@ -68,7 +68,7 @@ class RepoRefresh(OnPlatform):
 #----------------------------------------------------------------------------------------------
 
 class Setup(OnPlatform):
-    def __init__(self, nop=False):
+    def __init__(self, nop=False, xcodeCheck=True):
         OnPlatform.__init__(self)
         self.runner = Runner(nop)
         self.stages = [0]
@@ -83,6 +83,12 @@ class Setup(OnPlatform):
         self.python = sys.executable
 
         if self.os == 'macos':
+            if os.getuid() == 0 and os.getenv("BREW_AS_ROOT") != "1":
+                eprint("Cannot run as root. Set BREW_AS_ROOT=1 to override.")
+                sys.exit(1)
+            if xcodeCheck and sh('xcode-select -p') == '':
+                eprint("Xcode tools are not installed. Please run xcode-select --install.")
+                sys.exit(1)
             if 'VIRTUAL_ENV' not in os.environ:
                 # required because osx pip installed are done with --user
                 os.environ["PATH"] = os.environ["PATH"] + ':' + os.environ["HOME"] + '/Library/Python/2.7/bin'
@@ -181,6 +187,7 @@ class Setup(OnPlatform):
         self.run("dnf config-manager -y --add-repo {}".format(repourl), _try=_try, sudo=True)
 
     def zypper_add_repo(self, repourl, repo="", _try=False):
+        self.run("zypprt addrepo {} {}".format(repourl, repo), _try=_try, sudo=True)
         pass
 
     def pacman_add_repo(self, repourl, repo="", _try=False):
@@ -293,7 +300,5 @@ class Setup(OnPlatform):
             return
         self.install("software-properties-common")
         self.run("add-apt-repository -y ppa:ubuntu-toolchain-r/test")
-        self.run("apt-get -qq update")
         self.install("gcc-7 g++-7")
         self.run("update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 60 --slave /usr/bin/g++ g++ /usr/bin/g++-7")
-        self.run("update-alternatives --config gcc")
