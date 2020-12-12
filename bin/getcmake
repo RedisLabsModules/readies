@@ -40,7 +40,7 @@ class CMakeSetup(paella.Setup):
 
     def redhat_compat(self):
         if self.build:
-            self.install("openssl-dev")
+            self.install("openssl-devel")
 
     def fedora(self):
         self.redhat_compat()
