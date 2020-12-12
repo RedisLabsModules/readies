@@ -94,6 +94,8 @@ install_python() {
 		runn dnf install -y python2
 	elif [[ ! -z $(command -v yum) ]]; then
 		runn yum install -y python2
+	elif [[ ! -z $(command -v zypper) ]]; then
+		runn zypper install -y python2
 	elif [[ ! -z $(command -v apk) ]]; then
 		runn apk update
 		runn apk add python2
@@ -121,6 +123,9 @@ install_pip() {
 		runn dnf install -y $packs
 	elif [[ ! -z $(command -v yum) ]]; then
 		runn yum install -y $packs
+	elif [[ ! -z $(command -v zypper) ]]; then
+		packs+=" python-xml"
+		runn zypper install -y $packs
 	elif [[ ! -z $(command -v apk) ]]; then
 		runn apk update
 		runn apk add $packs

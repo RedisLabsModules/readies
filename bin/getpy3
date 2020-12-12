@@ -17,7 +17,7 @@ if [[ $1 == --help || $1 == help || $HELP == 1 ]]; then
 		PIP=1        Also install latest pip
 		PIP=version  Also install pip of the specified version
 		VENV=1       Install virtualenv
-		VENV=dir     Install virtualenv, create one in `dir` and activate it
+		VENV=dir     Install virtualenv, create one in `dir`
 		FORCE=1      Install even if present
 		FIX=1        Create /usr/local/bin/python3 symlink (default on macOS)
 		VERBOSE=1    Print commands
@@ -80,6 +80,14 @@ install_on_trusty() {
 }
 
 install_python() {
+	if [[ $(uname) == Darwin ]]; then
+		if [[ -z $(command -v brew) ]]; then
+			>&2 echo "Unable to install Python without brew. Aborting."
+			>&2 echo "Please install brew and retry."
+			exit 1
+		fi
+	fi
+
 	if [[ ! -z $(command -v apt-get) ]]; then
 		runn apt-get -qq update
 		osver=$(source /etc/os-release; echo ${ID}${VERSION_ID})
@@ -93,6 +101,8 @@ install_python() {
 	elif [[ ! -z $(command -v yum) ]]; then
 		runn yum install -y epel-release
 		runn yum install -y python36
+	elif [[ ! -z $(command -v zypper) ]]; then
+		runn zypper install -y python3
 	elif [[ ! -z $(command -v apk) ]]; then
 		runn apk update
 		runn apk add python3
@@ -123,6 +133,9 @@ install_pip() {
 		runn dnf install -y $packs
 	elif [[ ! -z $(command -v yum) ]]; then
 		runn yum install -y $packs
+	elif [[ ! -z $(command -v zypper) ]]; then
+		packs+=" python-xml"
+		runn zypper install -y $packs
 	elif [[ ! -z $(command -v apk) ]]; then
 		runn apk update
 		runn apk add $packs
