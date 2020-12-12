@@ -49,28 +49,27 @@ class CMakeSetup(paella.Setup):
         self.install("cmake")
 
     def linux_last(self):
-        BB()
         if not self.build:
             self.run(r"""
                 url=https://github.com/Kitware/CMake/releases/download/v{CMAKE_VER}/cmake-{CMAKE_VER}-`uname`-`uname -m`.sh
                 wget -q -O /tmp/cmake.sh $url
                 sh /tmp/cmake.sh --skip-license --prefix=/usr/local
                 rm -f /tmp/cmake.sh
-                """.format(CMAKE_VER=CMAKE_VER))
+                """.format(CMAKE_VER=CMAKE_VER), output_on_error=True)
         else:
             self.run(r"""
                 cd /tmp
                 cmake_dir=$(mktemp -d)
                 cd $cmake_dir
                 wget -q -O cmake.zip https://github.com/Kitware/CMake/archive/v{CMAKE_VER}.zip
-                unzip cmake.zip
+                unzip -q cmake.zip
                 cd CMake-{CMAKE_VER}/
                 ./bootstrap
                 make -j`nproc`
                 make install
                 cd /tmp
                 rm -rf $cmake_dir
-                """.format(CMAKE_VER=CMAKE_VER))
+                """.format(CMAKE_VER=CMAKE_VER), output_on_error=True)
 
 #----------------------------------------------------------------------------------------------
 
@@ -78,7 +77,6 @@ parser = argparse.ArgumentParser(description='Install CMake')
 parser.add_argument('-n', '--nop', action="store_true", help='no operation')
 args = parser.parse_args()
 
-BB()
 try:
     CMakeSetup(args).setup()
 except Exception as x:
