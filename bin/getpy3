@@ -14,7 +14,7 @@ if [[ $1 == --help || $1 == help || $HELP == 1 ]]; then
 
 		Argument variables:
 		CHECK=1      Only check and report, do not install
-		PIP=1        Also install latest pip
+		PIP=0        Avoid installing pip
 		PIP=version  Also install pip of the specified version
 		VENV=1       Install virtualenv
 		VENV=dir     Install virtualenv, create one in `dir`
@@ -28,7 +28,7 @@ if [[ $1 == --help || $1 == help || $HELP == 1 ]]; then
 fi
 
 [[ $VERBOSE == 1 ]] && { set -x; PS4='$LINENO: '; }
-[[ -z $PIP ]] && PIP=0
+[[ -z $PIP ]] && PIP=1
 
 # pip 20.x is broken is the sense that it will not respect virtualenv's system-site-packages
 # thus requiring packages to be built from source in order to be installed.
