@@ -85,7 +85,7 @@ class RedisSourceSetup(paella.Setup):
         self.redis_versions = list(map(lambda v: v['name'], j))
 
     def wget(self, url, file):
-        self.run('wget -O {} {}'.format(file, url), output_on_error=True)
+        self.run('wget -O {FILE} {URL}'.format(FILE=file, URL=url))
 
     def get_requested_redis_versions(self):
         from semantic_version import Version
@@ -125,7 +125,7 @@ class RedisSourceSetup(paella.Setup):
 
             file = os.path.join(self.base_dir, 'redis-{}.tgz'.format(str(version)))
             self.wget('https://github.com/redis/redis/archive/{}.tar.gz'.format(str(version)), file)
-            self.run('tar -C {} -xzf {}'.format(self.base_dir, file), output_on_error=True)
+            self.run('tar -C {DIR} -xzf {FILE}'.format(DIR=self.base_dir, FILE=file))
             with paella.cwd(self.base_dir):
                 shutil.move('redis-{}'.format(version), 'redis')
         if self.branch is not None:
@@ -138,7 +138,7 @@ class RedisSourceSetup(paella.Setup):
                 branch = '{}.{}'.format(sv.major, sv.minor)
             except:
                 branch = self.branch
-            self.run('cd {}; git clone https://github.com/redis/redis.git --branch {}'.format(self.base_dir, branch), output_on_error=True)
+            self.run('cd {DIR}; git clone https://github.com/redis/redis.git --branch {BRA}'.format(DIR=self.base_dir, BRA=branch))
         self.build_dir = os.path.join(self.base_dir, 'redis')
         if self.suffix:
             patch = r"""
@@ -165,7 +165,7 @@ index f6e5f3e3f..def02b80d 100644
 """
             patch_file = os.path.join(self.base_dir, 'redis-prog-sufffix.patch')
             paella.fwrite(patch_file, patch[1:])
-            self.run("patch -p1 -i %s" % patch_file, at=self.build_dir, output_on_error=True)
+            self.run("patch -p1 -i %s" % patch_file, at=self.build_dir)
 
     def build_redis(self):
         build_args = []
@@ -222,15 +222,15 @@ index f6e5f3e3f..def02b80d 100644
 
         with paella.cwd(self.build_dir):
             self.run("""
-                make -j `{}/bin/nproc` {}
-                """.format(ROOT, ' '.join(build_args)), output_on_error=True)
+                make -j `{ROOT}/bin/nproc` {ARGS}
+                """.format(ROOT=ROOT, ARGS=' '.join(build_args)))
 
             if self.no_install:
                 self.redis_server = os.path.join(self.build_dir, 'src', 'redis-server')
             else:
                 self.run("""
-                    make install {}
-                    """.format(' '.join(install_args)), output_on_error=True)
+                    make install {ARGS}
+                    """.format(ARGS=' '.join(install_args)))
 
                 if self.into:
                     into_bindir = os.path.join(self.into, 'bin')

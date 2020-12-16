@@ -6,7 +6,31 @@ import textwrap
 from .platform import OnPlatform, Platform
 from .error import *
 
+GIT_LFS_VER = '2.12.1'
+PIP_VER = '19.3.1'
+
 #----------------------------------------------------------------------------------------------
+
+class OutputMode:
+    def __init__(self, x):
+        lx = str(x).lower()
+        if x is True or x is 1 or lx == "yes" or lx == "true":
+            self.mode = "True"
+        elif x is False or x is 0 or lx == "no" or lx == "false":
+            self.mode = "False"
+        elif lx == "on_error":
+            self.mode = "on_error"
+        else:
+            raise Error("Wrong output mode: %s" % x)
+
+    def __eq__(self, x):
+        return self.mode == OutputMode(x).mode
+
+    def __bool__(self):
+        return self.mode == "True"
+
+    def on_error(self):
+        return self.mode == "on_error"
 
 class Runner:
     def __init__(self, nop=False):
@@ -14,7 +38,8 @@ class Runner:
         # self.has_sudo = sh('command -v sudo') != ''
         self.has_sudo = False
 
-    def run(self, cmd, at=None, output_on_error=False, _try=False, sudo=False):
+    def run(self, cmd, at=None, output="on_error", _try=False, sudo=False):
+        output = OutputMode(output)
         if cmd.find('\n') > -1:
             cmds1 = str.lstrip(textwrap.dedent(cmd))
             cmds = filter(lambda s: str.lstrip(s) != '', cmds1.split("\n"))
@@ -25,23 +50,25 @@ class Runner:
         sys.stdout.flush()
         if self.nop:
             return
-        if output_on_error:
+        if output != True:
             fd, temppath = tempfile.mkstemp()
             os.close(fd)
-            cmd = "{{ {}; }} >{} 2>&1".format(cmd, temppath)
+            cmd = "{{ {CMD}; }} >{LOG} 2>&1".format(CMD=cmd, LOG=temppath)
         if at is None:
             rc = os.system(cmd)
         else:
             with cwd(at):
                 rc = os.system(cmd)
         if rc > 0:
-            if output_on_error:
-                os.system("cat {}".format(temppath))
-                os.remove(temppath)
+            if output != True:
+                if output.on_error():
+                    os.system("cat {}".format(temppath))
             eprint("command failed: " + cmd)
             sys.stderr.flush()
-            if not _try:
-                sys.exit(1)
+        if output != True:
+            os.remove(temppath)
+        if rc > 0 and not _try:
+            sys.exit(1)
         return rc
 
     @staticmethod
@@ -50,20 +77,205 @@ class Runner:
 
 #----------------------------------------------------------------------------------------------
 
-class RepoRefresh(OnPlatform):
+class PackageManager(object):
     def __init__(self, runner):
-        OnPlatform.__init__(self)
         self.runner = runner
 
-    def redhat_compat(self):
-        pass
+    @staticmethod
+    def detect(platform, runner):
+        if platform.os == 'linux':
+            if platform.dist == 'fedora':  # also include centos 8
+                return Dnf(runner)
+            elif platform.is_debian_compat():
+                return Apt(runner)
+            elif platform.is_redhat_compat():
+                return Yum(runner)
+            elif platform.dist == 'suse':
+                return Zypper(runner)
+            elif platform.dist == 'arch':
+                return Pacman(runner)
+            else:
+                raise self.Error("Cannot determine package manager for distibution %s" % platform.dist)
+        elif platform.os == 'macos':
+            return Brew(runner)
+        elif platform.os == 'freebsd':
+            return Pkg(runner)
+        else:
+            raise Error("Cannot determine package manager for OS %s" % platform.os)
 
-    def debian_compat(self):
-        self.runner.run("apt-get -qq update -y", sudo=True)
+    def run(self, cmd, at=None, output="on_error", _try=False, sudo=False):
+        return self.runner.run(cmd, at=at, output=output, _try=_try, sudo=sudo)
 
-    def macos(self):
-        if os.environ.get('BREW_NO_UPDATE') != '1':
-            self.runner.run("brew update || true")
+    def has_command(cmd):
+        return self.runnner.has_command(cmd)
+
+    def install(self, packs, group=False, output="on_error", _try=False):
+        return False
+
+    def uninstall(self, packs, group=False, output="on_error", _try=False):
+        return False
+
+    def add_repo(self, repourl, repo="", output="on_error", _try=False):
+        return False
+
+    def update(self, output="on_error"):
+        return False
+
+#----------------------------------------------------------------------------------------------
+
+class Yum(PackageManager):
+    def __init__(self, runner):
+        super(Yum, self).__init__(runner)
+
+    def install(self, packs, group=False, output="on_error", _try=False):
+        if not group:
+            return self.run("yum install -q -y " + packs, output=output, _try=_try, sudo=True)
+        else:
+            return self.run("yum groupinstall -y " + packs, output=output, _try=_try, sudo=True)
+
+    def uninstall(self, packs, group=False, output="on_error", _try=False):
+        if not group:
+            return self.run("yum remove -q -y " + packs, output=output, _try=_try, sudo=True)
+        else:
+            return self.run("yum group remove -y " + packs, output=output, _try=_try, sudo=True)
+
+    def add_repo(self, repourl, repo="", output="on_error", _try=False):
+        if not self.has_command("yum-config-manager"):
+            return self.install("yum-utils")
+        return self.run("yum-config-manager -y --add-repo {}".format(repourl), output=output, _try=_try, sudo=True)
+
+#----------------------------------------------------------------------------------------------
+
+class Dnf(PackageManager):
+    def __init__(self, runner):
+        super(Dnf, self).__init__(runner)
+
+    def install(self, packs, group=False, output="on_error", _try=False):
+        if not group:
+            return self.run("dnf install -q -y " + packs, output=output, _try=_try, sudo=True)
+        else:
+            return self.run("dnf groupinstall -y " + packs, output=output, _try=_try, sudo=True)
+
+    def uninstall(self, packs, group=False, output="on_error", _try=False):
+        if not group:
+            return self.run("dnf remove -q -y " + packs, output=output, _try=_try, sudo=True)
+        else:
+            return self.run("dnf group remove -y " + packs, output=output, _try=_try, sudo=True)
+
+    def add_repo(self, repourl, repo="", output="on_error", _try=False):
+        if self.run("dnf config-manager 2>/dev/null", output=output, _try=True):
+            return self.install("dnf-plugins-core", _try=_try)
+        return self.run("dnf config-manager -y --add-repo {}".format(repourl), output=output, _try=_try, sudo=True)
+
+#----------------------------------------------------------------------------------------------
+
+class Apt(PackageManager):
+    def __init__(self, runner):
+        super(Apt, self).__init__(runner)
+
+        # prevents apt-get from interactively prompting
+        os.environ["DEBIAN_FRONTEND"] = 'noninteractive'
+
+    def install(self, packs, group=False, output="on_error", _try=False):
+        return self.run("apt-get -qq install -y " + packs, output=output, _try=_try, sudo=True)
+
+    def uninstall(self, packs, group=False, output="on_error", _try=False):
+        return self.run("apt-get -qq remove -y " + packs, output=output, _try=_try, sudo=True)
+
+    def add_repo(self, repo_url, repo="", output="on_error", _try=False):
+        if not self.has_command("add-apt-repository"):
+            self.install("software-properties-common")
+        rc = self.run("add-apt-repository -y {URL}".format(URL=repo_url), output=output, _try=_try, sudo=True)
+        self.run("apt-get -qq update", output=output, _try=_try, sudo=True)
+        return rc
+
+    def update(self, output="on_error"):
+        return self.run("apt-get -qq update -y", output=output, sudo=True)
+
+#----------------------------------------------------------------------------------------------
+
+class Zypper(PackageManager):
+    def __init__(self, runner):
+        super(Zypper, self).__init__(runner)
+
+    def install(self, packs, group=False, output="on_error", _try=False):
+        return self.run("zypper --non-interactive install " + packs, output=output, _try=_try, sudo=True)
+
+    def uninstall(self, packs, group=False, output="on_error", _try=False):
+        return self.run("zypper --non-interactive remove " + packs, output=output, _try=_try, sudo=True)
+
+    def add_repo(self, repo_url, repo="", output="on_error", _try=False):
+        return self.run("zypprt addrepo {URL} {NAME}".format(URL=repo_url, NAME=repo), output=output, _try=_try, sudo=True)
+
+#----------------------------------------------------------------------------------------------
+
+class Pacman(PackageManager):
+    def __init__(self, runner):
+        super(Pacman, self).__init__(runner)
+
+    def install(self, packs, group=False, output="on_error", _try=False):
+        return self.run("pacman --noconfirm -S " + packs, output=output, _try=_try, sudo=True)
+
+    def uninstall(self, packs, group=False, output="on_error", _try=False):
+        return self.run("pacman --noconfirm -R " + packs, output=output, _try=_try, sudo=True)
+
+    def add_repo(self, repourl, repo="", output="on_error", _try=False):
+        return False
+
+#----------------------------------------------------------------------------------------------
+
+class Brew(PackageManager):
+    def __init__(self, runner):
+        super(Brew, self).__init__(runner)
+
+        if os.getuid() == 0 and os.getenv("BREW_AS_ROOT") != "1":
+            eprint("Cannot run as root. Set BREW_AS_ROOT=1 to override.")
+            sys.exit(1)
+        if xcodeCheck and sh('xcode-select -p') == '':
+            eprint("Xcode tools are not installed. Please run xcode-select --install.")
+            sys.exit(1)
+        if 'VIRTUAL_ENV' not in os.environ:
+            # required because osx pip installed are done with --user
+            os.environ["PATH"] = os.environ["PATH"] + ':' + os.environ["HOME"] + '/Library/Python/2.7/bin'
+        # this prevents brew updating before each install
+        os.environ["HOMEBREW_NO_AUTO_UPDATE"] = "1"
+
+    def install(self, packs, group=False, output="on_error", _try=False):
+        # brew will fail if package is already installed
+        rc = True
+        for pack in packs.split():
+            rc = self.run("brew list {PACK} &>/dev/null || brew install {PACK}".format(PACK=pack),
+                     output=output, _try=_try) and rc
+        return rc
+
+    def uninstall(self, packs, group=False, output="on_error", _try=False):
+        rc = True
+        for pack in packs.split():
+            rc = self.run("brew remove {PACK}".format(PACK=pack), output=output, _try=_try) and rc
+        return rc
+
+    def add_repo(self, repourl, repo="", output="on_error", _try=False):
+        return False
+
+    def update(self, output="on_error"):
+        if os.environ.get('BREW_NO_UPDATE') == '1':
+            return True
+        return self.run("brew update || true", ouput=output)
+
+#----------------------------------------------------------------------------------------------
+
+class Pkg(PackageManager):
+    def __init__(self, runner):
+        super(Pkg, self).__init__(runner)
+
+    def install(self, packs, group=False, output="on_error", _try=False):
+        return self.run("pkg install -q -y " + packs, output=output, _try=_try, sudo=True)
+
+    def uninstall(self, packs, group=False, output="on_error", _try=False):
+        return self.run("pkg delete -q -y " + packs, output=output, _try=_try, sudo=True)
+
+    def add_repo(self, repourl, repo="", output="on_error", _try=False):
+        return False
 
 #----------------------------------------------------------------------------------------------
 
@@ -80,34 +292,18 @@ class Setup(OnPlatform):
         self.ver = self.platform.os_ver
         self.repo_refresh = True
 
+        self.package_manager = PackageManager.detect(self.platform, self.runner)
+
         self.python = sys.executable
-
-        if self.os == 'macos':
-            if os.getuid() == 0 and os.getenv("BREW_AS_ROOT") != "1":
-                eprint("Cannot run as root. Set BREW_AS_ROOT=1 to override.")
-                sys.exit(1)
-            if xcodeCheck and sh('xcode-select -p') == '':
-                eprint("Xcode tools are not installed. Please run xcode-select --install.")
-                sys.exit(1)
-            if 'VIRTUAL_ENV' not in os.environ:
-                # required because osx pip installed are done with --user
-                os.environ["PATH"] = os.environ["PATH"] + ':' + os.environ["HOME"] + '/Library/Python/2.7/bin'
-            # this prevents brew updating before each install
-            os.environ["HOMEBREW_NO_AUTO_UPDATE"] = "1"
-
-        if self.platform.is_debian_compat():
-            # prevents apt-get from interactively prompting
-            os.environ["DEBIAN_FRONTEND"] = 'noninteractive'
-
         os.environ["PYTHONWARNINGS"] = 'ignore:DEPRECATION::pip._internal.cli.base_command'
 
     def setup(self):
         if self.repo_refresh:
-            RepoRefresh(self.runner).invoke()
+            self.package_manager.update()
         self.invoke()
 
-    def run(self, cmd, at=None, output_on_error=False, _try=False, sudo=False):
-        return self.runner.run(cmd, at=at, output_on_error=output_on_error, _try=_try, sudo=sudo)
+    def run(self, cmd, at=None, output="on_error", _try=False, sudo=False):
+        return self.runner.run(cmd, at=at, output=output, _try=_try, sudo=sudo)
 
     @staticmethod
     def has_command(cmd):
@@ -115,130 +311,37 @@ class Setup(OnPlatform):
 
     #------------------------------------------------------------------------------------------
 
-    def apt_install(self, packs, group=False, _try=False):
-        self.run("apt-get -qq install -y " + packs, output_on_error=True, _try=_try, sudo=True)
+    def install(self, packs, group=False, output="on_error", _try=False):
+        return self.package_manager.install(packs, group=group, output=output, _try=_try)
 
-    def yum_install(self, packs, group=False, _try=False):
-        if not group:
-            self.run("yum install -q -y " + packs, output_on_error=True, _try=_try, sudo=True)
-        else:
-            self.run("yum groupinstall -y " + packs, output_on_error=True, _try=_try, sudo=True)
+    def group_install(self, packs, output="on_error", _try=False):
+        return self.install(packs, group=True, output=output, _try=_try)
 
-    def dnf_install(self, packs, group=False, _try=False):
-        if not group:
-            self.run("dnf install -y " + packs, output_on_error=True, _try=_try, sudo=True)
-        else:
-            self.run("dnf groupinstall -y " + packs, output_on_error=True, _try=_try, sudo=True)
-
-    def zypper_install(self, packs, group=False, _try=False):
-        self.run("zipper --non-interactive install " + packs, output_on_error=True, _try=_try, sudo=True)
-
-    def pacman_install(self, packs, group=False, _try=False):
-        self.run("pacman --noconfirm -S " + packs, output_on_error=True, _try=_try, sudo=True)
-
-    def brew_install(self, packs, group=False, _try=False):
-        # brew will fail if package is already installed
-        for pack in packs.split():
-            self.run("brew list {} &>/dev/null || brew install {}".format(pack, pack), output_on_error=True, _try=_try)
-
-    def pkg_install(self, packs, group=False, _try=False):
-        self.run("pkg install -q -y " + packs, output_on_error=True, _try=_try, sudo=True)
-
-    def install(self, packs, group=False, _try=False):
-        if self.os == 'linux':
-            if self.dist == 'fedora': # also include centos 8
-                self.dnf_install(packs, group=group, _try=_try)
-            elif self.platform.is_debian_compat():
-                self.apt_install(packs, group=group, _try=_try)
-            elif self.platform.is_redhat_compat():
-                self.yum_install(packs, group=group, _try=_try)
-            elif self.dist == 'suse':
-                self.zypper_install(packs, group=group, _try=_try)
-            elif self.dist == 'arch':
-                self.pacman_install(packs, group=group, _try=_try)
-            else:
-                raise self.Error("Cannot determine installer")
-        elif self.os == 'macos':
-            self.brew_install(packs, group=group, _try=_try)
-        elif self.os == 'freebsd':
-            self.pkg_install(packs, group=group, _try=_try)
-        else:
-            raise Error("Cannot determine installer")
-
-    def group_install(self, packs, _try=False):
-        self.install(packs, group=True, _try=_try)
+    def add_repo(self, repo_url, repo="", _try=False):
+        return self.package_manager.add_repo(repo_url, repo=repo, _try=_try)
 
     #------------------------------------------------------------------------------------------
 
-    def yum_add_repo(self, repourl, repo="", _try=False):
-        if not self.has_command("yum-config-manager"):
-            self.install("yum-utils")
-        self.run("yum-config-manager -y --add-repo {}".format(repourl), _try=_try, sudo=True)
-
-    def apt_add_repo(self, repourl, repo="", _try=False):
-        if not self.has_command("add-apt-repository"):
-            self.install("software-properties-common")
-        self.run("add-apt-repository -y {}".format(repourl), _try=_try, sudo=True)
-        self.run("apt-get -qq update", _try=_try, sudo=True)
-
-    def dnf_add_repo(self, repourl, repo="", _try=False):
-        if self.run("dnf config-manager 2>/dev/null", _try=True):
-            self.install("dnf-plugins-core", _try=_try)
-        self.run("dnf config-manager -y --add-repo {}".format(repourl), _try=_try, sudo=True)
-
-    def zypper_add_repo(self, repourl, repo="", _try=False):
-        self.run("zypprt addrepo {} {}".format(repourl, repo), _try=_try, sudo=True)
-        pass
-
-    def pacman_add_repo(self, repourl, repo="", _try=False):
-        pass
-
-    def brew_add_repo(self, repourl, repo="", _try=False):
-        pass
-
-    def add_repo(self, repourl, repo="", _try=False):
-        if self.os == 'linux':
-            if self.dist == 'fedora':
-                self.dnf_add_repo(repourl, repo=repo, _try=_try)
-            elif self.dist == 'ubuntu' or self.dist == 'debian':
-                self.apt_add_repo(repourl, repo=repo, _try=_try)
-            elif self.dist == 'centos' or self.dist == 'redhat':
-                self.yum_add_repo(repourl, repo=repo, _try=_try)
-            elif self.dist == 'suse':
-                self.zypper_add_repo(repourl, repo=repo, _try=_try)
-            elif self.dist == 'arch':
-                self.pacman_add_repo(repourl, repo=repo, _try=_try)
-            else:
-                raise Error("Cannot determine installer")
-        elif self.os == 'macos':
-            self.brew_add_repo(packs, group=group, _try=_try)
-        else:
-            raise Error("Cannot determine installer")
-
-    #------------------------------------------------------------------------------------------
-
-    def pip_install(self, cmd, _try=False):
+    def pip_install(self, cmd, output="on_error", _try=False):
         pip_user = ''
         if self.os == 'macos' and 'VIRTUAL_ENV' not in os.environ:
             pip_user = '--user '
-        self.run(self.python + " -m pip install --disable-pip-version-check " + pip_user + cmd,
-                 output_on_error=True, _try=_try, sudo=True)
+        return self.run(self.python + " -m pip install --disable-pip-version-check " + pip_user + cmd,
+                        output=output, _try=_try, sudo=True)
 
-    def pip3_install(self, cmd, _try=False):
-        self.pip_install(cmd, _try=_try)
-
-    def setup_pip(self, _try=False):
-        if self.run(self.python + " -m pip --version", _try=True, output_on_error=False) != 0:
+    def setup_pip(self, output="on_error", _try=False):
+        if self.run(self.python + " -m pip --version", _try=True, output=False) != 0:
             if sys.version_info.major == 3:
                 # required for python >= 3.6, may not exist in prior versions
                 self.install("python3-distutils", _try=True)
             self.install_downloaders()
             with_sudo = self.os != 'macos'
-            pip_user = ' --user' if self.os == 'macos' else ''
+            pip_user = '--user' if self.os == 'macos' else ''
             self.run("wget -q https://bootstrap.pypa.io/get-pip.py -O /tmp/get-pip.py",
-                     output_on_error=True, _try=_try)
-            self.run(self.python + " /tmp/get-pip.py pip==19.3.1" + pip_user,
-                     output_on_error=True, _try=_try, sudo=with_sudo)
+                     output=output, _try=_try)
+            self.run(self.python + " /tmp/get-pip.py pip=={PIP_VER} {PIP_USER}".
+                     format(PIP_VER=PIP_VER, PIP_USER=pip_user),
+                     output=output, _try=_try, sudo=with_sudo)
             if sys.version_info.major == 3:
                 self.pip_install("setuptools==49.3.0")
 
@@ -262,11 +365,11 @@ class Setup(OnPlatform):
             set -e
             d=$(mktemp -d /tmp/git-lfs.XXXXXX)
             mkdir -p $d
-            wget -q https://github.com/git-lfs/git-lfs/releases/download/v2.12.1/git-lfs-linux-{}-v2.12.1.tar.gz -O $d/git-lfs.tar.gz
+            wget -q https://github.com/git-lfs/git-lfs/releases/download/v{LFS_VER}/git-lfs-linux-{ARCH}-v{LFS_VER}.tar.gz -O $d/git-lfs.tar.gz
             (cd $d; tar xf git-lfs.tar.gz)
             $d/install.sh
             rm -rf $d
-            """.format(lfs_arch))
+            """.format(LFS_VER=GIT_LFS_VER, ARCH=lfs_arch))
 
     def install_gnu_utils(self, _try=False):
         packs = ""

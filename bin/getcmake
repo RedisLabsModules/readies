@@ -29,6 +29,17 @@ class CMakeSetup(paella.Setup):
     #------------------------------------------------------------------------------------------
     
     def common_first(self):
+        self.pip_install("-r {READIES}/paella/requirements.txt".format(READIES=READIES))
+        
+        if self.install("cmake", _try=True) == 0:
+            from semantic_version import Version
+            ver = Version(paella.sh("cmake --version | head -1 | awk '{print $3}'").strip())
+            if ver.major >= 3:
+                print("# installed cmake " + str(ver))
+                sys.exit(0)
+            self.uninstall("cmake", output=False)
+            self.build = True
+
         self.install_downloaders()
         if self.build:
             self.install("unzip")
@@ -55,7 +66,7 @@ class CMakeSetup(paella.Setup):
                 wget -q -O /tmp/cmake.sh $url
                 sh /tmp/cmake.sh --skip-license --prefix=/usr/local
                 rm -f /tmp/cmake.sh
-                """.format(CMAKE_VER=CMAKE_VER), output_on_error=True)
+                """.format(CMAKE_VER=CMAKE_VER))
         else:
             self.run(r"""
                 cd /tmp
@@ -69,7 +80,7 @@ class CMakeSetup(paella.Setup):
                 make install
                 cd /tmp
                 rm -rf $cmake_dir
-                """.format(CMAKE_VER=CMAKE_VER), output_on_error=True)
+                """.format(CMAKE_VER=CMAKE_VER))
 
 #----------------------------------------------------------------------------------------------
 
