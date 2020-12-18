@@ -5,9 +5,26 @@ platform_os() {
 	case "$OSTYPE" in
 		linux*)   echo "linux" ;;
 		solaris*) echo "solaris" ;;
-		darwin*)  echo "macos" ;; 
+		darwin*)  echo "macos" ;;
 		bsd*)     echo "bsd" ;;
 		msys*)    echo "windows" ;;
+		*)        echo "?" ;;
+	esac
+}
+
+platform_arch() {
+	case "`uname -m`" in
+		x86_64*)  echo "x64" ;;
+		amd64*)   echo "x64" ;;
+		i386*)    echo "x86" ;;
+		i686*)    echo "x86" ;;
+		aarch64*) echo "arm64v8" ;;
+		armv7hl*) echo "arm32v7" ;;
+		armv7l*)  echo "arm32v7" ;;
+		armv6l*)  echo "arm32v6" ;;
+		ppc64*)   echo "ppc" ;;
+		s390*)    echo "s390_31" ;;
+		s390x*)   echo "s390" ;;
 		*)        echo "?" ;;
 	esac
 }
@@ -25,11 +42,17 @@ fi
 #----------------------------------------------------------------------------------------------
 
 runn() {
-	[[ $NOP == 1 ]] && { echo "${@:1}"; return; }
-	__runn_log=$(mktemp /tmp/run.XXXXX)
-	{ "${@:1}"; } > $__runn_log  2>&1
-	[ $? != 0 ] && cat $__runn_log
-	rm -f $__runn_log
+	(( NOP == 1 || V >= 1 )) && { echo "${@:1}"; }
+	[[ $NOP == 1 ]] && { return; }
+	if (( V < 2 )); then
+		__runn_log=$(mktemp /tmp/run.XXXXX)
+		{ eval "${@:1}" > $__runn_log 2>&1 ; E=$?; } || true
+		[ $E != 0 ] && cat $__runn_log
+		rm -f $__runn_log
+		return $E
+	else
+		eval "${@:1}"
+	fi
 }
 
 #----------------------------------------------------------------------------------------------
