@@ -1,0 +1,32 @@
+#!/bin/bash
+
+set -e
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+READIES=$(cd $HERE/..; pwd)
+. $READIES/shibumi/defs
+
+if [[ ! -f /etc/redhat-release ]]; then
+	eprint "Not an EPEL-compatible OS."
+	exit 1
+fi
+
+EPEL=$(source /etc/os-release; echo $VERSION_ID;)
+if [[ $EPEL != 7 && $EPEL != 8 ]]; then
+	eprint "Cannot determine EPEL version."
+	exit 1
+fi
+
+if command -v dnf &> /dev/null; then
+	runn dnf install -q -y dnf-plugins-core
+	if ! rpm -q remi-release &> /dev/null; then
+		runn dnf install -q -y --allowerasing https://dl.fedoraproject.org/pub/epel/epel-release-latest-${EPEL}.noarch.rpm
+		runn dnf install -q -y http://rpms.remirepo.net/enterprise/remi-release-${EPEL}.rpm
+	fi
+	runn dnf config-manager -qy --set-enabled remi
+elif command -v yum &> /dev/null; then
+	runn yum install -q -y epel-release yum-utils
+	if ! rpm -q remi-release &> /dev/null; then
+		runn yum install -q -y http://rpms.remirepo.net/enterprise/remi-release-${EPEL}.rpm
+	fi
+	runn yum-config-manager -q -y --enable remi
+fi
