@@ -1,6 +1,7 @@
 
 import os
 import sys
+import subprocess
 import tempfile
 import textwrap
 from .platform import OnPlatform, Platform
@@ -55,7 +56,7 @@ class Runner:
             os.close(fd)
             cmd = "{{ {CMD}; }} >{LOG} 2>&1".format(CMD=cmd, LOG=temppath)
         if at is None:
-            rc = os.system(cmd)
+            rc = subprocess.call(["bash", "-c", cmd])
         else:
             with cwd(at):
                 rc = os.system(cmd)
