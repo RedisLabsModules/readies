@@ -18,7 +18,7 @@ else
 	exit 1
 fi
 
-runn $MYPY --no-cache-dir git+https://github.com/Grokzen/redis-py-cluster.git@master
-runn $MYPY --no-cache-dir git+https://github.com/RedisLabsModules/RLTest.git@master
-runn $MYPY --no-cache-dir git+https://github.com/RedisLabs/RAMP@master
+runn $MYPY -m pip install --no-cache-dir git+https://github.com/Grokzen/redis-py-cluster.git@master
+runn $MYPY -m pip install --no-cache-dir git+https://github.com/RedisLabsModules/RLTest.git@master
+runn $MYPY -m pip install --no-cache-dir git+https://github.com/RedisLabs/RAMP@master
 exit 0
