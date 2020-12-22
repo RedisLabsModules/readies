@@ -5,8 +5,9 @@
 # If Python 2 is not found on the system, try to install it and repeat the abose checks.
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
-
-. $HERE/../shibumi/functions
+ROOT=$(cd $HERE/../..; pwd)
+READIES=$ROOT/readies
+. $READIES/shibumi/functions
 
 if [[ $1 == --help || $1 == help || $HELP == 1 ]]; then
 	cat <<-END
@@ -78,8 +79,8 @@ check_variants() {
 install_python() {
 	if [[ $(uname) == Darwin ]]; then
 		if [[ -z $(command -v brew) ]]; then
-			>&2 echo "Unable to install Python without brew. Aborting."
-			>&2 echo "Please install brew and retry."
+			eprint "Unable to install Python without brew. Aborting."
+			eprint "Please install brew and retry."
 			exit 1
 		fi
 
@@ -152,15 +153,20 @@ fi
 
 check_variants
 if [[ -z $(command -v $MYPY) ]]; then
-	>&2 echo "Cannot install Python2. Aborting."
+	eprint "Cannot install Python2. Aborting."
 	exit 1
 fi
 
 [[ $PIP != 0 ]] && install_pip
 
-if [[ ! -z $VENV ]]; then
+REQ=$READIES/paella/requirements.txt
+if [[ ! -z $VENV && $VENV != 0 ]]; then
 	runn $MYPY -m pip install virtualenv
-	[[ $VENV != 1 ]] && runn $MYPY -m virtualenv $VENV
+	[[ $VENV == 1 ]] && VENV=$HOME/venv
+	runn $MYPY -m virtualenv $VENV
+	runn "{ . $VENV/bin/activate && python -m pip install -r $REQ; }"
+else
+	runn $MYPY -m pip install -r $REQ
 fi
 
 exit 0
