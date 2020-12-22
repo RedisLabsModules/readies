@@ -176,7 +176,7 @@ REQ=$READIES/paella/requirements.txt
 if [[ ! -z $VENV && $VENV != 0 ]]; then
 	runn $MYPY -m pip install virtualenv
 	[[ $VENV == 1 ]] && VENV=$HOME/venv
-	runn $MYPY -m virtualenv $VENV
+	runn $MYPY -m virtualenv $VENV --system-site-packages
 	runn "{ . $VENV/bin/activate && python -m pip install -r $REQ; }"
 else
 	runn $MYPY -m pip install -r $REQ
