@@ -5,7 +5,18 @@ ROOT=$(cd $HERE/../..; pwd)
 READIES=$ROOT/readies
 . $READIES/shibumi/defs
 
-if [[ ! -z $VIRTUAL_ENV ]]; then
+if command -v apt-get > /dev/null; then
+	runn apt-get -qq update
+	runn apt-get install -y python-psutil python3-psutil
+elif command -v dnf > /dev/null; then
+	runn dnf install -y python2-psutil python3-psutil
+elif command -v yum > /dev/null; then
+	runn yum install -y python2-psutil python36-psutil
+fi
+
+if [[ ! -z $PYTHON ]]; then
+	MYPY=$PYTHON
+elif [[ ! -z $VIRTUAL_ENV ]]; then
 	MYPY=python
 elif command -v python3 > /dev/null; then
 	MYPY=python3
