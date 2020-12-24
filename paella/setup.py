@@ -1,11 +1,13 @@
 
 import os
 import sys
+import re
 import subprocess
 import tempfile
 import textwrap
 from .platform import OnPlatform, Platform
 from .error import *
+import paella
 
 GIT_LFS_VER = '2.12.1'
 PIP_VER = '19.3.1'
@@ -300,7 +302,13 @@ class Setup(OnPlatform):
 
     def setup(self):
         if self.repo_refresh:
+            if re.match(r'Python 2', paella.sh(self.python + " --version 2>&1")):
+                pyver = "2"
+            else:
+                pyver = "3"
             self.package_manager.update()
+            self.python = paella.sh("command -v python" + pyver)
+            
         self.invoke()
 
     def run(self, cmd, at=None, output="on_error", _try=False, sudo=False):
