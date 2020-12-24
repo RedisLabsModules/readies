@@ -263,7 +263,7 @@ class Brew(PackageManager):
     def update(self, output="on_error"):
         if os.environ.get('BREW_NO_UPDATE') == '1':
             return True
-        return self.run("brew update || true", ouput=output)
+        return self.run("brew update || true", output=output)
 
 #----------------------------------------------------------------------------------------------
 
