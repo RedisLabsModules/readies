@@ -232,7 +232,7 @@ class Brew(PackageManager):
         if os.getuid() == 0 and os.getenv("BREW_AS_ROOT") != "1":
             eprint("Cannot run as root. Set BREW_AS_ROOT=1 to override.")
             sys.exit(1)
-        if xcodeCheck and sh('xcode-select -p') == '':
+        if sh('xcode-select -p') == '':
             eprint("Xcode tools are not installed. Please run xcode-select --install.")
             sys.exit(1)
         if 'VIRTUAL_ENV' not in os.environ:
@@ -281,7 +281,7 @@ class Pkg(PackageManager):
 #----------------------------------------------------------------------------------------------
 
 class Setup(OnPlatform):
-    def __init__(self, nop=False, xcodeCheck=True):
+    def __init__(self, nop=False):
         OnPlatform.__init__(self)
         self.runner = Runner(nop)
         self.stages = [0]
