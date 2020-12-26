@@ -4,10 +4,11 @@
 # If so, verify that python3 command is present.
 # If Python 3 is not found on the system, try to install it and repeat the abose checks.
 
+# set -e
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 ROOT=$(cd $HERE/../..; pwd)
 READIES=$ROOT/readies
-. $READIES/shibumi/functions
+. $READIES/shibumi/defs
 
 if [[ $1 == --help || $1 == help || $HELP == 1 ]]; then
 	cat <<-END
@@ -68,7 +69,7 @@ check_variants() {
 	
 	[[ ! -z $PYTHON3 ]] && MYPY=$PYTHON3
 	
-	[[ ! -z $FIX ]] && fix_variants
+	if [[ ! -z $FIX ]]; then fix_variants; fi
 }
 
 install_on_trusty() {
@@ -87,6 +88,9 @@ install_python() {
 			eprint "Please install brew and retry."
 			exit 1
 		fi
+
+		# try to fix /usr/local/bin/python on macOS unless stated otherwize
+		[[ $FIX != 0 ]] && export FIX=1
 	fi
 
 	if [[ ! -z $(command -v apt-get) ]]; then
@@ -172,14 +176,19 @@ fi
 
 [[ $PIP != 0 ]] && install_pip
 
+PIP_USER=""
+if [[ $(uname) == Darwin ]]; then
+	PIP_USER="--user"
+fi
+
 REQ=$READIES/paella/requirements.txt
 if [[ ! -z $VENV && $VENV != 0 ]]; then
-	runn $MYPY -m pip install virtualenv
+	runn $MYPY -m pip install ${PIP_USER} virtualenv
 	[[ $VENV == 1 ]] && VENV=$HOME/venv
 	runn $MYPY -m virtualenv $VENV --system-site-packages
 	runn "{ . $VENV/bin/activate && python -m pip install -r $REQ; }"
 else
-	runn $MYPY -m pip install -r $REQ
+	runn $MYPY -m pip install ${PIP_USER} -r $REQ
 fi
 
 exit 0
