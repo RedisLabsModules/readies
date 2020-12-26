@@ -146,7 +146,7 @@ check_variants
 
 [[ ! -z $MYPY && $PIP == 0 && $FORCE != 1 ]] && exit 0
 if [[ $CHECK == 1 ]]; then
-	if $MYPY -m pip --version 2&>1 > /dev/null; then exit 0; fi
+	if $MYPY -m pip --version 2>&1 > /dev/null; then exit 0; fi
 	exit 1
 fi
 
