@@ -6,15 +6,19 @@
 # . $READIES/shibumi/defs
 
 error_trap() {
-	>&2 echo "$0: There are errors."
+	# >&2 echo "$0: There are errors."
+	>&2 echo
+	>&2 echo "In $0:"
+	>&2 awk 'NR>L-4 && NR<L+4 { printf "%-5d%4s%s\n",NR,(NR==L?">>> ":""),$0 }' L=$1 $0 
+	>&2 echo
 	exit 1
 }
 
 # avoid trap with bashdb
 if [[ -z $_Dbg_DEBUGGER_LEVEL ]]; then
-	trap error_trap ERR
+	trap 'error_trap $LINENO' ERR
 fi
 
-if [[ ! -z $READIES ]]; then
+if [[ -d $READIES ]]; then
 	. $READIES/shibumi/functions 
 fi
