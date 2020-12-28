@@ -17,9 +17,9 @@ PIP_VER = '19.3.1'
 class OutputMode:
     def __init__(self, x):
         lx = str(x).lower()
-        if x is True or x is 1 or lx == "yes" or lx == "true":
+        if x == True or x == 1 or lx == "yes" or lx == "true":
             self.mode = "True"
-        elif x is False or x is 0 or lx == "no" or lx == "false":
+        elif x == False or x == 0 or lx == "no" or lx == "false":
             self.mode = "False"
         elif lx == "on_error":
             self.mode = "on_error"
