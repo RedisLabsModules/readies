@@ -9,6 +9,8 @@ import shutil
 import tempfile
 import traceback
 import textwrap
+from semantic_version import Version
+
 try:
     from urllib2 import urlopen
 except:
@@ -88,8 +90,6 @@ class RedisSourceSetup(paella.Setup):
         self.run('wget -O {FILE} {URL}'.format(FILE=file, URL=url))
 
     def get_requested_redis_versions(self):
-        from semantic_version import Version
-
         self.read_redis_versions()
         if self.version in self.redis_versions:
             return [self.version]
@@ -259,9 +259,9 @@ index f6e5f3e3f..def02b80d 100644
         self.install_downloaders()
         self.install("git")
 
-        self.setup_pip()
-        self.pip_install("wheel")
-        self.pip_install("setuptools --upgrade")
+        # self.setup_pip()
+        # self.pip_install("wheel")
+        # self.pip_install("setuptools --upgrade")
         # self.pip_install("semantic_version")
 
     def linux(self):
@@ -295,8 +295,6 @@ index f6e5f3e3f..def02b80d 100644
     def macos(self):
         if self.no_prepare:
             return
-        if sh('xcode-select -p') == '':
-            fatal("Xcode tools are not installed. Please run xcode-select --install.")
 
     def common_last(self):
         if not self.just_prepare:
