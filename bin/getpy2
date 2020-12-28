@@ -84,7 +84,7 @@ install_python() {
 			eprint "Please install brew and retry."
 			exit 1
 		else
-			brew update || true
+			# brew update || true
 		fi
 
 		# try to fix /usr/local/bin/python on macOS unless stated otherwize

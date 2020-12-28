@@ -261,7 +261,7 @@ class Brew(PackageManager):
         return False
 
     def update(self, output="on_error"):
-        if os.environ.get('BREW_NO_UPDATE') == '1':
+        if os.environ.get('BREW_UPDATE') != '1':
             return True
         return self.run("brew update || true", output=output)
 
@@ -308,7 +308,7 @@ class Setup(OnPlatform):
                 pyver = "3"
             self.package_manager.update()
             self.python = paella.sh("command -v python" + pyver)
-            
+
         self.invoke()
 
     def run(self, cmd, at=None, output="on_error", _try=False, sudo=False):
