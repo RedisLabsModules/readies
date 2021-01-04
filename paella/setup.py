@@ -298,16 +298,16 @@ class Setup(OnPlatform):
         self.package_manager = PackageManager.detect(self.platform, self.runner)
 
         self.python = sys.executable
+        if re.match(r'Python 2', paella.sh(self.python + " --version 2>&1")):
+            self.pyver = "2"
+        else:
+            self.pyver = "3"
         os.environ["PYTHONWARNINGS"] = 'ignore:DEPRECATION::pip._internal.cli.base_command'
 
     def setup(self):
         if self.repo_refresh:
-            if re.match(r'Python 2', paella.sh(self.python + " --version 2>&1")):
-                pyver = "2"
-            else:
-                pyver = "3"
             self.package_manager.update()
-            self.python = paella.sh("command -v python" + pyver)
+            self.python = paella.sh("command -v python" + self.pyver)
 
         self.invoke()
 
