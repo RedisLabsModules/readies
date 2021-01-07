@@ -1,3 +1,4 @@
+| Utility         | Description                                                  |
 | --------------- | ------------------------------------------------------------ |
 | enable-utf8     | Enable UTF8 output on terminal                               |
 | filter-colors   | Filter out ASCII colors                                      |
