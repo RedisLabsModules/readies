@@ -2,3 +2,4 @@ jinja2
 semantic_version
 six
 click
+packaging>=20.8
