@@ -1,9 +1,12 @@
 # Library cluster of common Redis Modules automation code
 
-Cetara: C/C++
+[bin](docs/bin.md): Utilities
 
-Paella: Python
+[Cetara](docs/cetara.md): C/C++ tools
 
-Shibumi: Bash
+[Paella](docs/paella.md): Python automation library
 
-mk: GNU Make
+[Shibumi](docs/shibumi.md): Bash tools
+
+[mk](docs/mk.md): GNU Make-based build framework
+
