@@ -21,8 +21,8 @@ class SystemSetup(paella.Setup):
         self.install("build-essential")
         if self.modern and self.osnick == 'trusty':
             self.add_repo("ppa:ubuntu-toolchain-r/test")
-            self.install("gcc-7 g++-7")
-            self.run("update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 60 --slave /usr/bin/g++ g++ /usr/bin/g++-7")
+            self.install("gcc-9 g++-9")
+            self.run("update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-9")
 
     def redhat_compat(self):
         self.group_install("'Development Tools'")
@@ -37,6 +37,8 @@ class SystemSetup(paella.Setup):
     def macos(self):
         if sh('xcode-select -p') == '':
             fatal("Xcode tools are not installed. Please run xcode-select --install.")
+			# install brew (which will install Xcode command line tools):
+			# self.run("/bin/bash -c '$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)'")
 
 #----------------------------------------------------------------------------------------------
 

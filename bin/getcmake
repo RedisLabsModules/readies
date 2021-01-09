@@ -17,29 +17,48 @@ os.environ["PYTHONWARNINGS"] = 'ignore:DEPRECATION::pip._internal.cli.base_comma
 
 #----------------------------------------------------------------------------------------------
 
-CMAKE_VER='3.19.0'
+CMAKE_VER='3.19.2'
+
+#----------------------------------------------------------------------------------------------
+
+class CMakeSetupFromRepo(paella.Setup):
+    def __init__(self, args):
+        paella.Setup.__init__(self, nop=args.nop)
+
+    def common_first(self):
+        pass
+
+    def debian_compat(self):
+        self.install("cmake")
+
+    def redhat_compat(self):
+        self.run("%s/bin/getepel" % READIES)
+        self.install("cmake3")
+        self.run("ln -sf `command -v cmake3` /usr/local/bin/cmake")
+        
+    def fedora(self):
+        self.redhat_compat()
+
+    def macos(self):
+        self.install("cmake")
+
+    def common_last(self):
+        verstr = paella.sh("cmake --version | head -1 | awk '{print $3}'").strip()
+        ver = int(verstr.split('.')[0])
+        if ver >= 3:
+            print("# installed cmake " + verstr)
+            sys.exit(0)
+        self.uninstall("cmake", output=False)
 
 #----------------------------------------------------------------------------------------------
 
 class CMakeSetup(paella.Setup):
     def __init__(self, args):
         paella.Setup.__init__(self, nop=args.nop)
-        self.build = not (self.os == 'linux' and self.arch == 'x64' or self.os == 'macos')
+        # check whether it is possible to download a pre-built cmake
+        self.build = args.build or not (self.os == 'linux' and self.arch == 'x64')
 
-    #------------------------------------------------------------------------------------------
-    
     def common_first(self):
-        self.pip_install("-r {READIES}/paella/requirements.txt".format(READIES=READIES))
-        
-        if self.install("cmake", _try=True) == 0:
-            from semantic_version import Version
-            ver = Version(paella.sh("cmake --version | head -1 | awk '{print $3}'").strip())
-            if ver.major >= 3:
-                print("# installed cmake " + str(ver))
-                sys.exit(0)
-            self.uninstall("cmake", output=False)
-            self.build = True
-
         self.install_downloaders()
         if self.build:
             self.install("unzip")
@@ -57,7 +76,7 @@ class CMakeSetup(paella.Setup):
         self.redhat_compat()
 
     def macos(self):
-        self.install("cmake")
+        pass
 
     def linux_last(self):
         if not self.build:
@@ -67,7 +86,9 @@ class CMakeSetup(paella.Setup):
                 sh /tmp/cmake.sh --skip-license --prefix=/usr/local
                 rm -f /tmp/cmake.sh
                 """.format(CMAKE_VER=CMAKE_VER))
-        else:
+
+    def comon_last(self):
+        if self.build:
             self.run(r"""
                 cd /tmp
                 cmake_dir=$(mktemp -d)
@@ -86,9 +107,13 @@ class CMakeSetup(paella.Setup):
 
 parser = argparse.ArgumentParser(description='Install CMake')
 parser.add_argument('-n', '--nop', action="store_true", help='no operation')
+parser.add_argument('--build', action="store_true", help='build from source')
 args = parser.parse_args()
 
 try:
+    platform = paella.Platform()
+    if not args.build and (platform.os == 'linux' and platform.arch == 'x64' or platform.os == 'macos'):
+        CMakeSetupFromRepo(args).setup()
     CMakeSetup(args).setup()
 except Exception as x:
     traceback.print_exc()
