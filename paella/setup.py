@@ -74,6 +74,9 @@ class Runner:
             sys.exit(1)
         return rc
 
+    def has_command(self, cmd):
+        return Runner.has_command(cmd)
+
     @staticmethod
     def has_command(cmd):
         return os.system("command -v " + cmd + " > /dev/null") == 0
@@ -109,8 +112,8 @@ class PackageManager(object):
     def run(self, cmd, at=None, output="on_error", _try=False, sudo=False):
         return self.runner.run(cmd, at=at, output=output, _try=_try, sudo=sudo)
 
-    def has_command(cmd):
-        return self.runnner.has_command(cmd)
+    def has_command(self, cmd):
+        return self.runner.has_command(cmd)
 
     def install(self, packs, group=False, output="on_error", _try=False):
         return False
@@ -322,6 +325,9 @@ class Setup(OnPlatform):
 
     def install(self, packs, group=False, output="on_error", _try=False):
         return self.package_manager.install(packs, group=group, output=output, _try=_try)
+
+    def uninstall(self, packs, group=False, output="on_error", _try=False):
+        return self.package_manager.uninstall(packs, group=group, output=output, _try=_try)
 
     def group_install(self, packs, output="on_error", _try=False):
         return self.install(packs, group=True, output=output, _try=_try)
