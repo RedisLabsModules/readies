@@ -69,6 +69,10 @@ check_variants() {
 	
 	[[ ! -z $PYTHON3 ]] && MYPY=$PYTHON3
 	
+	MINOR="$($MYPY --version 2>&1 | awk '{print $2}' | cut -d. -f2)"
+	# Python3 <= 3.4 breaks contemporary pip
+	if (( MINOR < 5 )); then export FORCE=1; fi
+
 	if [[ ! -z $FIX ]]; then fix_variants; fi
 }
 
@@ -77,7 +81,7 @@ install_on_trusty() {
 	runn add-apt-repository -y ppa:deadsnakes/ppa
 	runn apt-get -qq update
 	runn apt-get install -y python3.6
-	runn ln -sf `which python3.6` /usr/local/bin/python3
+	runn ln -sf `command -v python3.6` /usr/local/bin/python3
 	runn apt-get install -y python3.6-venv
 }
 
