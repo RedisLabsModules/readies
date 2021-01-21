@@ -349,7 +349,8 @@ class Setup(OnPlatform):
                         output=output, _try=_try, sudo=True)
 
     def pip_uninstall(self, cmd, output="on_error", _try=False):
-        return self.run(self.python + " -m pip uninstall --disable-pip-version-check -y || true" + cmd,
+        return self.run("{PYTHON} -m pip uninstall --disable-pip-version-check -y {CMD} || true".
+                        format(PYTHON=self.python, CMD=cmd),
                         output=output, _try=_try, sudo=True)
 
     def setup_pip(self, output="on_error", _try=False):

@@ -21,8 +21,8 @@ class RMPyToolsSetup(paella.Setup):
     def __init__(self, args):
         paella.Setup.__init__(self, nop=args.nop)
         if args.no_reinstall:
-            self.reinstall = args.reinstall
-        else
+            self.reinstall = False
+        else:
             self.reinstall = args.reinstall
 
     def build_and_install(self, deps):
