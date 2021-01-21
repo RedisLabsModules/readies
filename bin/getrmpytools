@@ -20,7 +20,10 @@ os.environ["PYTHONWARNINGS"] = 'ignore:DEPRECATION::pip._internal.cli.base_comma
 class RMPyToolsSetup(paella.Setup):
     def __init__(self, args):
         paella.Setup.__init__(self, nop=args.nop)
-        self.reinstall = args.reinstall
+		if args.no_reinstall:
+			self.reinstall = args.reinstall
+		else
+			self.reinstall = args.reinstall
 
     def build_and_install(self, deps):
         self.run("%s/bin/getgcc" % READIES)
@@ -53,7 +56,7 @@ class RMPyToolsSetup(paella.Setup):
     def common_last(self):
         self.install("git")
         if self.reinstall:
-            self.run("pip uninstall -y -q redis redis-py-cluster ramp-packer RLTest || true")
+            self.pip_uninstall("redis redis-py-cluster ramp-packer RLTest")
         # redis-py-cluster should be installed from git due to redis-py dependency
         self.pip_install("--no-cache-dir git+https://github.com/Grokzen/redis-py-cluster.git@master")
         self.pip_install("--no-cache-dir git+https://github.com/RedisLabsModules/RLTest.git@master")
@@ -63,7 +66,8 @@ class RMPyToolsSetup(paella.Setup):
 
 parser = argparse.ArgumentParser(description='Install RedisLabs Modules Python tools')
 parser.add_argument('-n', '--nop', action="store_true", help='no operation')
-parser.add_argument('--reinstall', action="store_true", help='Reinstall everything')
+parser.add_argument('--no-reinstall', action="store_true", default=False, help='Not not reinstall everything')
+parser.add_argument('--reinstall', action="store_true", default=True, help='Reinstall everything (the default behavior)')
 args = parser.parse_args()
 
 try:
