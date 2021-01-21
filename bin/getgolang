@@ -1,8 +1,6 @@
 #!/bin/bash
 
-GOLANG_VER=1.15.5
-GOLANG_OS=linux
-GOLANG_ARCH=amd64
+GOLANG_VER=1.15.6
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 READIES=$(cd $HERE/..; pwd)
@@ -18,6 +16,9 @@ if [[ $OS == Linux ]]; then
 	GOLANG_OS=linux
 elif [[ $OS == Darwin ]]; then
 	GOLANG_OS=darwin
+else
+	eprint "Cannot determine OS"
+	exit 1
 fi
 
 ARCH=`uname -m`
@@ -26,6 +27,7 @@ if [[ $ARCH == x86_64 ]]; then
 elif [[ $ARCH == aarch64 ]]; then
 	GOLANG_ARCH=arm64
 else
+	eprint "Cannot determine CPU"
 	exit 1
 fi
 
@@ -39,4 +41,4 @@ if [[ $NOP != 1 ]]; then
 	echo 'export PATH=$PATH:`/usr/local/go/bin/go env GOPATH`/bin' >> /etc/profile.d/golang.sh
 fi
 
-# for immediate results, invoke: source /etc/profile.d/golang.sh
+echo "to enable golang, invoke: source /etc/profile.d/golang.sh"
