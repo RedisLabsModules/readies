@@ -35,7 +35,7 @@ fi
 # pip 20.x is broken is the sense that it will not respect virtualenv's system-site-packages
 # thus requiring packages to be built from source in order to be installed.
 # Until this is fixed we stick to pip 19.3.1.
-[[ $PIP == 1 ]] && PIP=19.3.1
+# [[ $PIP == 1 ]] && PIP=19.3.1
 
 # the end state should be:
 # in a python2 venv: `python` command (don't fix)
@@ -63,20 +63,20 @@ check_variants() {
 	PYTHON_VER=""
 	
 	if [[ ! -z $PYTHON ]]; then
-		PYTHON_VER="$(python --version 2>&1 | cut -d" " -f2 | cut -d. -f1)"
+		PYTHON_VER="$(python --version 2>&1 | awk '{print $2}' | cut -d. -f1)"
 		[[ $PYTHON_VER == 3 ]] && MYPY=$PYTHON
 	fi
 	
 	[[ ! -z $PYTHON3 ]] && MYPY=$PYTHON3
 	
-	MINOR="$($MYPY --version 2>&1 | awk '{print $2}' | cut -d. -f2)"
+	export MINOR="$($MYPY --version 2>&1 | awk '{print $2}' | cut -d. -f2)"
 	# Python3 <= 3.4 breaks contemporary pip
 	if (( MINOR < 5 )); then export FORCE=1; fi
 
 	if [[ ! -z $FIX ]]; then fix_variants; fi
 }
 
-install_on_trusty() {
+install_python_on_old_ubuntu() {
 	runn apt-get install -y software-properties-common
 	runn add-apt-repository -y ppa:deadsnakes/ppa
 	runn apt-get -qq update
@@ -100,8 +100,8 @@ install_python() {
 	if [[ ! -z $(command -v apt-get) ]]; then
 		runn apt-get -qq update
 		osver=$(source /etc/os-release; echo ${ID}${VERSION_ID})
-		if [[ $osver == ubuntu14.04 ]]; then
-			install_on_trusty
+		if [[ $osver == ubuntu14.04 || $osver == ubuntu16.04 ]]; then
+			install_python_on_old_ubuntu
 		else
 			runn apt-get -qq install -y python3
 		fi
