@@ -310,6 +310,9 @@ class Platform:
     def is_redhat_compat(self):
         return self.dist == 'redhat' or self.dist == 'centos' or self.dist == 'amzn'
 
+    def is_arm(self):
+        return self.arch == 'arm64v8' or self.arch == 'arm32v7'
+
     def is_container(self):
         with open('/proc/1/cgroup', 'r') as conf:
             for line in conf:
