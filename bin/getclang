@@ -25,20 +25,21 @@ class CLangSetup(paella.Setup):
         self.format = args.format
 
     def common_first(self):
-        self.install_downloaders()
+        pass
 
     def linux(self):
+        self.install_downloaders()
         if self.format and self.arch == 'x64':
             self.run("wget -O /usr/local/bin/clang-format-10 %s/clang-format-10_linux-amd64" % CLANG_FORMAT_BASE_URL)
-
-    def macos(self):
-        if self.format and self.arch == 'x64':
-            self.run("wget -O /usr/local/bin/clang-format-10 %s/clang-format-10_macosx-amd64" % CLANG_FORMAT_BASE_URL)
-
-    def common_last(self):
-        if self.format and self.arch == 'x64':
             self.run("chmod +x /usr/local/bin/clang-format-10")
             self.run("ln -sf /usr/local/bin/clang-format-10 /usr/local/bin/clang-format")
+
+    def macos(self):
+        if self.format:
+            self.instll("clang-format")
+
+    def common_last(self):
+        pass
 
 #----------------------------------------------------------------------------------------------
 
