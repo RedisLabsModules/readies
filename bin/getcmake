@@ -107,12 +107,13 @@ class CMakeSetup(paella.Setup):
 
 parser = argparse.ArgumentParser(description='Install CMake')
 parser.add_argument('-n', '--nop', action="store_true", help='no operation')
+parser.add_argument('--no-repo', action="store_true", help='do not install from distribution repository')
 parser.add_argument('--build', action="store_true", help='build from source')
 args = parser.parse_args()
 
 try:
     platform = paella.Platform()
-    if not args.build and (platform.os == 'linux' and platform.arch == 'x64' or platform.os == 'macos'):
+    if not args.no_repo and not args.build and not (platform.os == 'linux' and platform.arch == 'x64' or platform.os == 'macos'):
         CMakeSetupFromRepo(args).setup()
     CMakeSetup(args).setup()
 except Exception as x:
