@@ -11,6 +11,12 @@ ifeq ($(STEM),)
 $(error STEM is undefined. Aborting.)
 endif
 
+ifeq ($(LATEST),1)
+ifneq ($(LATEST_BRANCH),$(GIT_BRANCH))
+override LATEST:=0
+endif
+endif
+
 ifeq ($(EDGE),1)
 ifeq ($(SIMPLE),1)
 VERSION=edge
