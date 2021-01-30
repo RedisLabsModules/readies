@@ -9,6 +9,11 @@ else
 FLAVOR=release
 endif
 
+ifneq ($(SETVARIANT),)
+export SETVARIANT
+VARIANT:=$(SETVARIANT)
+endif
+
 #----------------------------------------------------------------------------------------------
 
 ifeq ($(COV),1)
@@ -52,9 +57,9 @@ endif
 FULL_VARIANT:=$(OS)-$(ARCH)-$(FLAVOR)$(_VARIANT.string)
 FULL_VARIANT.release:=$(OS)-$(ARCH)-release$(_VARIANT.string)
 
-# if primary variant present, write it to file. otherwise, delete file
+# if primary variant and SETVARIANT are present, write variant to file
 ifneq ($(VARIANT.primary),)
-ifneq ($(origin VARIANT),)
-$(eval $(shell if [ -z $(VARIANT) ]; then rm -f $(ROOT)/VARIANT; else echo $(VARIANT)>$(ROOT)/VARIANT; fi))
+ifneq ($(origin SETVARIANT),)
+$(eval $(shell echo $(VARIANT)>$(ROOT)/VARIANT))
 endif
 endif
