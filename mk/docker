@@ -11,6 +11,14 @@ ifeq ($(STEM),)
 $(error STEM is undefined. Aborting.)
 endif
 
+ifeq ($(EDGE),1)
+ifeq ($(SIMPLE),1)
+VERSION=edge
+else
+VERSION=master
+endif
+endif
+
 ifeq ($(VERSION),)
 VERSION:=$(patsubst v%,%,$(shell git describe --tags `git rev-list --tags --max-count=1`))
 endif
@@ -79,7 +87,7 @@ make build      # build Docker images
   ARTIFACTS=1     # copy artifacts from docker image
 
 make publish   # push Docker image to Dockerhub
-  LATEST=1       # tag selected version as latest and push it
+  LATEST=1       # tag selected version as "latest" and push it
   PUSH=0         # only push multi-arch manifest
   MULTI=1        # build and push multi-arch Docker manifest
 
@@ -88,12 +96,25 @@ make show      # display registry information from Docker repo
 Common arguments:
   OSNICK=nick    # nick=buster|stretch|bionic|centos7
   VERSION=ver    # build and publish version x.y.z
+  EDGE=1         # treat build as "edge" version
   X64=1          # build and publish x64 arch
   ARM7=1         # build and publish arm32v7 arch
   ARM8=1         # build and publish arm64v8 arch
 endef
 
 #----------------------------------------------------------------------------------------------
+
+ifeq ($(SIMPLE),1)
+
+define D_NAME # (1=arch)
+$(STEM):$(VERSION)$(_VAR)
+endef
+
+define D_LATEST_NAME # (1=arch)
+$(STEM):latest$(_VAR)
+endef
+
+else
 
 define D_NAME # (1=arch)
 $(STEM):$(VERSION)$(_VAR)-$(1)-$(OSNICK)
@@ -102,6 +123,8 @@ endef
 define D_LATEST_NAME # (1=arch)
 $(STEM):latest$(_VAR)-$(1)-$(OSNICK)
 endef
+
+endif # SIMPLE
 
 DOCKER_BUILD_ARGS += \
 	VERSION=$(VERSION) \

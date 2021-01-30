@@ -5,6 +5,7 @@ ifeq ($(ROOT),)
 $(error ROOT is undefined)
 endif
 
+ifeq ($(READIES),)
 ifneq ($(wildcard $(ROOT)/deps/readies),)
 READIES:=$(ROOT)/deps/readies
 else ifneq ($(wildcard $(ROOT)/opt/readies),)
@@ -13,6 +14,7 @@ else ifneq ($(wildcard $(ROOT)/readies),)
 READIES:=$(ROOT)/readies
 else
 $(error Cannot find readies root)
+endif
 endif
 
 MK:=$(READIES)/mk
