@@ -1,6 +1,11 @@
 
 SHELL:=$(shell sh -c "command -v bash")
 
+MAKE_MAJORVER:=$(shell echo "$(MAKE_VERSION)" | cut -d. -f1)
+ifeq ($(MAKE_MAJORVER),3)
+$(error GNU Make version is too old. Aborting.)
+endif
+
 ifeq ($(ROOT),)
 $(error ROOT is undefined)
 endif
