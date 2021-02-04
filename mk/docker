@@ -18,10 +18,14 @@ endif
 endif
 
 ifeq ($(EDGE),1)
-ifeq ($(SIMPLE),1)
-VERSION=edge
+ifneq (master,$(GIT_BRANCH))
+$(error Cannot produce EDGE build on non-master branch)
 else
-VERSION=master
+ifeq ($(SIMPLE),1)
+override VERSION=edge
+else
+override VERSION=master
+endif
 endif
 endif
 
