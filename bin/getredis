@@ -165,7 +165,7 @@ index f6e5f3e3f..def02b80d 100644
 """
             patch_file = os.path.join(self.base_dir, 'redis-prog-sufffix.patch')
             paella.fwrite(patch_file, patch[1:])
-            self.run("patch -p1 -i %s" % patch_file, at=self.build_dir)
+            # self.run("patch -p1 -i %s" % patch_file, at=self.build_dir)
 
     def build_redis(self):
         build_args = []
