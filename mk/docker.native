@@ -78,24 +78,24 @@ make build      # build Docker images
 
 make publish   # push Docker image to Dockerhub
   OFFICIAL=0     # do not publish to official (redislabs/*) repos
-
-make show      # display registry information from Docker repo
+  PUSH_LATEST=0  # do not publish 'latest' version
+  PUSH_EDGE=0    # do not publish 'edge' version
 
 make clean     # remove docker images
+
+make show      # display registry information from Docker repo
 
 Common arguments:
   OSNICK=nick        # nick=buster|stretch|bionic|centos7
   INT_BRNACHES=list  # list of intergration branch names
   VERSION=ver        # build and publish specified version
   BRANCH=name        # build and publish from specified branch
-  LATEST=0           # do not publish 'latest' version
-  EDGE=0             # do not publish 'edge' version
 endef
 
 #----------------------------------------------------------------------------------------------
 
-ifeq ($(INT_BRANCHES),)
-INT_BRANCHES=master
+ifeq ($(findstring master,$(INT_BRANCHES)),)
+INT_BRANCHES += master
 endif
 LATEST_BRANCH=$(firstword $(INT_BRANCHES))
 
@@ -103,11 +103,14 @@ ifneq ($(VERSION),)
 D_VERSION=$(VERSION)
 LATEST_VERSION:=$(shell git name-rev --name-only HEAD | cut -f2 -d/ | cut -f1 -d^ | grep '^v' | sed -e 's/^v\(.*\)/\1/g')
 ifneq ($(findstring $(VERSION),$(LATEST_VERSION)),)
-LATEST=1
+PUSH_LATEST=1
 endif
 
 else ifneq ($(BRANCH),)
 D_VERSION=$(BRANCH)
+ifneq ($(findstring $(BRANCH),$(INT_BRANCHES)),)
+PUSH_GENERAL=1
+endif
 
 else
 BRANCH=$(GIT_BRANCH)
@@ -117,7 +120,7 @@ endif
 ifneq ($(OFFICIAL),0)
 
 ifeq ($(BRANCH),master)
-EDGE=1
+PUSH_EDGE=1
 endif
 
 endif # OFFICIAL
@@ -131,8 +134,9 @@ $(info GIT_BRANCH=$(GIT_BRANCH))
 $(info LATEST_BRANCH=$(LATEST_BRANCH))
 $(info INT_BRANCHES=$(INT_BRANCHES))
 $(info OFFICIAL=$(OFFICIAL))
-$(info EDGE=$(EDGE))
-$(info LATEST=$(LATEST))
+$(info PUSH_GENERAL=$(PUSH_GENERAL))
+$(info PUSH_EDGE=$(PUSH_EDGE))
+$(info PUSH_LATEST=$(PUSH_LATEST))
 endif
 
 #----------------------------------------------------------------------------------------------
@@ -194,14 +198,14 @@ build_docker:
 ifeq ($(ARTIFACTS),1)
 	$(SHOW)IMAGE=$(D_NAME) $(MK)/docker-collect-artifacts
 endif
-ifeq ($(LATEST),1)
+ifeq ($(PUSH_LATEST),1)
 	$(SHOW)docker tag $(D_NAME) $(D_LATEST_NAME)
 endif
 ifneq ($(OFFICIAL),0)
-ifeq ($(LATEST),1)
+ifeq ($(PUSH_LATEST),1)
 	$(SHOW)docker tag $(D_NAME) $(D_OFFICIAL_LATEST_NAME)
 endif
-ifeq ($(EDGE),1)
+ifeq ($(PUSH_EDGE),1)
 	$(SHOW)docker tag $(D_NAME) $(D_OFFICIAL_EDGE_NAME)
 endif
 endif # OFFICIAL
@@ -211,15 +215,17 @@ endif # OFFICIAL
 #----------------------------------------------------------------------------------------------
 
 publish:
+ifeq ($(PUSH_GENERAL),1)
 	$(SHOW)docker push $(D_NAME)
-ifeq ($(LATEST),1)
+endif
+ifeq ($(PUSH_LATEST),1)
 	$(SHOW)docker push $(D_LATEST_NAME)
 endif
 ifneq ($(OFFICIAL),0)
-ifeq ($(LATEST),1)
+ifeq ($(PUSH_LATEST),1)
 	$(SHOW)docker push $(D_OFFICIAL_LATEST_NAME)
 endif
-ifeq ($(EDGE),1)
+ifeq ($(PUSH_EDGE),1)
 	$(SHOW)docker push $(D_OFFICIAL_EDGE_NAME)
 endif
 endif # OFFICIAL
