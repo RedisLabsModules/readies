@@ -1,0 +1,250 @@
+
+.NOTPARALLEL:
+
+MK.nobindir=1
+
+MK_ALL_TARGETS=build_docker publish clean
+MK_CUSTOM_CLEAN=1
+
+#----------------------------------------------------------------------------------------------
+
+ifeq ($(REPO),)
+$(error REPO is undefined. Aborting.)
+endif
+
+OFFICIAL ?= 1
+
+ifeq ($(VARIANT),)
+_VARIANT=
+else
+_VARIANT=-$(VARIANT)
+endif
+
+#----------------------------------------------------------------------------------------------
+
+BUILD_OPT += --rm
+ifneq ($(PULL),0)
+BUILD_OPT += --pull
+endif
+
+# --squash
+
+DOCKERFILE_STEM ?= $(ROOT)/Dockerfile
+
+#----------------------------------------------------------------------------------------------
+
+REDIS_VER ?= 6.0.9
+
+PACK ?= 0
+TEST ?= 0
+
+ifeq ($(ARTIFACTS),1)
+PACK:=1
+endif
+
+#----------------------------------------------------------------------------------------------
+
+OSNICK ?= debian
+
+ifeq ($(OS.custom),)
+
+OS.centos7=centos:7.8.2003
+OS.fedora=fedora:32
+OS.focal=ubuntu:focal
+OS.bionic=ubuntu:bionic
+OS.xenial=ubuntu:xenial
+OS.buster=debian:buster
+OS.stretch=debian:stretch
+
+endif # OS
+
+OS=$(OS.$(OSNICK))
+ifeq ($(OS),)
+$(error Invalid OSNICK. Aborting.)
+endif
+
+#----------------------------------------------------------------------------------------------
+
+MACH:=$(shell uname -m)
+
+#----------------------------------------------------------------------------------------------
+
+define HELP
+make build      # build Docker images
+  REDIS_VER=ver   # use Redis version `ver`
+  TEST=1          # test aftar build
+  PACK=1          # create packages
+  ARTIFACTS=1     # copy artifacts from docker image
+
+make publish   # push Docker image to Dockerhub
+  OFFICIAL=0     # do not publish to official (redislabs/*) repos
+
+make show      # display registry information from Docker repo
+
+make clean     # remove docker images
+
+Common arguments:
+  OSNICK=nick        # nick=buster|stretch|bionic|centos7
+  INT_BRNACHES=list  # list of intergration branch names
+  VERSION=ver        # build and publish specified version
+  BRANCH=name        # build and publish from specified branch
+  LATEST=0           # do not publish 'latest' version
+  EDGE=0             # do not publish 'edge' version
+endef
+
+#----------------------------------------------------------------------------------------------
+
+ifeq ($(INT_BRANCHES),)
+INT_BRANCHES=master
+endif
+LATEST_BRANCH=$(firstword $(INT_BRANCHES))
+
+ifneq ($(VERSION),)
+D_VERSION=$(VERSION)
+LATEST_VERSION:=$(shell git name-rev --name-only HEAD | cut -f2 -d/ | cut -f1 -d^ | grep '^v' | sed -e 's/^v\(.*\)/\1/g')
+ifneq ($(findstring $(VERSION),$(LATEST_VERSION)),)
+LATEST=1
+endif
+
+else ifneq ($(BRANCH),)
+D_VERSION=$(BRANCH)
+
+else
+BRANCH=$(GIT_BRANCH)
+D_VERSION=$(BRANCH)
+endif
+
+ifneq ($(OFFICIAL),0)
+
+ifeq ($(BRANCH),master)
+EDGE=1
+endif
+
+endif # OFFICIAL
+
+ifeq ($(VERBOSE),1)
+$(info REPO=$(REPO))
+$(info VERSION=$(VERSION))
+$(info LATEST_VERSION=$(LATEST_VERSION))
+$(info BRANCH=$(BRANCH))
+$(info GIT_BRANCH=$(GIT_BRANCH))
+$(info LATEST_BRANCH=$(LATEST_BRANCH))
+$(info INT_BRANCHES=$(INT_BRANCHES))
+$(info OFFICIAL=$(OFFICIAL))
+$(info EDGE=$(EDGE))
+$(info LATEST=$(LATEST))
+endif
+
+#----------------------------------------------------------------------------------------------
+
+ORG ?= redisfab
+OFFICIAL_ORG ?= redislabs
+
+D_NAME=$(ORG)/$(REPO):$(D_VERSION)$(_VARIANT)-$(ARCH)-$(OSNICK)
+D_LATEST_NAME=$(ORG)/$(REPO):latest$(_VARIANT)-$(ARCH)-$(OSNICK)
+D_EDGE_NAME=$(ORG)/$(REPO):master$(_VARIANT)-$(ARCH)-$(OSNICK)
+
+D_OFFICIAL_NAME=$(OFFICIAL_ORG)/$(REPO):$(D_VERSION)$(_VARIANT)
+D_OFFICIAL_LATEST_NAME=$(OFFICIAL_ORG)/$(REPO):latest$(_VARIANT)
+D_OFFICIAL_EDGE_NAME=$(OFFICIAL_ORG)/$(REPO):edge$(_VARIANT)
+
+#----------------------------------------------------------------------------------------------
+
+DOCKER_BUILD_ARGS += \
+	VERSION=$(D_VERSION) \
+	OSNICK=$(OSNICK) \
+	OS=$(OS) \
+	ARCH=$(ARCH) \
+	MACH=$(MACH) \
+	REDIS_VER=$(REDIS_VER) \
+	TEST=$(TEST) \
+	PACK=$(PACK)
+
+#----------------------------------------------------------------------------------------------
+
+ifeq ($(ARTIFACTS),1)
+ifeq ($(ART_DIR),)
+$(error ART_DIR is not defined.)
+endif
+export ART_DIR
+ifeq ($(ART_INT_DIR),)
+$(error ART_INT_DIR is not defined.)
+endif
+export ART_INT_DIR
+endif
+
+#----------------------------------------------------------------------------------------------
+
+DEFAULT_TARGETS += all
+
+include $(MK)/defs
+
+#----------------------------------------------------------------------------------------------
+
+include $(MK)/rules
+
+#----------------------------------------------------------------------------------------------
+
+dockers: build_docker
+
+build_docker:
+	$(SHOW)docker build $(BUILD_OPT) -t $(D_NAME) -f $(DOCKERFILE_STEM) \
+		$(foreach A,$(DOCKER_BUILD_ARGS),--build-arg $(A)) \
+		$(ROOT)
+ifeq ($(ARTIFACTS),1)
+	$(SHOW)IMAGE=$(D_NAME) $(MK)/docker-collect-artifacts
+endif
+ifeq ($(LATEST),1)
+	$(SHOW)docker tag $(D_NAME) $(D_LATEST_NAME)
+endif
+ifneq ($(OFFICIAL),0)
+ifeq ($(LATEST),1)
+	$(SHOW)docker tag $(D_NAME) $(D_OFFICIAL_LATEST_NAME)
+endif
+ifeq ($(EDGE),1)
+	$(SHOW)docker tag $(D_NAME) $(D_OFFICIAL_EDGE_NAME)
+endif
+endif # OFFICIAL
+
+.PHONY: build_docker
+
+#----------------------------------------------------------------------------------------------
+
+publish:
+	$(SHOW)docker push $(D_NAME)
+ifeq ($(LATEST),1)
+	$(SHOW)docker push $(D_LATEST_NAME)
+endif
+ifneq ($(OFFICIAL),0)
+ifeq ($(LATEST),1)
+	$(SHOW)docker push $(D_OFFICIAL_LATEST_NAME)
+endif
+ifeq ($(EDGE),1)
+	$(SHOW)docker push $(D_OFFICIAL_EDGE_NAME)
+endif
+endif # OFFICIAL
+
+.PHONY: publish
+
+#----------------------------------------------------------------------------------------------
+
+# publish: $(PUSH_TARGETS) ;
+
+#----------------------------------------------------------------------------------------------
+
+clean:
+	$(SHOW)docker rmi -f $(D_NAME)
+
+.PHONY: clean
+
+#----------------------------------------------------------------------------------------------
+
+show:
+	@echo "$(ORG)/$(REPO):"
+	$(SHOW)curl -s -X "GET" https://cloud.docker.com/v2/repositories/$(ORG)/$(REPO)/tags/ | jq
+ifneq ($(OFFICIAL),0)
+	@echo "$(OFFICIAL_ORG)/$(REPO):"
+	$(SHOW)curl -s -X "GET" https://cloud.docker.com/v2/repositories/$(OFFICIAL_ORG)/$(REPO)/tags/ | jq
+endif
+
+.PHONY: show

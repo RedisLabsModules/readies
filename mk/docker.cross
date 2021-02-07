@@ -234,6 +234,15 @@ endef
 
 #----------------------------------------------------------------------------------------------
 
+define clean # (1=arch)
+push_native:
+	$(SHOW)docker rmi -f $(call D_NAME,$(1))
+
+.PHONY: clean
+endef
+
+#----------------------------------------------------------------------------------------------
+
 define create_manifest # (1=version)
 $(SHOW)docker manifest create -a $(STEM):$(1)-$(OSNICK) \
 	-a $(STEM):$(VERSION)-x64-$(OSNICK) \
@@ -293,6 +302,9 @@ else
 publish: $(PUSH_TARGETS) ;
 
 endif # MULTI
+
+clean:
+
 
 show:
 	@echo "$(STEM):"
