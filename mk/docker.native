@@ -3,7 +3,8 @@
 
 MK.nobindir=1
 
-MK_ALL_TARGETS=build_docker publish clean
+MK_ALL_TARGETS=build publish clean
+MK_CUSTOM_BUILD=1
 MK_CUSTOM_CLEAN=1
 
 #----------------------------------------------------------------------------------------------
@@ -189,9 +190,7 @@ include $(MK)/rules
 
 #----------------------------------------------------------------------------------------------
 
-dockers: build_docker
-
-build_docker:
+build:
 	$(SHOW)docker build $(BUILD_OPT) -t $(D_NAME) -f $(DOCKERFILE_STEM) \
 		$(foreach A,$(DOCKER_BUILD_ARGS),--build-arg $(A)) \
 		$(ROOT)

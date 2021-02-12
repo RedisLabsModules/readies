@@ -6,7 +6,11 @@ $(info *** DEFAULT_TARGETS=$(DEFAULT_TARGETS))
 $(info *** MK_MAKEFILES=$(MK_MAKEFILES))
 endif
 
+ifneq ($(MK_CUSTOM_BUILD),1)
+
 build: $(DEFAULT_TARGETS) $(MK_MAKEFILES) $(TARGET)
+
+endif
 
 ifneq ($(MK_CUSTOM_CLEAN),1)
 
