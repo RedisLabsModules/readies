@@ -21,6 +21,7 @@ parser.add_argument('--arch', action="store_true", help='CPU Architecture')
 
 parser.add_argument('--debian?', action="store_true", help='is Debian-like distribution?')
 parser.add_argument('--redhat?', action="store_true", help='is Redhat-like distribution?')
+parser.add_argument('--arch?', action="store_true", help='is Arch-like distribution?')
 parser.add_argument('--container?', action="store_true", help='running in container?')
 parser.add_argument('--conda?', action="store_true", help='Has Conda installer?') # TODO
 
@@ -49,6 +50,10 @@ if args.__dict__['redhat?']:
 
 if args.__dict__['container?']:
     print(1 if platform.is_container() else 0)
+    sys.exit(0)
+
+if args.__dict__['arch?']:
+    print(1 if platform.is_arch_compat() else 0)
     sys.exit(0)
 
 ret = ""

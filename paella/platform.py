@@ -202,7 +202,7 @@ class Platform:
             self.dist = self._identify_linux_dist(os_release)
             self.os_full_ver = self._identify_linux_full_ver(os_release, self.dist)
         except:
-            if strict:
+            if self.strict:
                 raise Error("Cannot determine distribution")
             self.os_ver = self.os_full_ver = 'unknown'
 
@@ -224,7 +224,7 @@ class Platform:
 
     def _identify_linux_dist(self, os_release):
         distname = os_release.id()
-        if distname == 'fedora' or  distname == 'debian' or distname == 'arch':
+        if distname == 'fedora' or distname == 'debian':
             pass
         elif distname == 'ubuntu':
             if self.osnick == 'ubuntu14.04':
@@ -238,6 +238,8 @@ class Platform:
         elif distname.startswith('amzn'):
             distname = 'amzn'
             self.osnick = 'amzn' + str(os_release.version_id())
+        elif distname.startswith('arch') or distname.startswith('manjaro'):
+            distname = 'arch'
         else:
             if self.strict:
                 raise Error("Cannot determine distribution")
@@ -309,6 +311,9 @@ class Platform:
 
     def is_redhat_compat(self):
         return self.dist == 'redhat' or self.dist == 'centos' or self.dist == 'amzn'
+
+    def is_arch_compat(self):
+        return self.dist == 'arch'
 
     def is_arm(self):
         return self.arch == 'arm64v8' or self.arch == 'arm32v7'
