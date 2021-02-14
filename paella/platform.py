@@ -70,7 +70,7 @@ class Platform:
     class OSRelease():
         CUSTOM_BRANDS = [ 'elementary', 'pop' ]
         UBUNTU_BRANDS = [ 'elementary', 'pop' ]
-        
+
         def __init__(self, brand=False):
             self.defs = {}
             self.brand_mode = brand
@@ -111,7 +111,7 @@ class Platform:
                 if ver_id == "":
                     raise Error("Cannot determine os version")
                 return ver_id
-                    
+
             ver = self.defs.get("VERSION_ID", "")
             if ver == "" and self.id() == 'debian':
                 ver, _ = self.debian_sid_version()
@@ -123,7 +123,7 @@ class Platform:
                 return DEBIAN_VERSIONS.get(m[1], ""), m[1]
             else:
                 return "", ""
-        
+
         def version_codename(self):
             brand = self.brand_id()
             if brand in self.UBUNTU_BRANDS:
@@ -360,6 +360,9 @@ class OnPlatform:
                     self.debian_compat()
                 if self.platform.is_redhat_compat():
                     self.redhat_compat()
+                if self.platform.is_arch_compat():
+                    if getattr(self, "arch_compat", None) is not None:
+                        self.arch_compat()
 
                 if dist == 'fedora':
                     self.fedora()
@@ -374,7 +377,7 @@ class OnPlatform:
                 elif dist == 'suse':
                     self.suse()
                 elif dist == 'arch':
-                    self.arch()
+                    self.archlinux()
                 elif dist == 'linuxmint':
                     self.linuxmint()
                 elif dist == 'amzn':
@@ -408,7 +411,7 @@ class OnPlatform:
     def linux_last(self):
         pass
 
-    def arch(self):
+    def archlinux(self):
         pass
 
     def debian_compat(self): # debian, ubuntu, etc

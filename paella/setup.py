@@ -219,11 +219,20 @@ class Pacman(PackageManager):
     def __init__(self, runner):
         super(Pacman, self).__init__(runner)
 
-    def install(self, packs, group=False, output="on_error", _try=False):
-        return self.run("pacman --noconfirm -S " + packs, output=output, _try=_try, sudo=True)
+    def install(self, packs, group=False, output="on_error", _try=False, aur=False):
+        if aur is False:
+            return self.run("sudo pacman --noconfirm -S " + packs, output=output, _try=_try, sudo=True)
+        else:
+            if os.path.isfile("/usr/bin/yay"):
+                aurbin = "yay"
+            if os.path.isfile("/usr/bin/trizen"):
+                aurbin = "trizen"
+            else:
+                raise FileNotFoundError("Failed to find yay or trizen, for aur package installation.")
+            return self.run("{} --noconfirm -S {}".format(aurbin, packs), output=output, _try=_try, sudo=True)
 
     def uninstall(self, packs, group=False, output="on_error", _try=False):
-        return self.run("pacman --noconfirm -R " + packs, output=output, _try=_try, sudo=True)
+        return self.run("sudo pacman --noconfirm -R " + packs, output=output, _try=_try, sudo=True)
 
     def add_repo(self, repourl, repo="", output="on_error", _try=False):
         return False
@@ -323,8 +332,8 @@ class Setup(OnPlatform):
 
     #------------------------------------------------------------------------------------------
 
-    def install(self, packs, group=False, output="on_error", _try=False):
-        return self.package_manager.install(packs, group=group, output=output, _try=_try)
+    def install(self, packs, group=False, output="on_error", _try=False, **kwargs):
+        return self.package_manager.install(packs, group=group, output=output, _try=_try, **kwargs)
 
     def uninstall(self, packs, group=False, output="on_error", _try=False):
         return self.package_manager.uninstall(packs, group=group, output=output, _try=_try)
