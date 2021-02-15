@@ -44,7 +44,7 @@ class RMPyToolsSetup(paella.Setup):
         if not self.psutil_installed:
             self.build_and_install("python%s-devel" % self.pyver)
 
-    def arch_compat(self):
+    def archlinux(self):
         if not self.psutil_installed:
             self.psutil_installed = self.install("python-psutil", _try=True, output=False) == 0
 

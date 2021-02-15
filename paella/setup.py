@@ -221,7 +221,7 @@ class Pacman(PackageManager):
 
     def install(self, packs, group=False, output="on_error", _try=False, aur=False):
         if aur is False:
-            return self.run("sudo pacman --noconfirm -S " + packs, output=output, _try=_try, sudo=True)
+            return self.run("pacman --noconfirm -S " + packs, output=output, _try=_try, sudo=True)
         else:
             if os.path.isfile("/usr/bin/yay"):
                 aurbin = "yay"

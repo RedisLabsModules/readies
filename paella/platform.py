@@ -361,8 +361,8 @@ class OnPlatform:
                 if self.platform.is_redhat_compat():
                     self.redhat_compat()
                 if self.platform.is_arch_compat():
-                    if getattr(self, "arch_compat", None) is not None:
-                        self.arch_compat()
+                    if getattr(self, "archlinux", None) is not None:
+                        self.archlinux()
 
                 if dist == 'fedora':
                     self.fedora()
