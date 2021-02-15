@@ -238,9 +238,9 @@ class Platform:
         elif distname.startswith('amzn'):
             distname = 'amzn'
             self.osnick = 'amzn' + str(os_release.version_id())
-        elif distname.startswith('arch') or distname.startswith('manjaro'):
-            distname = 'arch'
         else:
+            if os_release.id_like() == 'arch':
+                distname = 'arch'
             if self.strict:
                 raise Error("Cannot determine distribution")
             elif distname == '':

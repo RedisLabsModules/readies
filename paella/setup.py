@@ -232,7 +232,7 @@ class Pacman(PackageManager):
             return self.run("{} --noconfirm -S {}".format(aurbin, packs), output=output, _try=_try, sudo=True)
 
     def uninstall(self, packs, group=False, output="on_error", _try=False):
-        return self.run("sudo pacman --noconfirm -R " + packs, output=output, _try=_try, sudo=True)
+        return self.run("pacman --noconfirm -R " + packs, output=output, _try=_try, sudo=True)
 
     def add_repo(self, repourl, repo="", output="on_error", _try=False):
         return False
