@@ -70,7 +70,7 @@ class Platform:
     class OSRelease():
         CUSTOM_BRANDS = [ 'elementary', 'pop' ]
         UBUNTU_BRANDS = [ 'elementary', 'pop' ]
-        
+
         def __init__(self, brand=False):
             self.defs = {}
             self.brand_mode = brand
@@ -111,7 +111,7 @@ class Platform:
                 if ver_id == "":
                     raise Error("Cannot determine os version")
                 return ver_id
-                    
+
             ver = self.defs.get("VERSION_ID", "")
             if ver == "" and self.id() == 'debian':
                 ver, _ = self.debian_sid_version()
@@ -123,7 +123,7 @@ class Platform:
                 return DEBIAN_VERSIONS.get(m[1], ""), m[1]
             else:
                 return "", ""
-        
+
         def version_codename(self):
             brand = self.brand_id()
             if brand in self.UBUNTU_BRANDS:
@@ -202,7 +202,7 @@ class Platform:
             self.dist = self._identify_linux_dist(os_release)
             self.os_full_ver = self._identify_linux_full_ver(os_release, self.dist)
         except:
-            if strict:
+            if self.strict:
                 raise Error("Cannot determine distribution")
             self.os_ver = self.os_full_ver = 'unknown'
 
@@ -224,7 +224,7 @@ class Platform:
 
     def _identify_linux_dist(self, os_release):
         distname = os_release.id()
-        if distname == 'fedora' or  distname == 'debian' or distname == 'arch':
+        if distname == 'fedora' or distname == 'debian':
             pass
         elif distname == 'ubuntu':
             if self.osnick == 'ubuntu14.04':
@@ -239,6 +239,8 @@ class Platform:
             distname = 'amzn'
             self.osnick = 'amzn' + str(os_release.version_id())
         else:
+            if os_release.id_like() == 'arch':
+                distname = 'arch'
             if self.strict:
                 raise Error("Cannot determine distribution")
             elif distname == '':
@@ -310,6 +312,9 @@ class Platform:
     def is_redhat_compat(self):
         return self.dist == 'redhat' or self.dist == 'centos' or self.dist == 'amzn'
 
+    def is_arch_compat(self):
+        return self.dist == 'arch'
+
     def is_arm(self):
         return self.arch == 'arm64v8' or self.arch == 'arm32v7'
 
@@ -355,6 +360,9 @@ class OnPlatform:
                     self.debian_compat()
                 if self.platform.is_redhat_compat():
                     self.redhat_compat()
+                if self.platform.is_arch_compat():
+                    if getattr(self, "archlinux", None) is not None:
+                        self.archlinux()
 
                 if dist == 'fedora':
                     self.fedora()
@@ -369,7 +377,7 @@ class OnPlatform:
                 elif dist == 'suse':
                     self.suse()
                 elif dist == 'arch':
-                    self.arch()
+                    self.archlinux()
                 elif dist == 'linuxmint':
                     self.linuxmint()
                 elif dist == 'amzn':
@@ -403,7 +411,7 @@ class OnPlatform:
     def linux_last(self):
         pass
 
-    def arch(self):
+    def archlinux(self):
         pass
 
     def debian_compat(self): # debian, ubuntu, etc
