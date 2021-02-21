@@ -44,6 +44,10 @@ class RMPyToolsSetup(paella.Setup):
         if not self.psutil_installed:
             self.build_and_install("python%s-devel" % self.pyver)
 
+    def archlinux(self):
+        if not self.psutil_installed:
+            self.psutil_installed = self.install("python-psutil", _try=True, output=False) == 0
+
     def fedora(self):
         if not self.psutil_installed:
             self.psutil_installed = self.install("python%s-psutil" % self.pyver, _try=True, output=False) == 0

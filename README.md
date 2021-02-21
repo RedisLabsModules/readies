@@ -2,11 +2,10 @@
 
 [bin](docs/bin.md): Utilities
 
-[Cetara](docs/cetara.md): C/C++ tools
+[Cetara](cetara/README.md): C/C++ tools
 
-[Paella](docs/paella.md): Python automation library
+[Paella](paella/README.md): Python automation library
 
-[Shibumi](docs/shibumi.md): Bash tools
+[Shibumi](shibumi/README.md): Bash tools
 
-[mk](docs/mk.md): GNU Make-based build framework
-
+[mk](mk/README.md): GNU Make-based build framework
