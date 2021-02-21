@@ -87,7 +87,7 @@ class CMakeSetup(paella.Setup):
                 rm -f /tmp/cmake.sh
                 """.format(CMAKE_VER=CMAKE_VER))
 
-    def comon_last(self):
+    def common_last(self):
         if self.build:
             self.run(r"""
                 cd /tmp
@@ -96,7 +96,7 @@ class CMakeSetup(paella.Setup):
                 wget -q -O cmake.zip https://github.com/Kitware/CMake/archive/v{CMAKE_VER}.zip
                 unzip -q cmake.zip
                 cd CMake-{CMAKE_VER}/
-                ./bootstrap
+                ./bootstrap --parallel=`nproc`
                 make -j`nproc`
                 make install
                 cd /tmp
@@ -113,7 +113,7 @@ args = parser.parse_args()
 
 try:
     platform = paella.Platform()
-    if not args.no_repo and not args.build and not (platform.os == 'linux' and platform.arch == 'x64' or platform.os == 'macos'):
+    if not args.no_repo and not args.build and (platform.os == 'linux' and platform.arch == 'x64' or platform.os == 'macos'):
         CMakeSetupFromRepo(args).setup()
     CMakeSetup(args).setup()
 except Exception as x:
