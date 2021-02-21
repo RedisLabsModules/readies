@@ -1,7 +1,7 @@
 
 # Typically invoked with:
 # HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
-# ROOT=$(cd $HERE/somewhere; pwd)
+# ROOT=$(cd $HERE/somewhere && pwd)
 # READIES=$ROOT/deps/readies
 # . $READIES/shibumi/defs
 

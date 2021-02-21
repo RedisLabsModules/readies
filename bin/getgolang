@@ -3,7 +3,7 @@
 GOLANG_VER=1.15.6
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
-READIES=$(cd $HERE/..; pwd)
+READIES=$(cd $HERE/.. && pwd)
 . $READIES/shibumi/defs
 
 OP=""
