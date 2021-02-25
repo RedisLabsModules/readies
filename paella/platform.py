@@ -3,7 +3,7 @@ from __future__ import absolute_import
 import platform
 import os
 import re
-from .text import match
+from .text import match, is_numeric
 from .files import fread
 from .error import *
 
@@ -308,7 +308,7 @@ class Platform:
 
     def version(self, full=False):
         v = (self.os_full_ver if full else self.os_ver).split(".")
-        return tuple(map(lambda x: int(x) if x.isnumeric() else x, v))
+        return tuple(map(lambda x: int(x) if is_numeric(x) else x, v))
 
     #------------------------------------------------------------------------------------------
 

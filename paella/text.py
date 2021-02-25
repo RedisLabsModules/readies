@@ -26,3 +26,22 @@ def heredoc(s):
     if s.find('\n') > -1:
         s = str.lstrip(textwrap.dedent(s))
     return s 
+
+#----------------------------------------------------------------------------------------------
+
+def is_int(x):
+    try:
+        n = int(x)
+        return True
+    except:
+        return False
+
+def is_float(x):
+    try:
+        n = float(x)
+        return True
+    except:
+        return False
+
+def is_numeric(x):
+    return re.match(r'^\d+$', x) is not None
