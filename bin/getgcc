@@ -17,12 +17,23 @@ class SystemSetup(paella.Setup):
         paella.Setup.__init__(self, nop)
         self.modern = modern
 
-    def debian_compat(self):
+    def ubuntu(self):
         self.install("build-essential")
-        if self.modern and self.osnick == 'trusty':
+        if self.modern:
             self.add_repo("ppa:ubuntu-toolchain-r/test")
-            self.install("gcc-9 g++-9")
-            self.run("update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-9")
+            if self.install("gcc-10 g++-10", output=False, _try=True) == 0:
+                self.run("update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 60 --slave /usr/bin/g++ g++ /usr/bin/g++-10")
+            else:
+                self.install("gcc-9 g++-9")
+                self.run("update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-9")
+
+    def debian(self):
+        if not self.modern:
+            self.install("build-essential")
+        else:
+            self.run("echo 'deb http://deb.debian.org/debian testing main' > /etc/apt/sources.list.d/testing.list")
+            self.run("apt-get update -qq")
+            self.run("apt-get install -y -t testing build-essential")
 
     def redhat_compat(self):
         self.group_install("'Development Tools'")
@@ -37,8 +48,8 @@ class SystemSetup(paella.Setup):
     def macos(self):
         if sh('xcode-select -p') == '':
             fatal("Xcode tools are not installed. Please run xcode-select --install.")
-			# install brew (which will install Xcode command line tools):
-			# self.run("/bin/bash -c '$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)'")
+            # install brew (which will install Xcode command line tools):
+            # self.run("/bin/bash -c '$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)'")
 
 #----------------------------------------------------------------------------------------------
 
