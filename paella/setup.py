@@ -66,8 +66,8 @@ class Runner:
             if output != True:
                 if output.on_error():
                     os.system("cat {}".format(temppath))
-            eprint("command failed: " + cmd)
-            sys.stderr.flush()
+                eprint("command failed: " + cmd)
+                sys.stderr.flush()
         if output != True:
             os.remove(temppath)
         if rc > 0 and not _try:
@@ -305,6 +305,7 @@ class Setup(OnPlatform):
         self.osnick = self.platform.osnick
         self.dist = self.platform.dist
         self.ver = self.platform.os_ver
+        self.version = self.platform.version(full=True)
         self.repo_refresh = True
 
         self.package_manager = PackageManager.detect(self.platform, self.runner)

@@ -306,6 +306,12 @@ class Platform:
     def triplet(self):
         return '-'.join([self.os, self.osnick, self.arch])
 
+    def version(self, full=False):
+        v = (self.os_full_ver if full else self.os_ver).split(".")
+        return tuple(map(lambda x: int(x) if x.isnumeric() else x, v))
+
+    #------------------------------------------------------------------------------------------
+
     def is_debian_compat(self):
         return self.dist == 'debian' or self.dist == 'ubuntu' or self.dist == 'linuxmint'
 
@@ -324,6 +330,8 @@ class Platform:
                 if re.search('docker', line):
                     return True
         return False
+
+    #------------------------------------------------------------------------------------------
 
     def report(self):
         if self.dist != "":
