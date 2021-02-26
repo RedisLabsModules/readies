@@ -46,10 +46,17 @@ class SystemSetup(paella.Setup):
         self.group_install("'Development Tools'")
 
     def macos(self):
-        if sh('xcode-select -p') == '':
-            fatal("Xcode tools are not installed. Please run xcode-select --install.")
-            # install brew (which will install Xcode command line tools):
-            # self.run("/bin/bash -c '$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)'")
+        if self.modern:
+            self.install("gcc@9")
+            self.run("%s/bin/symlink -f --target /usr/local/bin/gcc-9 --link /usr/local/bin/gcc" % ROOT)
+            self.run("%s/bin/symlink -f --target /usr/local/bin/g++-9 --link /usr/local/bin/g++" % ROOT)
+            self.run("%s/bin/symlink -f --target /usr/local/bin/gcc-9 --link /usr/local/bin/cc" % ROOT)
+            self.run("%s/bin/symlink -f --target /usr/local/bin/g++-9 --link /usr/local/bin/c++" % ROOT)
+        else:
+            if sh('xcode-select -p') == '':
+                fatal("Xcode tools are not installed. Please run xcode-select --install.")
+                # install brew (which will install Xcode command line tools):
+                # self.run("/bin/bash -c '$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)'")
 
 #----------------------------------------------------------------------------------------------
 
