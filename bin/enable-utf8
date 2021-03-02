@@ -1,14 +1,34 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-if [[ ! -z $(command -v yum) && -f /etc/yum.conf ]]; then
-	if [[ -z $(grep '^override_install_langs=' /etc/yum.conf) ]]; then
+create_utf8_profile_script() {
+	[[ -f /etc/profile.d/utf8.sh ]] && return
+	local x="$1"
+	x="${x:-en_US}"
+	cat <<-EOF > /etc/profile.d/utf8.sh
+		export LANG="${x}.UTF-8"
+		# export LANGUAGE="${x}.UTF-8"
+		export LC_ALL="${x}.UTF-8"
+EOF
+}
+
+if command -v apt-get &> /dev/null; then
+	if export LANG=en_US.UTF-8 2>&1 | grep warning &> /dev/null; then
+		if ! dpkg -l locales locale-gen &> /dev/null; then
+			apt-get -qq update
+			apt-get install -q -y locales
+		fi
+		locale-gen --purge en_US.UTF-8
+		dpkg-reconfigure -f noninteractive locales
+	fi
+	create_utf8_profile_script
+
+elif command -v yum &> /dev/null; then
+	if [[ -f /etc/yum.conf && -z $(grep '^override_install_langs=' /etc/yum.conf) ]]; then
 		sed -i 's/^\(override_install_langs=\)/# \1/' /etc/yum.conf
 		yum reinstall -y glibc-common
 	fi
-	
-	export LC_ALL=en_US.UTF-8
-	export LANG=en_US.UTF-8
+	create_utf8_profile_script
+
 else
-	export LC_ALL=C.UTF-8
-	export LANG=C.UTF-8
+	create_utf8_profile_script "C"
 fi
