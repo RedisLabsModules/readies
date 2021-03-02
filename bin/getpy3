@@ -87,7 +87,7 @@ install_python_on_old_ubuntu() {
 
 install_python() {
 	if [[ $(uname) == Darwin ]]; then
-		if [[ -z $(command -v brew) ]]; then
+		if ! is_command brew; then
 			eprint "Unable to install Python without brew. Aborting."
 			eprint "Please install brew and retry."
 			exit 1
@@ -97,7 +97,7 @@ install_python() {
 		[[ $FIX != 0 ]] && export FIX=1
 	fi
 
-	if [[ ! -z $(command -v apt-get) ]]; then
+	if is_command apt-get; then
 		runn apt-get -qq update
 		osver=$(source /etc/os-release; echo ${ID}${VERSION_ID})
 		if [[ $osver == ubuntu14.04 || $osver == ubuntu16.04 ]]; then
@@ -105,19 +105,19 @@ install_python() {
 		else
 			runn apt-get -qq install -y python3
 		fi
-	elif [[ ! -z $(command -v dnf) ]]; then
+	elif is_command dnf; then
 		runn dnf install -y python3
-	elif [[ ! -z $(command -v yum) ]]; then
+	elif is_command yum; then
 		runn yum install -y epel-release
 		runn yum install -y python36
-	elif [[ ! -z $(command -v zypper) ]]; then
+	elif is_command zypper; then
 		runn zypper install -y python3
-	elif [[ ! -z $(command -v apk) ]]; then
+	elif is_command apk; then
 		runn apk update
 		runn apk add python3
-	elif [[ ! -z $(command -v brew) ]]; then
+	elif is_command brew; then
 		runn brew install python3
-	elif [[ ! -z $(command -v pkg) ]]; then
+	elif is_command pkg; then
 		runn pkg install -y python3
 	fi
 }
@@ -132,25 +132,25 @@ install_pip() {
 	
 	local packs="ca-certificates wget"
 
-	if [[ ! -z $(command -v apt-get) ]]; then
+	if is_command apt-get; then
 		runn apt-get -qq update
-		runn apt-get -qq install -y $packs
+		runn apt-get install -y $packs
 		if [[ ! -z $(apt-cache search --names-only '^python3-distutils$')  ]]; then
-			runn apt-get -qq install -y python3-distutils
+			runn apt-get install -y python3-distutils
 		fi
-	elif [[ ! -z $(command -v dnf) ]]; then
+	elif is_command dnf; then
 		runn dnf install -y $packs
-	elif [[ ! -z $(command -v yum) ]]; then
+	elif is_command yum; then
 		runn yum install -y $packs
-	elif [[ ! -z $(command -v zypper) ]]; then
+	elif is_command zypper; then
 		packs+=" python-xml"
 		runn zypper install -y $packs
-	elif [[ ! -z $(command -v apk) ]]; then
+	elif is_command apk; then
 		runn apk update
 		runn apk add $packs
-	elif [[ ! -z $(command -v brew) ]]; then
+	elif is_command brew; then
 		runn brew install wget
-	elif [[ ! -z $(command -v pkg) ]]; then
+	elif is_command pkg; then
 		runn pkg install -y $packs
 	fi
 
@@ -173,7 +173,7 @@ fi
 [[ -z $MYPY || $FORCE == 1 ]] && install_python
 
 check_variants
-if [[ -z $(command -v $MYPY) ]]; then
+if ! is_command $MYPY; then
 	eprint "Cannot install Python3. Aborting."
 	exit 1
 fi

@@ -77,7 +77,7 @@ check_variants() {
 
 install_python() {
 	if [[ $(uname) == Darwin ]]; then
-		if [[ -z $(command -v brew) ]]; then
+		if ! is_command brew; then
 			eprint "Unable to install Python without brew. Aborting."
 			eprint "Please install brew and retry."
 			exit 1
@@ -87,21 +87,21 @@ install_python() {
 		[[ $FIX != 0 ]] && export FIX=1
 	fi
 
-	if [[ ! -z $(command -v apt-get) ]]; then
+	if is_command apt-get; then
 		runn apt-get -qq update
 		runn apt-get -qq install -y python
-	elif [[ ! -z $(command -v dnf) ]]; then
+	elif is_command dnf; then
 		runn dnf install -y python2
-	elif [[ ! -z $(command -v yum) ]]; then
+	elif is_command yum; then
 		runn yum install -y python2
-	elif [[ ! -z $(command -v zypper) ]]; then
+	elif is_command zypper; then
 		runn zypper install -y python2
-	elif [[ ! -z $(command -v apk) ]]; then
+	elif is_command apk; then
 		runn apk update
 		runn apk add python2
-	elif [[ ! -z $(command -v brew) ]]; then
+	elif is_command brew; then
 		runn brew install python2
-	elif [[ ! -z $(command -v pkg) ]]; then
+	elif is_command pkg; then
 		runn pkg install -y python2
 	fi
 }
@@ -117,24 +117,24 @@ install_pip() {
 	local packs="ca-certificates wget"
 	# local packs=""
 
-	if [[ ! -z $(command -v apt-get) ]]; then
+	if is_command apt-get; then
 		runn apt-get -qq update
-		runn apt-get -qq install -y $packs # python-pip
-	elif [[ ! -z $(command -v dnf) ]]; then
+		runn apt-get install -y $packs # python-pip
+	elif is_command dnf; then
 		runn dnf install -y $packs # python2-pip
-	elif [[ ! -z $(command -v yum) ]]; then
+	elif is_command yum; then
 		runn $READIES/bin/getepel
 		runn yum install -y $packs # python2-pip
-	elif [[ ! -z $(command -v zypper) ]]; then
+	elif is_command zypper; then
 		packs+=" python-xml" # python2-pip
 		runn zypper install -y $packs
-	elif [[ ! -z $(command -v apk) ]]; then
+	elif is_command apk; then
 		runn apk update
 		runn apk add $packs # python2-pip
-	elif [[ ! -z $(command -v brew) ]]; then
+	elif is_command brew; then
 		runn brew install wget
 		# runn $MYPY -m ensurepip
-	elif [[ ! -z $(command -v pkg) ]]; then
+	elif is_command pkg; then
 		runn pkg install -y $packs # python2-pip
 	fi
 
@@ -157,7 +157,7 @@ fi
 [[ -z $MYPY || $FORCE == 1 ]] && install_python
 
 check_variants
-if [[ -z $(command -v $MYPY) ]]; then
+if ! is_command $MYPY; then
 	eprint "Cannot install Python2. Aborting."
 	exit 1
 fi
