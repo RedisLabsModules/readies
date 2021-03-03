@@ -361,7 +361,11 @@ class Setup(OnPlatform):
             self.install_downloaders()
             with_sudo = self.os != 'macos'
             pip_user = '--user' if self.os == 'macos' else ''
-            self.run("wget -q https://bootstrap.pypa.io/get-pip.py -O /tmp/get-pip.py",
+            if sys.version_info.major == 2:
+                url = 'https://bootstrap.pypa.io/2.7/get-pip.py'
+            elif sys.version_info.major >= 3:
+                url = "https://bootstrap.pypa.io/get-pip.py"
+            self.run("wget -q %s -O /tmp/get-pip.py" % url,
                      output=output, _try=_try)
             self.run(self.python + " /tmp/get-pip.py pip=={PIP_VER} {PIP_USER}".
                      format(PIP_VER=PIP_VER, PIP_USER=pip_user),
