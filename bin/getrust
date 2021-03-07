@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -e
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+READIES=$(cd $HERE/.. && pwd)
+. $READIES/shibumi/defs
+
+runn 'curl https://sh.rustup.rs -sSf | sh -s -- -y'
+cp $HOME/.cargo/env /etc/profile.d/rust.sh
+
