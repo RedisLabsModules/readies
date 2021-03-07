@@ -5,6 +5,13 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 READIES=$(cd $HERE/.. && pwd)
 . $READIES/shibumi/defs
 
-runn 'curl https://sh.rustup.rs -sSf | sh -s -- -y'
-cp $HOME/.cargo/env /etc/profile.d/rust.sh
-
+runn "curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh -s -- -y"
+if [[ -f $HOME/.cargo/env ]]; then
+    cp $HOME/.cargo/env /etc/profile.d/rust.sh
+elif [[ -f /usr/local/cargo/env ]]; then
+	cp /usr/local/cargo/env /etc/profile.d/rust.sh
+else
+	eprint "rust: environment file not found"
+	exit 1
+fi
+exit 0
