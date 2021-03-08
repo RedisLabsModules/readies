@@ -101,8 +101,9 @@ class RedisSourceSetup(paella.Setup):
             return [version]
 
         if sv.minor is None:
-            sv.minor = 0
-        br = '{}.{}'.format(sv.major, sv.minor)
+            br='{}'.format(sv.major)
+        else:
+            br = '{}.{}'.format(sv.major, sv.minor)
         # select the latest version of the major.minor branch
         return list(filter(lambda v: v.startswith(br + '.'), self.redis_versions))
     
