@@ -23,6 +23,11 @@ if command -v dnf &> /dev/null; then
 		runn dnf install -q -y http://rpms.remirepo.net/enterprise/remi-release-${EPEL}.rpm
 	fi
 	runn dnf config-manager -qy --set-enabled remi
+	
+	# enable raven repo (i.e. pkgs.org)
+	if [[ $EPEL == 8 && `uname -m` == x86_64 && NO_RAVEN != 1 ]]; then
+		runn dnf install -y https://pkgs.dyn.su/el8/base/x86_64/raven-release-1.0-1.el8.noarch.rpm
+	fi
 elif command -v yum &> /dev/null; then
 	runn yum install -q -y epel-release yum-utils
 	if ! rpm -q remi-release &> /dev/null; then
