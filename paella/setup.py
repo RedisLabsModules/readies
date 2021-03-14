@@ -363,21 +363,9 @@ class Setup(OnPlatform):
                         format(PYTHON=self.python, CMD=cmd),
                         output=output, _try=_try, sudo=True)
 
+    # deprecated
     def setup_pip(self, output="on_error", _try=False):
-        if self.run(self.python + " -m pip --version", _try=True, output=False) != 0:
-            if sys.version_info.major == 3:
-                # required for python >= 3.6, may not exist in prior versions
-                self.install("python3-distutils", _try=True)
-            self.install_downloaders()
-            with_sudo = self.os != 'macos'
-            pip_user = '--user' if self.os == 'macos' else ''
-            self.run("wget -q https://bootstrap.pypa.io/get-pip.py -O /tmp/get-pip.py",
-                     output=output, _try=_try)
-            self.run(self.python + " /tmp/get-pip.py pip=={PIP_VER} {PIP_USER}".
-                     format(PIP_VER=PIP_VER, PIP_USER=pip_user),
-                     output=output, _try=_try, sudo=with_sudo)
-            if sys.version_info.major == 3:
-                self.pip_install("setuptools==49.3.0")
+        return
 
     #------------------------------------------------------------------------------------------
 
@@ -431,11 +419,6 @@ class Setup(OnPlatform):
             rm -rf $dir
             """)
 
+    # deprecated
     def install_ubuntu_modern_gcc(self, _try=False):
-        if self.dist != 'ubuntu':
-            eprint("Warning: not Ubuntu - modern gcc not installed")
-            return
-        self.install("software-properties-common")
-        self.run("add-apt-repository -y ppa:ubuntu-toolchain-r/test")
-        self.install("gcc-7 g++-7")
-        self.run("update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 60 --slave /usr/bin/g++ g++ /usr/bin/g++-7")
+        return
