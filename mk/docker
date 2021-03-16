@@ -68,13 +68,22 @@ OSNICK ?= debian
 
 ifeq ($(OS.custom),)
 
-OS.centos7=centos:7.8.2003
-OS.fedora=fedora:32
+OS.centos7=centos:7
+OS.centos7.8=centos:7.8.2003
+OS.centos8=centos:8
+OS.centos8.3=centos:8.2011
+OS.fedora=fedora:latest
+OS.fedora33=fedora:33
 OS.focal=ubuntu:focal
 OS.bionic=ubuntu:bionic
 OS.xenial=ubuntu:xenial
 OS.buster=debian:buster
 OS.stretch=debian:stretch
+OS.leap=opensuse/leap:latest
+OS.leap15.2=opensuse/leap:15.2
+OS.leap15.3=opensuse/leap:15.3
+OS.tumbleweed=opensuse/tumbleweed
+OS.archlinux=archlinux:latest
 
 endif # OS
 
