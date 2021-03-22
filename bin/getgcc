@@ -38,8 +38,11 @@ class SystemSetup(paella.Setup):
     def redhat_compat(self):
         self.group_install("'Development Tools'")
         if self.modern:
-            self.install("centos-release-scl")
-            self.install("devtoolset-9")
+            if self.dist == 'centos' and self.os_version[0] == 8:
+                self.install("gcc-toolset-9-gcc gcc-toolset-9-gcc-c++")
+            else:
+                self.install("centos-release-scl")
+                self.install("devtoolset-9")
             self.run("cp /opt/rh/devtoolset-9/enable /etc/profile.d/scl-devtoolset-9.sh")
 
     def fedora(self):
