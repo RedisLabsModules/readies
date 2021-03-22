@@ -305,7 +305,8 @@ class Setup(OnPlatform):
         self.osnick = self.platform.osnick
         self.dist = self.platform.dist
         self.ver = self.platform.os_ver
-        self.version = self.platform.version(full=True)
+        self.os_version = self.platform.os_version
+        self.version = self.platform.version(full=True) # deprecated
         self.repo_refresh = True
 
         self.package_manager = PackageManager.detect(self.platform, self.runner)

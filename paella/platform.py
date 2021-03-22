@@ -306,9 +306,14 @@ class Platform:
     def triplet(self):
         return '-'.join([self.os, self.osnick, self.arch])
 
+    # deprecated
     def version(self, full=False):
         v = (self.os_full_ver if full else self.os_ver).split(".")
         return tuple(map(lambda x: int(x) if is_numeric(x) else x, v))
+
+    @property
+    def os_version(self):
+        return tuple(map(lambda x: int(x) if is_numeric(x) else x, self.os_full_ver))
 
     #------------------------------------------------------------------------------------------
 
