@@ -59,7 +59,7 @@ FULL_VARIANT.release:=$(OS)-$(ARCH)-release$(_VARIANT.string)
 
 # if primary variant and SETVARIANT are present, write variant to file
 ifneq ($(VARIANT.primary),)
-ifneq ($(origin SETVARIANT),)
+ifneq ($(origin SETVARIANT),undefined)
 $(eval $(shell echo $(VARIANT)>$(ROOT)/VARIANT))
 endif
 endif
