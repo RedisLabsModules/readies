@@ -49,8 +49,8 @@ else
     cachedir=$HOME/.cache
 fi
 bazdir="$cachedir/bazelisk/downloads/bazelbuild/${bazfullver}/bin/"
-mkdir -p "$bazdir" 
-cp output/bazel "$bazdir" 
+mkdir -p "$bazdir"
+cp output/bazel "$bazdir"
 
 cd $curdir
 rm -rf $basedir $bazverfile
@@ -61,7 +61,7 @@ exec bazelisk "$@"
         self.run("chmod +x /usr/local/bin/bazel")
 
     #------------------------------------------------------------------------------------------
-    
+
     def common_first(self):
         self.install_downloaders()
         self.install("git unzip zip sudo rsync")
@@ -71,7 +71,10 @@ exec bazelisk "$@"
     def debian_compat(self):
         self.install("software-properties-common pkg-config")
         self.install("build-essential swig libcurl3-dev libfreetype6-dev libhdf5-serial-dev libzmq3-dev zlib1g-dev python3-dev")
-        self.install("openjdk-8-jdk openjdk-8-jre-headless")
+        if self.osnick == 'buster':
+            self.install("openjdk-11-jdk openjdk-11-jre-headless")
+        else:
+            self.install("openjdk-8-jdk openjdk-8-jre-headless")
         if self.osnick == 'trusty':
             self.run("add-apt-repository -y ppa:ubuntu-toolchain-r/test")
             self.run("apt-get -qq update")
