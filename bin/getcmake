@@ -17,7 +17,7 @@ os.environ["PYTHONWARNINGS"] = 'ignore:DEPRECATION::pip._internal.cli.base_comma
 
 #----------------------------------------------------------------------------------------------
 
-CMAKE_VER='3.19.2'
+CMAKE_VER='3.19.5'
 
 #----------------------------------------------------------------------------------------------
 
@@ -35,7 +35,7 @@ class CMakeSetupFromRepo(paella.Setup):
         self.run("%s/bin/getepel" % READIES)
         self.install("cmake3")
         self.run("ln -sf `command -v cmake3` /usr/local/bin/cmake")
-        
+
     def fedora(self):
         self.redhat_compat()
 
