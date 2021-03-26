@@ -86,10 +86,11 @@ make build      # build Docker images
   PACK=1          # create packages
   ARTIFACTS=1     # copy artifacts from docker image
 
-make publish   # push Docker image to Dockerhub
-  OFFICIAL=0     # do not publish to official (redislabs/*) repos
-  PUSH_LATEST=0  # do not publish 'latest' version
-  PUSH_EDGE=0    # do not publish 'edge' version
+make publish        # push Docker image to Dockerhub
+  OFFICIAL=0|1        # whether to publish to official (redislabs/*) repos
+  PUSH_GENERAL=0|1    # whether to publish non-official version
+  PUSH_LATEST=0|1     # whether to publish 'latest' version
+  PUSH_EDGE=0|1       # whether to publish 'edge' version
 
 make clean     # remove docker images
 
@@ -118,13 +119,14 @@ endif
 
 else ifneq ($(BRANCH),)
 D_VERSION=$(BRANCH)
-ifneq ($(findstring $(BRANCH),$(INT_BRANCHES)),)
-PUSH_GENERAL=1
-endif
 
 else
 BRANCH=$(GIT_BRANCH)
 D_VERSION=$(BRANCH)
+endif
+
+ifneq ($(findstring $(BRANCH),$(INT_BRANCHES)),)
+PUSH_GENERAL=1
 endif
 
 ifneq ($(OFFICIAL),0)
@@ -237,6 +239,7 @@ ifeq ($(PUSH_EDGE),1)
 	$(SHOW)docker push $(D_OFFICIAL_EDGE_NAME)
 endif
 endif # OFFICIAL
+	@true
 
 .PHONY: publish
 
