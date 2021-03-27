@@ -29,9 +29,10 @@ if command -v dnf &> /dev/null; then
 		runn dnf install -y https://pkgs.dyn.su/el8/base/x86_64/raven-release-1.0-1.el8.noarch.rpm
 	fi
 elif command -v yum &> /dev/null; then
-	runn yum install -q -y epel-release yum-utils
+	runn yum install -q -y epel-release yum-utils centos-release-scl
 	if ! rpm -q remi-release &> /dev/null; then
 		runn yum install -q -y http://rpms.remirepo.net/enterprise/remi-release-${EPEL}.rpm
 	fi
 	runn yum-config-manager -q -y --enable remi
+	runn yum-config-manager -q -y --enable rhel-server-rhscl-7-rpms
 fi
