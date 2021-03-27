@@ -15,22 +15,22 @@ import paella  # noqa: F401
 
 os.environ["PYTHONWARNINGS"] = 'ignore:DEPRECATION::pip._internal.cli.base_command'
 
-CLANG_FORMAT_BASE_URL = "https://github.com/muttleyxd/clang-tools-static-binaries/releases/download/master-22538c65"
-
 #----------------------------------------------------------------------------------------------
 
-class CLangSetup(paella.Setup):
+CLANG_FORMAT_BASE_URL = "https://github.com/muttleyxd/clang-tools-static-binaries/releases/download/master-22538c65"
+
+class CLangFormatSetup(paella.Setup):
     def __init__(self, args):
         paella.Setup.__init__(self, nop=args.nop)
-        self.format = args.format
 
     def common_first(self):
         pass
 
     def linux(self):
         self.install_downloaders()
+
         if self.format and self.arch == 'x64':
-            self.run("wget -O /usr/local/bin/clang-format-10 %s/clang-format-10_linux-amd64" % CLANG_FORMAT_BASE_URL)
+            self.run("wget -q -O /usr/local/bin/clang-format-10 %s/clang-format-10_linux-amd64" % CLANG_FORMAT_BASE_URL)
             self.run("chmod +x /usr/local/bin/clang-format-10")
             self.run("ln -sf /usr/local/bin/clang-format-10 /usr/local/bin/clang-format")
 
@@ -43,13 +43,69 @@ class CLangSetup(paella.Setup):
 
 #----------------------------------------------------------------------------------------------
 
+class CLangSetup(paella.Setup):
+    def __init__(self, args):
+        paella.Setup.__init__(self, nop=args.nop)
+        self.modern = args.modern
+
+    def common_first(self):
+        if not self.modern:
+            self.install("clang")
+
+    def debian_compat(self):
+        if not self.modern:
+            return
+        self.install("software-properties-common apt-transport-https")
+        self.install("unzip lsb-release gnupg2")
+        
+        self.run(r"""
+            cd /tmp
+            wget -q https://apt.llvm.org/llvm.sh
+            bash llvm.sh
+            rm llvm.sh
+            """)
+        clang_ver = sh("ls /usr/bin/clang-* 2>/dev/null | grep -E 'clang-[[:digit:]].*' | cut -f2 -d- | sort -n | head -1").strip()
+        if clang_ver == "":
+            raise paella.Error("Error installing CLang via apt.llvm.org")
+
+        self.install("clang-tools-%s" % clang_ver)
+        
+        # arrange llvm-* and clang-* version-neutral symlinks
+        self.run(r"""
+            cd /usr/bin
+            for f in `ls llvm*-{CLANG_VER} clang*-{CLANG_VER} 2>/dev/null`; do ln -sf $f ${{f/%-{CLANG_VER}/}}; done
+            """.format(CLANG_VER=clang_ver))
+        
+    def redhat_compat(self):
+        if not self.modern:
+            return
+        self.run("%s/bin/getepel" % READIES)
+        self.install("llvm-toolset-7.0")
+        self.run("cp /opt/rh/llvm-toolset-7.0/enable /etc/profile.d/llvm-toolset-7.0.sh")
+
+    def fedora(self):
+        if self.modern:
+            self.install("clang")
+
+    def macos(self):
+        self.instll("clang")
+
+    def common_last(self):
+        pass
+
+#----------------------------------------------------------------------------------------------
+
 parser = argparse.ArgumentParser(description='Install CLang tools')
 parser.add_argument('-n', '--nop', action="store_true", help='no operation')
 parser.add_argument('--format', action="store_true", default=False, help='Install clang-format')
+parser.add_argument('--modern', action="store_true", help="Install modern CLang/LLVM version") 
 args = parser.parse_args()
 
 try:
-    CLangSetup(args).setup()
+    if args.format:
+        CLangFormatSetup(args).setup()
+    else:
+        CLangSetup(args).setup()
 except Exception as x:
     traceback.print_exc()
     fatal(str(x))
