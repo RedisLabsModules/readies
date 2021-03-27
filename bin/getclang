@@ -23,23 +23,18 @@ class CLangFormatSetup(paella.Setup):
     def __init__(self, args):
         paella.Setup.__init__(self, nop=args.nop)
 
-    def common_first(self):
-        pass
-
     def linux(self):
         self.install_downloaders()
 
-        if self.format and self.arch == 'x64':
+        if self.arch == 'x64':
             self.run("wget -q -O /usr/local/bin/clang-format-10 %s/clang-format-10_linux-amd64" % CLANG_FORMAT_BASE_URL)
             self.run("chmod +x /usr/local/bin/clang-format-10")
             self.run("ln -sf /usr/local/bin/clang-format-10 /usr/local/bin/clang-format")
+        else:
+            raise paella.Error("Error installing CLang Format on not-x64 platform")
 
     def macos(self):
-        if self.format:
-            self.instll("clang-format")
-
-    def common_last(self):
-        pass
+        self.instll("clang-format")
 
 #----------------------------------------------------------------------------------------------
 
