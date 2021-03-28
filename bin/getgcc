@@ -45,7 +45,7 @@ class SystemSetup(paella.Setup):
             else:
                 self.install("centos-release-scl")
                 self.install("devtoolset-9")
-                self.install("toolset-9-libatomic-devel")
+                self.install("devtoolset-9-libatomic-devel")
                 self.run("cp /opt/rh/devtoolset-9/enable /etc/profile.d/scl-devtoolset-9.sh")
 
     def fedora(self):
