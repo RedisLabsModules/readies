@@ -37,6 +37,9 @@ class SystemSetup(paella.Setup):
 
     def redhat_compat(self):
         self.group_install("'Development Tools'")
+        if self.dist == "centos" and self.ver == "8":
+                return
+
         if self.modern:
             if self.dist == 'centos' and self.os_version[0] == 8:
                 self.install("gcc-toolset-9-gcc gcc-toolset-9-gcc-c++")
