@@ -1,3 +1,6 @@
+/wd40/target/
+/wd40/Cargo.lock
+
 # Object files
 *.o
 *.ko
