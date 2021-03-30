@@ -18,8 +18,8 @@ fi
 [[ $VERBOSE == 1 ]] && echo "Last tag is $last_tag"
 tag_sha=$(git show-ref -s $last_tag)
 
-git diff --quiet
-if [[ $? != 0 ]]; then
+{ git diff --quiet; E=$?; } || true
+if [[ $E != 0 ]]; then
 	echo "Working tree is dirty" >&2
 	exit 1
 fi
