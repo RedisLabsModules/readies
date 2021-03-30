@@ -18,7 +18,8 @@ EOF
 
 export __UTF8=UTF-8
 if command -v apt-get &> /dev/null; then
-	if export LANG="en_US.${__UTF8}" 2>&1 | grep warning &> /dev/null; then
+	# if export LANG="en_US.${__UTF8}" 2>&1 | grep warning &> /dev/null; then
+	if ! locale -a | grep 'en_US.utf8' &> /dev/null; then
 		if ! dpkg -l locales locale-gen &> /dev/null; then
 			runn apt-get -qq update
 			runn apt-get install -q -y locales
