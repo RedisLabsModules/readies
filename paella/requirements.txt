@@ -1,5 +1,6 @@
+addict
+click
 jinja2
 semantic_version
 six
-click
-
+toml
