@@ -18,7 +18,6 @@ parser.add_argument('-f', '--force', action="store_true", default=False, help='O
 parser.add_argument('-n', '--nop', action="store_true", default=False, help='No operation')
 args = parser.parse_args()
 
-BB()
 target = os.path.abspath(args.target)
 if args.verify and not os.path.exists(target):
     eprint("Target does not exist: %s" % target)

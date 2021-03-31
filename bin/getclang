@@ -117,7 +117,6 @@ parser.add_argument('--format', action="store_true", default=False, help='Instal
 parser.add_argument('--modern', action="store_true", help="Install modern CLang/LLVM version") 
 args = parser.parse_args()
 
-BB()
 try:
     if args.format:
         CLangFormatSetup(args).setup()
