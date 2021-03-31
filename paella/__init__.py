@@ -4,6 +4,7 @@ from .classes import *
 from .debug import *
 from .utils import *
 from .files import *
+from .func import *
 from .text import *
 from .log import *
 from .platform import *
@@ -35,3 +36,5 @@ Global.cwd = cwd
 Global.sh = sh
 Global.ctor = ctor
 Global.noctor = noctor
+Global.foldl = foldl
+Global.foldr = foldr
