@@ -104,7 +104,7 @@ class CLangSetup(paella.Setup):
             self.install("clang")
 
     def macos(self):
-        self.install("clang")
+        self.install("llvm")
 
     def common_last(self):
         pass
