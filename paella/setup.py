@@ -341,12 +341,12 @@ class Setup(OnPlatform):
             return "/etc/profile.d"
 
     def cp_to_profile_d(self, file, as_file=None):
-        if !os.path.isfile(file):
+        if not os.path.isfile(file):
             raise self.Error("file not found: %s" % file)
         d = self.profile_d
         if as_file is None:
             as_file = os.path.basename(file)
-        if !os.path.isdir(d):
+        if not os.path.isdir(d):
             paella.mkdir_p(d)
         shutil.copyfile(file, os.path.join(d, as_file))
 

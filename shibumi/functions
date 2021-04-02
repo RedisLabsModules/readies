@@ -129,7 +129,8 @@ setup_profile_d() {
 	local profile
 	if [[ `uname -s` == Darwin ]]; then
 		d="$HOME/.profile.d"
-		profile="$HOME/.profile"
+		profile="$HOME/.bash_profile"
+		[[ ! -f $profile ]] && touch $profile
 	else
 		d="/etc/profile.d"
 		profile="/etc/profile"
@@ -137,7 +138,7 @@ setup_profile_d() {
 	if [[ ! -d $d ]]; then
 		mkdir -p "$d"
 	fi
-	if ! grep -q 'profile.d' $profile; then
+	if ! grep -q 'profile.d' $profile 2>/dev/null; then
 		printf "\nif [ -d $d ]; then for __sh in $d/*.sh; do if [ -r \$__sh ]; then . \$__sh; fi; done; unset __sh; fi\n" >> $profile
 	fi
 }
@@ -160,4 +161,3 @@ add_to_profile_d() {
 }
 
 #----------------------------------------------------------------------------------------------
-setup_profile_d
