@@ -22,3 +22,5 @@ fi
 if [[ -d $READIES ]]; then
 	. $READIES/shibumi/functions 
 fi
+
+setup_profile_d

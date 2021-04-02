@@ -36,9 +36,12 @@ $OP wget -q -O $tar https://dl.google.com/go/go${GOLANG_VER}.${GOLANG_OS}-${GOLA
 $OP tar -C /usr/local -xzf $tar
 $OP rm -f $tar
 
+profile_d=`get_profile_d`
 if [[ $NOP != 1 ]]; then
-	echo 'export PATH=$PATH:/usr/local/go/bin' > /etc/profile.d/golang.sh
-	echo 'export PATH=$PATH:`/usr/local/go/bin/go env GOPATH`/bin' >> /etc/profile.d/golang.sh
+	cat <<-EOF > $profile_d/golang.sh
+		export PATH=$PATH:/usr/local/go/bin
+		export PATH=$PATH:`/usr/local/go/bin/go env GOPATH`/bin
+EOF
 fi
 
-echo "to enable golang, invoke: source /etc/profile.d/golang.sh"
+echo "to enable golang, invoke: source $profile_d/golang.sh"

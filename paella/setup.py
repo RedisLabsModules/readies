@@ -2,6 +2,7 @@
 import os
 import sys
 import re
+import shutil
 import subprocess
 import tempfile
 import textwrap
@@ -331,6 +332,23 @@ class Setup(OnPlatform):
     @staticmethod
     def has_command(cmd):
         return Runner.has_command(cmd)
+
+    @property
+    def profile_d(self):
+        if self.os == 'macos':
+            return os.path.join(os.getenv('HOME'), ".profile.d")
+        else:
+            return "/etc/profile.d"
+
+    def cp_to_profile_d(self, file, as_file=None):
+        if !os.path.isfile(file):
+            raise self.Error("file not found: %s" % file)
+        d = self.profile_d
+        if as_file is None:
+            as_file = os.path.basename(file)
+        if !os.path.isdir(d):
+            paella.mkdir_p(d)
+        shutil.copyfile(file, os.path.join(d, as_file))
 
     #------------------------------------------------------------------------------------------
 
