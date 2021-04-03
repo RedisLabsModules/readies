@@ -6,10 +6,11 @@ READIES=$(cd $HERE/.. && pwd)
 . $READIES/shibumi/defs
 
 create_utf8_profile_script() {
-	[[ -f /etc/profile.d/utf8.sh ]] && return
+	local profile_d=`get_profile_d`
+	[[ -f $profile_d/utf8.sh ]] && return
 	local x="$1"
 	x="${x:-en_US}"
-	cat <<-EOF > /etc/profile.d/utf8.sh
+	cat <<-EOF > $profile_d/utf8.sh
 		export LANG="${x}.${__UTF8}"
 		export LANGUAGE="${x}.${__UTF8}"
 		# export LC_ALL="${x}.${__UTF8}"

@@ -97,7 +97,7 @@ class CLangSetup(paella.Setup):
             return
         self.run("%s/bin/getepel" % READIES)
         self.install("llvm-toolset-7.0")
-        self.run("cp /opt/rh/llvm-toolset-7.0/enable /etc/profile.d/llvm-toolset-7.0.sh")
+        self.cp_to_profile_d("/opt/rh/llvm-toolset-7.0/enable", "llvm-toolset-7.0.sh")
 
     def fedora(self):
         if self.modern:

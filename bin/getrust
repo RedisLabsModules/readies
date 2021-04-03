@@ -6,10 +6,11 @@ READIES=$(cd $HERE/.. && pwd)
 . $READIES/shibumi/defs
 
 runn "curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh -s -- -y"
+profile_d=`get_profile_d`
 if [[ -f $HOME/.cargo/env ]]; then
-    cp $HOME/.cargo/env /etc/profile.d/rust.sh
+    cp $HOME/.cargo/env $profile_d/rust.sh
 elif [[ -f /usr/local/cargo/env ]]; then
-	cp /usr/local/cargo/env /etc/profile.d/rust.sh
+	cp /usr/local/cargo/env $profile_d/rust.sh
 else
 	eprint "rust: environment file not found"
 	exit 1

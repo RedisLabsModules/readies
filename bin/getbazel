@@ -9,8 +9,8 @@ import tempfile
 import traceback
 
 HERE = os.path.dirname(__file__)
-ROOT = os.path.abspath(os.path.join(HERE, ".."))
-sys.path.insert(0, ROOT)
+READIES = os.path.abspath(os.path.join(HERE, ".."))
+sys.path.insert(0, READIES)
 import paella  # noqa: F401
 
 os.environ["PYTHONWARNINGS"] = 'ignore:DEPRECATION::pip._internal.cli.base_command'
@@ -25,7 +25,12 @@ class BazeliskeSetup(paella.Setup):
         cmd = r"""
 #!/bin/bash
 
-. /etc/profile.d/golang.sh
+if [[ `uname -s` == Darwin ]]; then
+	profile_d="$HOME/.profile.d"
+else
+	profile_d="/etc/profile.d"
+fi
+. $profile_d/golang.sh
 
 bazverfile=$(mktemp /tmp/bazver.XXXXXX)
 bazelisk version > $bazverfile 2>&1
@@ -66,7 +71,7 @@ exec bazelisk "$@"
         self.install_downloaders()
         self.install("git unzip zip sudo rsync")
 
-        self.run("%s/bin/getgolang" % ROOT)
+        self.run("%s/bin/getgolang" % READIES)
 
     def debian_compat(self):
         self.install("software-properties-common pkg-config")
@@ -95,7 +100,7 @@ exec bazelisk "$@"
             fatal("Xcode tools are not installed. Please run xcode-select --install.")
 
     def common_last(self):
-        self.run(". /etc/profile.d/golang.sh; go get github.com/bazelbuild/bazelisk")
+        self.run(". {PROFILE_D}/golang.sh; go get github.com/bazelbuild/bazelisk".format(PROFILE_D=self.profile_d))
         self.install_bazel()
 
 #----------------------------------------------------------------------------------------------
