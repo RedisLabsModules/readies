@@ -74,6 +74,7 @@ OS.centos8=centos:8
 OS.centos8.3=centos:8.2011
 OS.fedora=fedora:latest
 OS.fedora33=fedora:33
+OS.hirsute=ubuntu:hirsute
 OS.focal=ubuntu:focal
 OS.bionic=ubuntu:bionic
 OS.xenial=ubuntu:xenial
