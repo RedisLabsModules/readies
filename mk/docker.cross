@@ -42,7 +42,7 @@ else
 _VAR=-$(VAR)
 endif
 
-BUILD_OPT += --rm
+BUILD_OPT += --rm --no-cache
 ifneq ($(PULL),0)
 BUILD_OPT += --pull
 endif
