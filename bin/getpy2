@@ -88,6 +88,7 @@ install_python() {
 	fi
 
 	if is_command apt-get; then
+		export DEBIAN_FRONTEND=noninteractive
 		runn apt-get -qq update
 		runn apt-get -qq install -y python
 	elif is_command dnf; then
@@ -118,6 +119,7 @@ install_pip() {
 	# local packs=""
 
 	if is_command apt-get; then
+		export DEBIAN_FRONTEND=noninteractive
 		runn apt-get -qq update
 		runn apt-get install -y $packs # python-pip
 	elif is_command dnf; then

@@ -166,6 +166,7 @@ xinstall() {
 	local packs="$@"
 	
 	if is_command apt-get; then
+		export DEBIAN_FRONTEND=noninteractive
 		[[ $NO_UPDATE == 1 ]] && runn apt-get update -qq
 		runn apt-get install -y "$packs"
 	elif is_command dnf; then

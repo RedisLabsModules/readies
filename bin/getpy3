@@ -77,6 +77,7 @@ check_variants() {
 }
 
 install_python_on_old_ubuntu() {
+	export DEBIAN_FRONTEND=noninteractive
 	runn apt-get install -y software-properties-common
 	runn add-apt-repository -y ppa:deadsnakes/ppa
 	runn apt-get -qq update
@@ -98,6 +99,7 @@ install_python() {
 	fi
 
 	if is_command apt-get; then
+		export DEBIAN_FRONTEND=noninteractive
 		runn apt-get -qq update
 		osver=$(source /etc/os-release; echo ${ID}${VERSION_ID})
 		if [[ $osver == ubuntu14.04 || $osver == ubuntu16.04 ]]; then
@@ -133,6 +135,7 @@ install_pip() {
 	local packs="ca-certificates wget"
 
 	if is_command apt-get; then
+		export DEBIAN_FRONTEND=noninteractive
 		runn apt-get -qq update
 		runn apt-get install -y $packs
 		if [[ ! -z $(apt-cache search --names-only '^python3-distutils$')  ]]; then
