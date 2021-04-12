@@ -61,14 +61,14 @@ check_variants() {
 
 	MYPY=""
 	PYTHON_VER=""
-	
+
 	if [[ ! -z $PYTHON ]]; then
 		PYTHON_VER="$(python --version 2>&1 | awk '{print $2}' | cut -d. -f1)"
 		[[ $PYTHON_VER == 3 ]] && MYPY=$PYTHON
 	fi
-	
+
 	[[ ! -z $PYTHON3 ]] && MYPY=$PYTHON3
-	
+
 	export MINOR="$($MYPY --version 2>&1 | awk '{print $2}' | cut -d. -f2)"
 	# Python3 <= 3.4 breaks contemporary pip
 	if (( MINOR < 5 )); then export FORCE=1; fi
@@ -121,6 +121,8 @@ install_python() {
 		runn brew install python3
 	elif is_command pkg; then
 		runn pkg install -y python3
+	elif is_command pacman; then
+		runn pacman -Syy --noconfirm python
 	fi
 }
 
@@ -128,10 +130,10 @@ install_pip() {
 	if [[ $FORCE != 1 ]]; then
 		[[ $($MYPY -m pip --version > /dev/null 2>&1; echo $?) == 0 ]] && return
 	fi
-	
+
 	pipspec=""
 	[[ $PIP != 1 ]] && pipspec="pip==$PIP"
-	
+
 	local packs="ca-certificates wget"
 
 	if is_command apt-get; then
@@ -155,6 +157,8 @@ install_pip() {
 		runn brew install wget
 	elif is_command pkg; then
 		runn pkg install -y $packs
+	elif is_command pacman; then
+		runn pacman -Syy --noconfirm $packs
 	fi
 
 	runn wget -q -O /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py
