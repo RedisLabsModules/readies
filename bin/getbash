@@ -1,0 +1,8 @@
+#!/bin/sh
+
+# A lightweight shim to add bash to alpine
+
+grep -i alpine /etc/os-release &>/dev/null
+if [ $? -eq 0 ]; then
+    apk add bash
+fi
