@@ -1,0 +1,29 @@
+#!/bin/bash
+
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+READIES=$(cd $HERE/.. && pwd)
+. $READIES/shibumi/defs
+
+VALGRIND_VER=3.17.0
+
+OP=""
+[[ $NOP == 1 ]] && OP=echo
+
+cd /tmp
+vg_dir=$(mktemp -d)
+cd $vg_dir
+$OP wget -q -O valgrind.tar.bz2 https://sourceware.org/pub/valgrind/valgrind-${VALGRIND_VER}.tar.bz2
+$OP tar xjf valgrind.tar.bz2
+cd valgrind-${VALGRIND_VER}
+runn ./configure
+runn make -j`nproc`
+runn make install
+cd /tmp
+$OP rm -rf $vg_dir
+
+profile_d=`get_profile_d`
+if [[ $NOP != 1 ]]; then
+	cat <<-EOF > $profile_d/valgrind.sh
+		export VALGRIND_LIB=/usr/local/libexec/valgrind/
+EOF
+fi

@@ -1,0 +1,55 @@
+#!/bin/bash
+
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+READIES=$(cd $HERE/.. && pwd)
+. $READIES/shibumi/defs 
+
+OP=""
+[[ $NOP == 1 ]] && OP=echo
+
+xinstall git
+if ! runn python3 -m pip install --no-cache-dir git+https://github.com/inducer/pudb.git@main; then
+	cd /tmp
+	runn git clone https://github.com/inducer/pudb.git
+	cd pudb
+	# this is debian-specific right now, as pip/git install is failing on arm
+	xinstall python3-dev
+	runn python3 setup.py install
+	cd ..
+	$OP rm -rf pudb
+fi
+
+cfg="$HOME/.config/pudb/pudb.cfg"
+$OP mkdir -p `dirname $cfg`
+if [[ ! -e $cfg ]]; then
+	cat <<-EOF > $cfg
+		[pudb]
+		breakpoints_weight = 1
+		current_stack_frame = top
+		custom_shell = 
+		custom_stringifier = 
+		custom_theme = 
+		default_variables_access_level = public
+		display = auto
+		hide_cmdline_win = True
+		line_numbers = True
+		prompt_on_quit = False
+		seen_welcome = e039
+		shell = internal
+		sidebar_width = 0.5
+		stack_weight = 1
+		stringifier = type
+		theme = vim
+		variables_weight = 1
+		wrap_variables = True
+EOF
+fi
+
+pudb=/usr/local/bin/pudb
+if [[ ! -e $pudb ]]; then
+	cat <<-EOF > $pudb
+#!/bin/bash
+
+python3 -m pudb "$@"
+EOF
+fi
