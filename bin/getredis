@@ -395,7 +395,7 @@ if args.into:
     redis_server = os.path.join(args.into, "bin", redis_server)
 if args.suffix:
     redis_server += "-%s" % args.suffix
-if paella.Setup.has_command("redis-server") and not args.force and not args.no_install:
+if paella.Setup.has_command(redis_server) and not args.force and not args.no_install:
     vermsg = sh('%s --version' % redis_server)
     eprint("{} is present:\n{}".format(redis_server, vermsg))
     exit(0)
