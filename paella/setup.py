@@ -101,6 +101,8 @@ class PackageManager(object):
                 return Zypper(runner)
             elif platform.dist == 'arch':
                 return Pacman(runner)
+            elif platform.dist == 'alpine':
+                return Alpine(runner)
             else:
                 raise self.Error("Cannot determine package manager for distibution %s" % platform.dist)
         elif platform.os == 'macos':
@@ -292,6 +294,19 @@ class Pkg(PackageManager):
 
     def add_repo(self, repourl, repo="", output="on_error", _try=False):
         return False
+
+#----------------------------------------------------------------------------------------------
+class Alpine(PackageManager):
+
+    def __init__(self, runner):
+        super(Alpine, self).__init__(runner)
+
+    def install(self, packs, group=False, output="on_error", _try=False):
+        return self.run("apk add -q " + packs, output=output, _try=_try, sudo=True)
+
+    def uninstall(self, packs, group=False, output="on_error", _try=False):
+        return self.run("apk del -q " + packs, output=output, _try=_try, sudo=True)
+
 
 #----------------------------------------------------------------------------------------------
 

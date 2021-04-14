@@ -395,6 +395,8 @@ class OnPlatform:
                     self.linuxmint()
                 elif dist == 'amzn':
                     self.amzn()
+                elif dist == 'alpine':
+                    self.alpine()
                 else:
                     assert(False), "Cannot determine installer"
 
@@ -470,4 +472,7 @@ class OnPlatform:
         pass
 
     def amzn(self):
+        pass
+
+    def alpine(self):
         pass
