@@ -2,12 +2,15 @@
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 READIES=$(cd $HERE/.. && pwd)
-. $READIES/shibumi/defs 
+. $READIES/shibumi/defs
 
 OP=""
 [[ $NOP == 1 ]] && OP=echo
 
 xinstall git
+if is_command python2; then
+	runn python2 -m pip install pudb
+fi
 if ! runn python3 -m pip install --no-cache-dir git+https://github.com/inducer/pudb.git@main; then
 	cd /tmp
 	runn git clone https://github.com/inducer/pudb.git

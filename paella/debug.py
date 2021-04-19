@@ -10,9 +10,12 @@ if pydebug == '':
         os.environ['PYDEBUG'] = pydebug
 if pydebug == '1':
     try:
-        from ipdb import set_trace as bb
+        from pudb import set_trace as bb
     except ImportError:
-        from pdb import set_trace as bb
+        try:
+            from ipdb import set_trace as bb
+        except ImportError:
+            from pdb import set_trace as bb
 elif pydebug == 'pudb':
     from pudb import set_trace as bb
 elif pydebug == 'pdb':
