@@ -40,12 +40,13 @@ realpath() {
 fi
 
 #----------------------------------------------------------------------------------------------
+#
 
 runn() {
 	(( NOP == 1 || V >= 1 )) && { echo "${@:1}"; }
 	[[ $NOP == 1 ]] && { return; }
 	if (( V < 2 )); then
-		__runn_log=$(mktemp /tmp/run.XXXXX)
+		__runn_log=$(mktemp)
 		{ eval "${@:1}" > $__runn_log 2>&1 ; E=$?; } || true
 		[ $E != 0 ] && cat $__runn_log
 		rm -f $__runn_log
@@ -164,7 +165,7 @@ add_to_profile_d() {
 
 xinstall() {
 	local packs="$@"
-	
+
 	if is_command apt-get; then
 		export DEBIAN_FRONTEND=noninteractive
 		[[ $NO_UPDATE == 1 ]] && runn apt-get update -qq
@@ -184,5 +185,5 @@ xinstall() {
 		runn brew install "$packs"
 	elif is_command pkg; then
 		runn pkg install -y "$packs"
-	fi 
+	fi
 }
