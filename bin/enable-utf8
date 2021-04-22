@@ -7,7 +7,7 @@ READIES=$(cd $HERE/.. && pwd)
 
 create_utf8_profile_script() {
 	local profile_d=`get_profile_d`
-	[[ -f $profile_d/utf8.sh ]] && return
+	# [[ -f $profile_d/utf8.sh ]] && return
 	local x="$1"
 	x="${x:-en_US}"
 	cat <<-EOF > $profile_d/utf8.sh
