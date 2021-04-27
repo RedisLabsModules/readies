@@ -70,6 +70,7 @@ class Platform:
     class OSRelease():
         CUSTOM_BRANDS = [ 'elementary', 'pop' ]
         UBUNTU_BRANDS = [ 'elementary', 'pop' ]
+        ROLLING_RELEASES = ['arch', 'gentoo', 'manjaro']
 
         def __init__(self, brand=False):
             self.defs = {}
@@ -106,6 +107,9 @@ class Platform:
 
         def version_id(self):
             brand = self.brand_id()
+            if brand in self.ROLLING_RELEASES:
+                return "rolling"
+
             if brand in self.UBUNTU_BRANDS:
                 ver_id = UBUNTU_VERSIONS.get(self.ubuntu_codename(), "")
                 if ver_id == "":
