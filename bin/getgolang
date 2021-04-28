@@ -12,6 +12,7 @@ OP=""
 [[ ! -z $(command -v go) && $FORCE != 1 ]] && exit 0
 
 OS=`uname -s`
+TAR=tar
 if [[ $OS == Linux ]]; then
 	GOLANG_OS=linux
 elif [[ $OS == Darwin ]]; then
@@ -33,12 +34,22 @@ fi
 
 tar=$(mktemp /tmp/golang.XXXXX.tag.gz)
 $OP wget -q -O $tar https://dl.google.com/go/go${GOLANG_VER}.${GOLANG_OS}-${GOLANG_ARCH}.tar.gz
-$OP tar -C /usr/local -xzf $tar
+if [[ $OS == Darwin ]]; then
+    $OP sudo /usr/local/bin/tar -C /usr/local -xpzf $tar
+else
+    $OP tar -C /usr/local -xzf $tar
+    rm -f $tar/$$.tmp
+fi
 $OP rm -f $tar
 
+if [[ `uname -s` == Darwin ]]; then
+	profile_d="$HOME/.profile.d"
+else
+	profile_d="/etc/profile.d"
+fi
 if [[ $NOP != 1 ]]; then
-	echo 'export PATH=$PATH:/usr/local/go/bin' > /etc/profile.d/golang.sh
-	echo 'export PATH=$PATH:`/usr/local/go/bin/go env GOPATH`/bin' >> /etc/profile.d/golang.sh
+    echo 'export PATH=$PATH:/usr/local/go/bin' > ${profile_d}/golang.sh
+    echo 'export PATH=$PATH:`/usr/local/go/bin/go env GOPATH`/bin' >> ${profile_d}/golang.sh
 fi
 
 echo "to enable golang, invoke: source /etc/profile.d/golang.sh"
