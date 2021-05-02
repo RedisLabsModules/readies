@@ -314,7 +314,7 @@ class Alpine(PackageManager):
 #----------------------------------------------------------------------------------------------
 
 class Setup(OnPlatform):
-    def __init__(self, *, nop=False, verbose=False):
+    def __init__(self, nop=False, verbose=False):
         OnPlatform.__init__(self)
         self.verbose = verbose
         if verbose:
