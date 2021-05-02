@@ -35,6 +35,8 @@ class CMakeSetupFromRepo(paella.Setup):
         self.run("%s/bin/getepel" % READIES)
         self.install("cmake3")
         self.run("ln -sf `command -v cmake3` /usr/local/bin/cmake")
+        self.run("ln -sf `command -v ctest3` /usr/local/bin/ctest")
+        self.run("ln -sf `command -v cpack3` /usr/local/bin/cpack")
 
     def fedora(self):
         self.redhat_compat()
