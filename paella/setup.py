@@ -37,13 +37,17 @@ class OutputMode:
         return self.mode == "on_error"
 
 class Runner:
-    def __init__(self, nop=False):
+    def __init__(self, *, nop=False, output="on_error"):
         self.nop = nop
         # self.has_sudo = sh('command -v sudo') != ''
         self.has_sudo = False
+        self.output = OutputMode(output)
 
-    def run(self, cmd, at=None, output="on_error", _try=False, sudo=False):
-        output = OutputMode(output)
+    def run(self, cmd, at=None, output=None, _try=False, sudo=False):
+        if output is None:
+            output = self.output
+        else:
+            output = OutputMode(output)
         if cmd.find('\n') > -1:
             cmds1 = str.lstrip(textwrap.dedent(cmd))
             cmds = filter(lambda s: str.lstrip(s) != '', cmds1.split("\n"))
@@ -296,8 +300,8 @@ class Pkg(PackageManager):
         return False
 
 #----------------------------------------------------------------------------------------------
-class Alpine(PackageManager):
 
+class Alpine(PackageManager):
     def __init__(self, runner):
         super(Alpine, self).__init__(runner)
 
@@ -307,13 +311,16 @@ class Alpine(PackageManager):
     def uninstall(self, packs, group=False, output="on_error", _try=False):
         return self.run("apk del -q " + packs, output=output, _try=_try, sudo=True)
 
-
 #----------------------------------------------------------------------------------------------
 
 class Setup(OnPlatform):
-    def __init__(self, nop=False):
+    def __init__(self, *, nop=False, verbose=False):
         OnPlatform.__init__(self)
-        self.runner = Runner(nop)
+        self.verbose = verbose
+        if verbose:
+            self.runner = Runner(nop=nop, output=True)
+        else:
+            self.runner = Runner(nop=nop)
         self.stages = [0]
         self.platform = Platform()
         self.os = self.platform.os
