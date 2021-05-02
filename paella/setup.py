@@ -37,7 +37,7 @@ class OutputMode:
         return self.mode == "on_error"
 
 class Runner:
-    def __init__(self, *, nop=False, output="on_error"):
+    def __init__(self, nop=False, output="on_error"):
         self.nop = nop
         # self.has_sudo = sh('command -v sudo') != ''
         self.has_sudo = False
