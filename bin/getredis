@@ -33,7 +33,7 @@ class RedisSourceSetup(paella.Setup):
     # branch can be either 6 (will be mapped to 6.0) or 6.1 or any string
     # for partial semantic versions branches, we'll fetch HEAD of the given branch from github
     def __init__(self, args):
-        paella.Setup.__init__(self, args.nop)
+        paella.Setup.__init__(self, nop=args.nop, verbose=args.verbose)
 
         if args.version is not None and args.branch is not None:
             raise RuntimeError('conflicting arguments: version, branch')
@@ -222,9 +222,9 @@ index f6e5f3e3f..def02b80d 100644
             install_args += ['PREFIX=' + self.into]
 
         with paella.cwd(self.build_dir):
-			# build_args += ['-j', '`%s/bin/nproc`' % ROOT]
+            build_args += ['-j', '`%s/bin/nproc`' % ROOT]
             self.run("""
-                make {ARGS}
+                MAKEFLAGS="" make {ARGS}
                 """.format(ARGS=' '.join(build_args)))
 
             if self.no_install:
@@ -292,7 +292,6 @@ index f6e5f3e3f..def02b80d 100644
         if self.no_prepare:
             return
         self.redhat_compat()
-        self.install("openssl-devel")
 
     def macos(self):
         if self.no_prepare:
