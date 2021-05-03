@@ -137,9 +137,9 @@ endif
 
 # when no version is defined, attempt to use the tag
 # if the tag is defined, and it matches our last
-ifndef ($VERSION)
+ifeq ($(VERSION),)
 TAG_NAME=$(shell git describe --exact-match --tags $$(git log -n1 --pretty='%h')|cut -d 'v' -f 2-2)
-ifneq ($TAG_NAME,)
+ifneq ($(TAG_NAME),)
 BASE_TAG=$(shell echo $(TAG_NAME) | cut -d '.' -f 1-2)
 ifeq ($(BASE_TAG),$(LATEST_BRANCH))
 D_VERSION=$(TAG_NAME)
