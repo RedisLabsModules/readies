@@ -138,6 +138,19 @@ ifeq ($(BRANCH),master)
 PUSH_EDGE=1
 endif
 
+# when no version is defined, attempt to use the tag
+# if the tag is defined, and it matches our last
+ifeq ($(VERSION),)
+TAG_NAME=$(shell git describe --exact-match --tags $$(git log -n1 --pretty='%h')|cut -d 'v' -f 2-2)
+ifneq ($(TAG_NAME),)
+BASE_TAG=$(shell echo $(TAG_NAME) | cut -d '.' -f 1-2)
+ifeq ($(BASE_TAG),$(LATEST_BRANCH))
+D_VERSION=$(TAG_NAME)
+PUSH_LATEST=1
+endif
+endif
+endif
+
 endif # OFFICIAL
 
 ifeq ($(VERBOSE),1)
@@ -152,6 +165,7 @@ $(info OFFICIAL=$(OFFICIAL))
 $(info PUSH_GENERAL=$(PUSH_GENERAL))
 $(info PUSH_EDGE=$(PUSH_EDGE))
 $(info PUSH_LATEST=$(PUSH_LATEST))
+$(info TAG_NAME=$(TAG_NAME))
 endif
 
 #----------------------------------------------------------------------------------------------
