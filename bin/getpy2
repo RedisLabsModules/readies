@@ -102,6 +102,9 @@ install_python() {
 		runn apk add python2
 	elif is_command brew; then
 		runn brew install python2
+		# the following is for avoiding python to be upgraded by brew silently,
+		# hence disrupting pip installaitons
+		runn brew upgrade python
 	elif is_command pkg; then
 		runn pkg install -y python2
 	fi
