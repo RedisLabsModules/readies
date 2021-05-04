@@ -13,10 +13,10 @@
 #
 
 # The assumption is that this is called from another directory. But if not PRODUCT and VERSION can be overridden
-if [ -z "${PRODUCT}" ]; then
-    PRODUCT=$(basename `git rev-parse --show-toplevel`)
-fi
-
+#if [ -z "${PRODUCT}" ]; then
+#    PRODUCT=$(basename `git rev-parse --show-toplevel`)
+#fi
+#
 if [ -z "${VERSION}" ]; then
     VERSION=$(git branch|grep '*'|cut -d '*' -f 2-2|sed 's/^ *//g')
 fi
@@ -36,7 +36,8 @@ if [ ! -z "${EXTENSION}" ]; then
     EXT="-${EXTENSION}"
 fi
 
-RESULTANT_VERSION="${PRODUCT}-${VERSION}-${OSNICK}-${ARCH}${EXT}"
+#RESULTANT_VERSION="${PRODUCT}-${VERSION}-${OSNICK}-${ARCH}${EXT}"
+RESULTANT_VERSION="${VERSION}-${OSNICK}-${ARCH}${EXT}"
 
 generate_version() {
     echo ${RESULTANT_VERSION}
