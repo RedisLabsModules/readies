@@ -97,14 +97,14 @@ class CLangSetup(paella.Setup):
             return
         self.run("%s/bin/getepel" % READIES)
         self.install("llvm-toolset-7.0")
-        self.cp_to_profile_d("/opt/rh/llvm-toolset-7.0/enable", "llvm-toolset-7.0.sh")
+        self.run("cp /opt/rh/llvm-toolset-7.0/enable /etc/profile.d/llvm-toolset-7.0.sh")
 
     def fedora(self):
         if self.modern:
             self.install("clang")
 
     def macos(self):
-        self.install("llvm")
+        self.install("clang")
 
     def common_last(self):
         pass
@@ -117,6 +117,7 @@ parser.add_argument('--format', action="store_true", default=False, help='Instal
 parser.add_argument('--modern', action="store_true", help="Install modern CLang/LLVM version") 
 args = parser.parse_args()
 
+BB()
 try:
     if args.format:
         CLangFormatSetup(args).setup()
