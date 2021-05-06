@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #
 # Generate the version definition of a given artifact. This can be used in one of two ways:
