@@ -23,6 +23,7 @@ fi
 
 # We change to the script directory, purely to call platform from the exact path
 HERE=`dirname $0`
+pushd . &>/dev/null
 cd ${HERE}
 ROOT=$(git rev-parse --show-toplevel)
 ARCH=$(${ROOT}/bin/platform --arch)
@@ -31,6 +32,7 @@ ARCH=$(${ROOT}/bin/platform --arch)
 if [ -z "${OSNICK}" ]; then
     OSNICK=$(${ROOT}/bin/platform --osnick)
 fi
+popd &>/dev/null
 
 if [ ! -z "${EXTENSION}" ]; then
     EXT="-${EXTENSION}"
