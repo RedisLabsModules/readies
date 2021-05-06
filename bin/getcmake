@@ -17,7 +17,7 @@ os.environ["PYTHONWARNINGS"] = 'ignore:DEPRECATION::pip._internal.cli.base_comma
 
 #----------------------------------------------------------------------------------------------
 
-CMAKE_VER='3.19.5'
+CMAKE_VER='3.20.2'
 
 #----------------------------------------------------------------------------------------------
 
@@ -58,7 +58,7 @@ class CMakeSetup(paella.Setup):
     def __init__(self, args):
         paella.Setup.__init__(self, nop=args.nop)
         # check whether it is possible to download a pre-built cmake
-        self.build = args.build or not (self.os == 'linux' and self.arch == 'x64')
+        self.build = args.build or not (self.os == 'linux' and (self.arch == 'x64' or self.arch.find("arm64") != -1))
 
     def common_first(self):
         self.install_downloaders()
@@ -81,13 +81,16 @@ class CMakeSetup(paella.Setup):
         pass
 
     def linux_last(self):
+        if self.arch.find("arm64") != -1:
+            url = "https://github.com/Kitware/CMake/releases/download/v3.20.2/cmake-{CMAKE_VER}-linux-aarch64.sh".format(CMAKE_VER=CMAKE_VER)
+        else:
+            url="https://github.com/Kitware/CMake/releases/download/v{CMAKE_VER}/cmake-{CMAKE_VER}-`uname`-`uname -m`.sh"
         if not self.build:
             self.run(r"""
-                url=https://github.com/Kitware/CMake/releases/download/v{CMAKE_VER}/cmake-{CMAKE_VER}-`uname`-`uname -m`.sh
-                wget -q -O /tmp/cmake.sh $url
+                wget -q -O /tmp/cmake.sh {url}
                 sh /tmp/cmake.sh --skip-license --prefix=/usr/local
                 rm -f /tmp/cmake.sh
-                """.format(CMAKE_VER=CMAKE_VER))
+                """.format(CMAKE_VER=CMAKE_VER, url=url))
 
     def common_last(self):
         if self.build:
