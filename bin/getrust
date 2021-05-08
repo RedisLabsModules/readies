@@ -5,7 +5,15 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 READIES=$(cd $HERE/.. && pwd)
 . $READIES/shibumi/defs
 
-runn "curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh -s -- -y"
+if command -v rustup; then
+	runn "curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh -s -- -y"
+else
+	if ! runn rustup update stable; then
+		runn rustup toolchain uninstall stable
+		runn rustup toolchain install stable
+	fi
+fi
+
 profile_d=`get_profile_d`
 if [[ -f $HOME/.cargo/env ]]; then
     cp $HOME/.cargo/env $profile_d/rust.sh
