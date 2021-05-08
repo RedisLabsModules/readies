@@ -5,7 +5,10 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 READIES=$(cd $HERE/.. && pwd)
 . $READIES/shibumi/defs
 
-if command -v rustup; then
+if [[ -f $HOME/.cargo/env ]]; then
+	source $HOME/.cargo/env
+fi
+if ! is_command rustup; then
 	runn "curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh -s -- -y"
 else
 	if ! runn rustup update stable; then
