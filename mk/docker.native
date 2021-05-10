@@ -162,7 +162,7 @@ D_EDGE_NAME=$(ORG)/$(REPO):master$(_VARIANT)-$(ARCH)-$(OSNICK)
 
 D_OFFICIAL_NAME=$(OFFICIAL_ORG)/$(REPO):$(D_VERSION)$(_VARIANT)
 D_OFFICIAL_LATEST_NAME=$(OFFICIAL_ORG)/$(REPO):latest$(_VARIANT)
-D_OFFICIAL_EDGE_NAME=$(OFFICIAL_ORG)/$(REPO):edge$(_VARIANT)
+D_OFFICIAL_EDGE_NAME=$(OFFICIAL_ORG)/$(REPO):edge$(_VARIANT)-$(OSNICK)
 
 #----------------------------------------------------------------------------------------------
 
