@@ -1,6 +1,6 @@
 #!/bin/bash
 
-TERRAFORM_VER=${TERRAFORM_VER:-"0.15.0"}
+VERSION=${VERSION:-"0.15.0"}
 
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
@@ -33,7 +33,7 @@ else
 fi
 
 dir=$(mktemp -d /tmp/tf.XXXXXX)
-wget -q -O $dir/tf.zip https://releases.hashicorp.com/terraform/${TERRAFORM_VER}/terraform_${TERRAFORM_VER}_${OS}_${ARCH}.zip
+wget -q -O $dir/tf.zip https://releases.hashicorp.com/terraform/${VERSION}/terraform_${VERSION}_${OS}_${ARCH}.zip
 cd $dir
 unzip -q tf.zip
 chmod +x terraform
