@@ -1,6 +1,7 @@
 #!/bin/bash
 
-TERRAFORM_VER=0.15.0
+TERRAFORM_VER=${TERRAFORM_VER:-"0.15.0"}
+
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 READIES=$(cd $HERE/.. && pwd)
