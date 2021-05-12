@@ -71,7 +71,7 @@ check_variants() {
 
 	export MINOR="$($MYPY --version 2>&1 | awk '{print $2}' | cut -d. -f2)"
 	# Python3 <= 3.4 breaks contemporary pip
-	if (( MINOR < 5 )); then export FORCE=1; fi
+	if (( ${MINOR} < 5 )); then export FORCE=1; fi
 
 	if [[ ! -z $FIX ]]; then fix_variants; fi
 }
