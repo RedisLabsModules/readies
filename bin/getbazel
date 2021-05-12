@@ -69,10 +69,9 @@ exec bazelisk "$@"
 
     def common_first(self):
         self.install_downloaders()
-        if self.os == 'macos':
-            self.install("git unzip zip rsync")
-        else:
-            self.install("git unzip zip sudo rsync")
+        if self.os != 'macos':
+            self.install("sudo")
+        self.install("git unzip zip rsync")
 
         self.run("%s/bin/getgolang" % READIES)
 
