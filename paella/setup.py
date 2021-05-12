@@ -300,6 +300,19 @@ class Pkg(PackageManager):
         return False
 
 #----------------------------------------------------------------------------------------------
+class Alpine(PackageManager):
+
+    def __init__(self, runner):
+        super(Alpine, self).__init__(runner)
+
+    def install(self, packs, group=False, output="on_error", _try=False):
+        return self.run("apk add -q " + packs, output=output, _try=_try, sudo=True)
+
+    def uninstall(self, packs, group=False, output="on_error", _try=False):
+        return self.run("apk del -q " + packs, output=output, _try=_try, sudo=True)
+
+
+#----------------------------------------------------------------------------------------------
 
 class Alpine(PackageManager):
     def __init__(self, runner):
