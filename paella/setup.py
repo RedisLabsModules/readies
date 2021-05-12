@@ -36,6 +36,8 @@ class OutputMode:
     def on_error(self):
         return self.mode == "on_error"
 
+#----------------------------------------------------------------------------------------------
+
 class Runner:
     def __init__(self, nop=False, output="on_error"):
         self.nop = nop
@@ -298,19 +300,6 @@ class Pkg(PackageManager):
 
     def add_repo(self, repourl, repo="", output="on_error", _try=False):
         return False
-
-#----------------------------------------------------------------------------------------------
-class Alpine(PackageManager):
-
-    def __init__(self, runner):
-        super(Alpine, self).__init__(runner)
-
-    def install(self, packs, group=False, output="on_error", _try=False):
-        return self.run("apk add -q " + packs, output=output, _try=_try, sudo=True)
-
-    def uninstall(self, packs, group=False, output="on_error", _try=False):
-        return self.run("apk del -q " + packs, output=output, _try=_try, sudo=True)
-
 
 #----------------------------------------------------------------------------------------------
 
