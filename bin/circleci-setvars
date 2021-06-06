@@ -2,13 +2,9 @@
 
 import sys
 import os
-import json
-import functools
 import argparse
 import requests
 from configparser import SafeConfigParser
-from urllib.parse import urljoin
-# from pycircleci.api import Api
 
 HERE = os.path.dirname(__file__)
 READIES = os.path.abspath(os.path.join(HERE, ".."))
@@ -19,29 +15,28 @@ import paella  # noqa: F401
 
 class CircleCI:
     def __init__(self, token):
-        self.token = token
-        self.headers = {"Circle-Token": token}
-        r = requests.get("https://circleci.com/api/v2/me", headers=self.headers)
-        if r.status_code > 204:
+        self.HEADERS = {"Circle-Token": token}
+        r = requests.get("https://circleci.com/api/v2/me", headers=self.HEADERS)
+        if r.status_code > 204 or not r.ok:
             fatal("Incorrect token - login failed")
         self.base_url = "https://circleci.com/api/v2"
 
     def get(self, query, die=False):
-        r = requests.get(f"{self.base_url}/{query}", headers=self.headers)
+        r = requests.get(f"{self.base_url}/{query}", headers=self.HEADERS)
         if r.status_code > 204 or not r.ok:
-            return (r,)
+            raise RuntimeError(r)
         return r.json()
 
     def put(self, query, data):
-        r = requests.put(f"{self.base_url}/{query}", data=data, headers=self.headers)
+        r = requests.put(f"{self.base_url}/{query}", data=data, headers=self.HEADERS)
         if r.status_code > 204 or not r.ok:
-            return (r,)
+            raise RuntimeError(r)
         return r.json()
 
     def delete(self, query):
         r = requests.delete(f"{self.base_url}/{query}", headers=self.headers)
         if r.status_code > 204 or not r.ok:
-            return (r,)
+            raise RuntimeError(r)
         return r.json()
 
 #----------------------------------------------------------------------------------------------
@@ -99,8 +94,9 @@ config.read(args.config)
 for org in orgs:
     if VERBOSE:
         print(f"{org}:")
-    ci_contexts = circleci.get(f"context/?owner-slug=gh/{org}")
-    if type(ci_contexts) is tuple:
+    try:
+        ci_contexts = circleci.get(f"context/?owner-slug=gh/{org}")
+    except:
         eprint(f"Failed to open {org} contexts, continuing to next org")
         continue
 
@@ -123,12 +119,14 @@ for org in orgs:
                 if VERBOSE:
                     print(f"  context {org}/{context} not found. Will try to create.")
                 created_ctx = True
-                r = circleci.put(f"context", {"name": context, "owner": {"slug": f"gh/{org}"}})
-                if type(r) is tuple:
+                try:
+                    r = circleci.put("context", {"name": context, "owner": {"slug": f"gh/{org}"}})
+                except:
                     eprint(f"  Failed to create {org}/{context}, continuing to next context")
                     continue
-                ci_contexts = circleci.get(f"context/?owner-slug=gh/{org}")    
-                if type(ci_contexts) is tuple:
+                try:
+                    ci_contexts = circleci.get(f"context/?owner-slug=gh/{org}")    
+                except:
                     eprint(f"  Failed to open {org} contexts, continuing to next org")
                     continue
         if next_ctx:
@@ -140,13 +138,15 @@ for org in orgs:
                 if VERBOSE:
                     print(f"    setting {org}/{context}/{key}")
                 if not NOP:
-                    r = circleci.put(f"context/{ctx_id}/environment-variable/{key}", {"value": value})
-                    if type(r) is tuple:
-                        perror(f"    Failed to set variable {key} for org {org}, continuing: {r}")
+                    try:
+                        r = circleci.put(f"context/{ctx_id}/environment-variable/{key}", {"value": value})
+                    except Exception as x:
+                        perror(f"    Failed to set variable {key} for org {org}, continuing: {x}")
             else:
                 if VERBOSE:
                     print(f"    removing {org}/{context}/{key}")
                 if not NOP:
-                    r = circleci.delete(f"context/{ctx_id}/environment-variable/{key}")
-                    if type(r) is tuple:
-                        perror(f"    Failed to delete variable {key} for org {org}, continuing: {r}")
+                    try:
+                        r = circleci.delete(f"context/{ctx_id}/environment-variable/{key}")
+                    except Exception as x:
+                        perror(f"    Failed to delete variable {key} for org {org}, continuing: {x}")

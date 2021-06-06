@@ -2,11 +2,7 @@
 
 import sys
 import os
-import subprocess
 import json
-import yaml
-import psutil
-import shutil
 from functools import reduce
 import requests
 import time
@@ -19,7 +15,7 @@ READIES = os.path.abspath(os.path.join(HERE, ".."))
 sys.path.insert(0, READIES)
 import paella  # noqa: F401
 
-DEBUG=False
+DEBUG = False
 
 #----------------------------------------------------------------------------------------------
 
@@ -37,14 +33,14 @@ def dockerhub_query(query, token, key):
             print(f"# {url}")
         res = requests.get(url, headers={'Authorization': f'JWT {token}'})
         if res.status_code > 204 or not res.ok:
-            return (res,)
+            raise RuntimeError(res)
         jres = json.loads(res.content)
         if count == 0:
             count = jres['count']
             if count > 100:
                 if DEBUG:
                     print(f"# {url} = {count}")
-        x = reduce(lambda d, x: d.update({x[key] : x}) or d, jres['results'], {})
+        x = reduce(lambda d, x: d.update({x[key]: x}) or d, jres['results'], {})
         results.update(x)
         t = time.monotonic()
         if DEBUG:
@@ -54,24 +50,25 @@ def dockerhub_query(query, token, key):
 
 #----------------------------------------------------------------------------------------------
 
-
 def scan():
     d = f'{{"username": "{user}", "password": "{passwd}"}}'
-    res = requests.post(f"https://hub.docker.com/v2/users/login/", headers={'Content-Type': 'application/json'}, data=d)
+    res = requests.post("https://hub.docker.com/v2/users/login/", headers={'Content-Type': 'application/json'}, data=d)
     jres = json.loads(res.content)
     token = jres['token']
 
     now = datetime.now(timezone.utc)
     max_dt = timedelta(days=max_days)
 
-    images = dockerhub_query(f"repositories/{org}", token, 'name')
-    if type(images) is not dict:
-        print(f"### error: {images}")
+    try:
+        images = dockerhub_query(f"repositories/{org}", token, 'name')
+    except Exception as x:
+        print(f"### error: {x}")
         exit(1)
 
     for img, image in images.items():
-        tags = dockerhub_query(f"repositories/{org}/{img}/tags", token, 'name')
-        if type(tags) is not dict:
+        try:
+            tags = dockerhub_query(f"repositories/{org}/{img}/tags", token, 'name')
+        except:
             print(f"### error in {img}")
             continue
 
