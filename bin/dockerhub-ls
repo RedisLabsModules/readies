@@ -15,8 +15,6 @@ READIES = os.path.abspath(os.path.join(HERE, ".."))
 sys.path.insert(0, READIES)
 import paella  # noqa: F401
 
-DEBUG = False
-
 #----------------------------------------------------------------------------------------------
 
 def dockerhub_query(query, token, key):
@@ -26,7 +24,7 @@ def dockerhub_query(query, token, key):
     page = 0
     while url is not None:
         page += 1
-        if page > max_pages:
+        if page > MAX_PAGES:
             break
         t0 = time.monotonic()
         if DEBUG:
@@ -51,23 +49,23 @@ def dockerhub_query(query, token, key):
 #----------------------------------------------------------------------------------------------
 
 def scan():
-    d = f'{{"username": "{user}", "password": "{passwd}"}}'
+    d = f'{{"username": "{USER}", "password": "{PASSWD}"}}'
     res = requests.post("https://hub.docker.com/v2/users/login/", headers={'Content-Type': 'application/json'}, data=d)
     jres = json.loads(res.content)
     token = jres['token']
 
     now = datetime.now(timezone.utc)
-    max_dt = timedelta(days=max_days)
+    max_dt = timedelta(days=MAX_DAYS)
 
     try:
-        images = dockerhub_query(f"repositories/{org}", token, 'name')
+        images = dockerhub_query(f"repositories/{ORG}", token, 'name')
     except Exception as x:
         print(f"### error: {x}")
         exit(1)
 
     for img, image in images.items():
         try:
-            tags = dockerhub_query(f"repositories/{org}/{img}/tags", token, 'name')
+            tags = dockerhub_query(f"repositories/{ORG}/{img}/tags", token, 'name')
         except:
             print(f"### error in {img}")
             continue
@@ -92,10 +90,10 @@ parser.add_argument('--pages', type=int, default=10, help='Maximum info pages to
 parser.add_argument('--days', type=int, default=180, help='Maximum info pages to scan')
 args = parser.parse_args()
 
-debug = args.debug
-user = args.user
-passwd = args.password
-org = args.org
-max_pages = args.pages
-max_days = args.days
+DEBUG = args.debug
+USER = args.user
+PASSWD = args.password
+ORG = args.org
+MAX_PAGES = args.pages
+MAX_DAYS = args.days
 scan()
