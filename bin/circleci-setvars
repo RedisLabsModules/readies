@@ -34,7 +34,7 @@ class CircleCI:
         return r.json()
 
     def delete(self, query):
-        r = requests.delete(f"{self.base_url}/{query}", headers=self.headers)
+        r = requests.delete(f"{self.base_url}/{query}", headers=self.HEADERS)
         if r.status_code > 204 or not r.ok:
             raise RuntimeError(r)
         return r.json()
