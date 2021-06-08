@@ -122,7 +122,11 @@ D_VERSION=$(BRANCH)
 
 else
 BRANCH=$(GIT_BRANCH)
-D_VERSION=$(BRANCH)
+ifeq ($(BRANCH),master)
+D_VERSION=${BRANCH}
+else
+D_VERSION=$(shell git name-rev --name-only HEAD | cut -f2 -d/ | cut -f1 -d^ | grep '^v' | sed -e 's/^v\(.*\)/\1/g')
+endif
 endif
 
 ifneq ($(findstring $(BRANCH),$(INT_BRANCHES)),)
@@ -160,7 +164,7 @@ D_NAME=$(ORG)/$(REPO):$(D_VERSION)$(_VARIANT)-$(ARCH)-$(OSNICK)
 D_LATEST_NAME=$(ORG)/$(REPO):latest$(_VARIANT)-$(ARCH)-$(OSNICK)
 D_EDGE_NAME=$(ORG)/$(REPO):master$(_VARIANT)-$(ARCH)-$(OSNICK)
 
-D_OFFICIAL_NAME=$(OFFICIAL_ORG)/$(REPO):$(D_VERSION)$(_VARIANT)
+D_OFFICIAL_NAME=$(OFFICIAL_ORG)/$(REPO):$(D_VERSION)$(_VARIANT)-$(OSNICK)
 D_OFFICIAL_LATEST_NAME=$(OFFICIAL_ORG)/$(REPO):latest$(_VARIANT)
 D_OFFICIAL_EDGE_NAME=$(OFFICIAL_ORG)/$(REPO):edge$(_VARIANT)-$(OSNICK)
 
@@ -218,6 +222,9 @@ endif
 ifeq ($(PUSH_EDGE),1)
 	$(SHOW)docker tag $(D_NAME) $(D_OFFICIAL_EDGE_NAME)
 endif
+ifeq ($(PUSH_GENERAL),1)
+	$(SHOW)docker tag $(D_NAME) $(D_OFFICIAL_NAME)
+endif
 endif # OFFICIAL
 
 .PHONY: build_docker
@@ -232,6 +239,11 @@ ifeq ($(PUSH_LATEST),1)
 	$(SHOW)docker push $(D_LATEST_NAME)
 endif
 ifneq ($(OFFICIAL),0)
+ifeq ($(PUSH_GENERAL),1)
+ifneq ($(BRANCH),master)
+	$(SHOW)docker push $(D_OFFICIAL_NAME)
+endif
+endif
 ifeq ($(PUSH_LATEST),1)
 	$(SHOW)docker push $(D_OFFICIAL_LATEST_NAME)
 endif
