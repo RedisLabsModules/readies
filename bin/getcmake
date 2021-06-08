@@ -84,13 +84,13 @@ class CMakeSetup(paella.Setup):
         if self.arch.find("arm64") != -1:
             url = "https://github.com/Kitware/CMake/releases/download/v3.20.2/cmake-{CMAKE_VER}-linux-aarch64.sh".format(CMAKE_VER=CMAKE_VER)
         else:
-            url="https://github.com/Kitware/CMake/releases/download/v{CMAKE_VER}/cmake-{CMAKE_VER}-`uname`-`uname -m`.sh"
+            url="https://github.com/Kitware/CMake/releases/download/v{CMAKE_VER}/cmake-{CMAKE_VER}-`uname`-`uname -m`.sh".format(CMAKE_VER=CMAKE_VER)
         if not self.build:
             self.run(r"""
                 wget -q -O /tmp/cmake.sh {url}
                 sh /tmp/cmake.sh --skip-license --prefix=/usr/local
                 rm -f /tmp/cmake.sh
-                """.format(CMAKE_VER=CMAKE_VER, url=url))
+                """.format(url=url))
 
     def common_last(self):
         if self.build:
