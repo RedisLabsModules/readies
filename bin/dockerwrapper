@@ -136,7 +136,7 @@ if __name__ == "__main__":
     db.generate(opts.SRC, opts.DEST, template_dirs, variables)
 
     if opts.GENERATE_ONLY:
-        sys.stderr.write("Wrote generated file to {}. Exiting.\n".format(opts.DEST)
+        sys.stderr.write("Wrote generated file to {}. Exiting.\n".format(opts.DEST))
         sys.exit(0)
 
     # get the docker options, for building
