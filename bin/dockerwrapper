@@ -81,6 +81,8 @@ if __name__ == "__main__":
                       help="If set, all environment variables will be passed to the template")
     parser.add_option('-e', '--env-vars-prefix', dest='ENV_VAR_PREFIX', type="str",
                       help="If set, environment variables with this prefix will be used as variables")
+    parser.add_option('-g', '--generate-and-exit', dest="GENERATE_ONLY", action="store_true",
+                      help="Set, to generate the dockerfile, then exit.")
     parser.add_option('-D', '--dockeropts', dest='DOCKER_OPTS', type="str",
                       help="A quoted string, with options to pass to docker build - if building")
     parser.add_option('-P', '--publish', dest='DOCKER_PUSH', action="store_true",
@@ -132,6 +134,10 @@ if __name__ == "__main__":
 
     db = DockerBuilder()
     db.generate(opts.SRC, opts.DEST, template_dirs, variables)
+
+    if opts.GENERATE_ONLY:
+        sys.stderr.write("Wrote generated file to {}. Exiting.\n".format(opts.DEST)
+        sys.exit(0)
 
     # get the docker options, for building
     if opts.DOCKER_OPTS is None:
