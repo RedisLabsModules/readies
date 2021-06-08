@@ -1,0 +1,30 @@
+#!/bin/bash
+
+set -e
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+READIES=$(cd $HERE/.. && pwd)
+. $READIES/shibumi/defs
+
+if is_command apt-get; then
+	export DEBIAN_FRONTEND=noninteractive
+	runn apt-get update -qq
+    runn apt-get upgrade -yqq
+    runn rm -rf /var/cache/apt
+elif is_command dnf; then
+	runn dnf update -y
+    runn rm -rf /var/cache/dnf
+elif is_command yum; then
+	runn yum update -y
+    runn rm -rf /var/cache/yum
+elif is_command zypper; then
+	runn zypper update -y
+	runn rm -rf /var/cache/zypp
+elif is_command apk; then
+	runn apk -U upgrade
+elif is_command pacman; then
+	pacman --noconfirm -Syu
+elif is_command brew; then
+	runn brew update
+elif is_command pkg; then
+	runn pkg upgrade -y
+fi
