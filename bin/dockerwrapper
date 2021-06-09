@@ -87,7 +87,7 @@ if __name__ == "__main__":
                       help="A quoted string, with options to pass to docker build - if building")
     parser.add_option('-P', '--publish', dest='DOCKER_PUSH', action="store_true",
                       help="Set, if you want to push dockers to dockerhub, after the build")
-    parser.add_option('-p', '--publish-only', dest='DOCKER_PUSH_ONLY', action="store_false", default=True,
+    parser.add_option('-p', '--publish-only', dest='DOCKER_PUSH_ONLY', action="store_true",
                       help="If set, push the built tags. Nothing is built or generated")
     parser.add_option('-t', '--tag', dest='DOCKER_BASE_TAG', type="str", default="dev/dev:latest",
                       help="The named tag to build for the docker image")
@@ -138,7 +138,7 @@ if __name__ == "__main__":
     db.generate(opts.SRC, opts.DEST, template_dirs, variables)
 
     # if we're only pushing, things are already built
-    if opts.DOCKER_PUSH_ONLY is False:
+    if not opts.DOCKER_PUSH_ONLY:
         if opts.GENERATE_ONLY:
             sys.stderr.write("Wrote generated file to {}. Exiting.\n".format(opts.DEST))
             sys.exit(0)
