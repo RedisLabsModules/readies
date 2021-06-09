@@ -1,0 +1,161 @@
+#!/usr/bin/env python3
+
+# A passthrough tool for docker
+import subprocess
+import copy
+import os
+import sys
+from optparse import OptionParser
+import tempfile
+import jinja2
+
+class DockerBuilder(object):
+
+    def nop_runner(self, cmdline, nop=True, verbose=False):
+        """A run wrapper, so that we can optionally run commands, but do so identically."""
+        if nop:
+            sys.stdout.write(' '.join(cmdline) + "\n")
+            return None
+        else:
+            if verbose:
+                sys.stdout.write(' '.join(cmdline) + "\n")
+            proc = subprocess.Popen(cmdline, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            while True:
+                output = proc.stdout.readline()
+                if proc.poll() is not None:
+                    break
+                if output:
+                    sys.stdout.write(output.strip().decode('utf-8') + "\n")
+            rc = proc.poll()
+            return rc
+
+    def build(self, dockerfile, nop=True, docker_options=[], tag="dev/dev:latest", verbose=False):
+        """Builds and tags the docker image"""
+        dockerfile_dir = os.path.dirname(dockerfile)
+        build_cmd = ["docker", "build", "-t", tag.lower(), "-f", dockerfile, dockerfile_dir] + docker_options
+        res = self.nop_runner(build_cmd, nop=nop, verbose=verbose)
+        return res
+
+    def push(self, tag="dev/dev:latest", source_tag=None, nop=True, verbose=False):
+        """Pushes the docker images upstream, optionally retagging them first, if necessary."""
+        if source_tag is not None:  # retag
+            tag_cmd = ["docker", "tag", source_tag, tag.lower()]
+            self.nop_runner(tag_cmd, opts.NOP, verbose=verbose)
+
+        push_cmd = ["docker", "push", tag.lower()]
+        self.nop_runner(push_cmd, opts.NOP)
+
+    def generate(self, src, dest, template_dirs, context={}):
+        """Generate the docker file
+        src           - The source file to use, when generating the destination
+        dest          - Output destination of the generated context
+        template_dirs - A list of directories, containing source templates to optionally import
+        context       - Dictionary used when rendeeing the template
+        """
+        tl = jinja2.FileSystemLoader(template_dirs)
+        env = jinja2.Environment(loader=tl)
+        tmpl = tl.load(name=src, environment=env)
+
+        generated = tmpl.render(context)
+        with open(dest, "w+") as fp:
+            fp.write(generated)
+
+# should we have a default tag format? I prefer the idea of each module declaring their own
+# redislabs/redisai:edge-cpu-somethingspecial
+
+if __name__ == "__main__":
+
+    parser = OptionParser()
+    parser.add_option('-s', '--src', dest='SRC', type="str", metavar="file", help="Dockerfile template",
+                      default="dockerfile.tmpl")
+    parser.add_option('-S', '--srcdir', dest='SRCDIR', action="append", metavar="directory",
+                      help="Directories of template files to include")
+    parser.add_option('-n', '--nop', dest='NOP', action='store_true', help="NO OP")
+    parser.add_option('-v', '--verbose', dest='VERBOSE', action='store_true', help="Echo commands being run")
+    parser.add_option('-k', '--keep', dest='KEEP', action='store_true',
+                      help="Keep generated file (only relevant when used with a temp file). Can also be specified as en environment variable.")
+    parser.add_option('-d', '--dest', dest='DEST', action='store', metavar="file",
+                      default=tempfile.mkstemp()[1],
+                      help="File to generate. *If not set, a temp file will be created)")
+    parser.add_option('-E', '--env-vars-all', dest='USE_ALL_ENV_VARS', action='store_true',
+                      help="If set, all environment variables will be passed to the template")
+    parser.add_option('-e', '--env-vars-prefix', dest='ENV_VAR_PREFIX', type="str",
+                      help="If set, environment variables with this prefix will be used as variables")
+    parser.add_option('-g', '--generate-and-exit', dest="GENERATE_ONLY", action="store_true",
+                      help="Set, to generate the dockerfile, then exit.")
+    parser.add_option('-D', '--dockeropts', dest='DOCKER_OPTS', type="str",
+                      help="A quoted string, with options to pass to docker build - if building")
+    parser.add_option('-P', '--publish', dest='DOCKER_PUSH', action="store_true",
+                      help="Set, if you want to push dockers to dockerhub, after the build")
+    parser.add_option('-t', '--tag', dest='DOCKER_BASE_TAG', type="str", default="dev/dev:latest",
+                      help="The named tag to build for the docker image")
+    parser.add_option('-T', '--docker-tags', dest='DOCKER_TAGS', action="append",
+                      help="An appendable list of docker tags to push")
+    opts, args = parser.parse_args()
+
+    # any environment variable with the same name as a variable in opts, overrides.
+    # In the case of variables that are action="append", we'll override by splitting the string on space.
+    appends = [a.dest for a in parser.option_list if a.action=='append']
+    for key in vars(opts).keys():
+        e = os.getenv(key, None)
+        if e is not None:
+            if key in appends:  # opts Value objects don't support standard assignment
+                setattr(opts, key, e.split())
+            else:
+                try:  # because zero and one are a thing
+                    setattr(opts, key, bool(int(e)))
+                except ValueError:
+                    setattr(opts, key, e)
+
+    if not os.path.isfile(opts.SRC):
+        sys.stderr.write("{} does not exist.\n".format(opts.SRC))
+        sys.exit(3)
+
+    variables = {}
+    if opts.USE_ALL_ENV_VARS:
+        variables = copy.copy(os.environ)
+    if opts.ENV_VAR_PREFIX:
+        variables = {k: v for k, v in os.environ.items() if not k.find(opts.ENV_VAR_PREFIX)}
+
+    # now, you can pass X=Y on the command line, like a regular argument
+    for a in args:
+        try:
+            k, v = a.split("=")
+            if v != "":
+                variables[k] = v
+        except ValueError:
+            pass
+
+    # template directories, for generating the docker file
+    default_includes = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "docker-parts"))
+    if opts.SRCDIR is None:
+        opts.SRCDIR = []
+    template_dirs = opts.SRCDIR + [os.path.abspath(os.path.dirname(opts.SRC)), os.getcwd(), default_includes]
+
+    db = DockerBuilder()
+    db.generate(opts.SRC, opts.DEST, template_dirs, variables)
+
+    if opts.GENERATE_ONLY:
+        sys.stderr.write("Wrote generated file to {}. Exiting.\n".format(opts.DEST))
+        sys.exit(0)
+
+    # get the docker options, for building
+    if opts.DOCKER_OPTS is None:
+        dock_opts = []
+    else:
+        dock_opts = opts.DOCKER_OPTS.split()
+
+    # build
+    r = db.build(opts.DEST, nop=opts.NOP, tag=opts.DOCKER_BASE_TAG,
+                 docker_options=dock_opts, verbose=opts.VERBOSE)
+    if opts.NOP is False:
+        if r != 0:
+            sys.stderr.write("docker build failed, exiting.\n")
+            sys.exit(r)
+
+    # tag
+    if opts.DOCKER_PUSH:
+        db.push(tag=opts.DOCKER_BASE_TAG, nop=opts.NOP, verbose=opts.VERBOSE)
+        if opts.DOCKER_TAGS is not None:
+            for tag in opts.DOCKER_TAGS:
+                db.push(tag=tag, source_tag=opts.DOCKER_BASE_TAG, nop=opts.NOP, verbose=opts.VERBOSE)

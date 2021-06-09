@@ -1,0 +1,32 @@
+ifndef OSNICK
+$(error No OSNICK defined. Aborting.)
+endif
+
+ifeq ($(OS.custom),)
+
+OS.centos7=centos:7
+OS.centos7.8=centos:7.8.2003
+OS.centos8=centos:8
+OS.centos8.3=centos:8.2011
+OS.fedora=fedora:latest
+OS.fedora33=fedora:33
+OS.hirsute=ubuntu:hirsute
+OS.focal=ubuntu:focal
+OS.bionic=ubuntu:bionic
+OS.xenial=ubuntu:xenial
+OS.trusty=ubuntu:trusty
+OS.bullseye=debian:bullseye
+OS.buster=debian:buster-slim
+OS.stretch=debian:stretch
+OS.leap=opensuse/leap:latest
+OS.leap15.2=opensuse/leap:15.2
+OS.leap15.3=opensuse/leap:15.3
+OS.tumbleweed=opensuse/tumbleweed
+OS.archlinux=archlinux:latest
+
+endif # OS
+
+OS=$(OS.$(OSNICK))
+ifeq ($(OS),)
+$(error Invalid OSNICK. Aborting.)
+endif
