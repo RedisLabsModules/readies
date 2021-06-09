@@ -1,5 +1,5 @@
 # e.g redislabs/RedisTimeSeries:edge
-DEFAULT_TAG=${DOCKER_ORG}/${PRODUCT}:${VERSION}
+DEFAULT_TAG?=${DOCKER_ORG}/${PRODUCT}:${VERSION}
 
 # defaults
 PACK ?=0
