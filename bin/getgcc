@@ -35,6 +35,14 @@ class SystemSetup(paella.Setup):
             self.run("apt-get update -qq")
             self.run("apt-get install -y -t testing build-essential")
 
+        #  we cannot use gcc10 in many contexts - this change allows compilation on new ubuntus, and
+        # gcc10 (for now)
+        if self.modern is False and self.osnick in ['hirsute', 'focal']:
+            self.install("gcc-9 g++-9")
+            self.run("update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 9")
+            self.run("update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 9")
+
+
     def redhat_compat(self):
         self.group_install("'Development Tools'")
         if self.modern:
