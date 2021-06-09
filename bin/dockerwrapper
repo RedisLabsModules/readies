@@ -73,7 +73,7 @@ if __name__ == "__main__":
     parser.add_option('-n', '--nop', dest='NOP', action='store_true', help="NO OP")
     parser.add_option('-v', '--verbose', dest='VERBOSE', action='store_true', help="Echo commands being run")
     parser.add_option('-k', '--keep', dest='KEEP', action='store_true',
-                      help="Keep generated file (only relevant when used with a temp file). Can also be specified as en environment variable.")
+                      help="Keep generated file (when used with a temp file).")
     parser.add_option('-d', '--dest', dest='DEST', action='store', metavar="file",
                       default=tempfile.mkstemp()[1],
                       help="File to generate. *If not set, a temp file will be created)")
