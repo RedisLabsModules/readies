@@ -19,7 +19,7 @@ export ART_INT_DIR=/var/opt/redislabs/artifacts
 # but, master is remapped to edge
 # if this is a tag (v1.2.3), we remove the v
 ifndef VERSION
-	VERSION=$(shell git branch --show-current|sed -e 's/v//g')
+	VERSION=$(shell git branch|grep \*|cut -d ' ' -f 2-|sed -e 's/v//g')
 	ifeq ($(VERSION),master)  # master
 		VERSION=edge
 	endif
