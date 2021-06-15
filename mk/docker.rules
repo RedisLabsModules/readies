@@ -58,7 +58,7 @@ build:
 		-e REDIS \
 		-D "${DOCKER_OPTS}" \
 		${DOCKER_ARGS}
-ifeq ($(REDIS_PACK),1)
+ifeq ($(PACK),1)
 	IMAGE=${DEFAULT_TAG} ${READIES}/mk/docker-collect-artifacts
 endif
 
