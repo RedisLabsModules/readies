@@ -25,7 +25,7 @@ class RMPyToolsSetup(paella.Setup):
         else:
             self.reinstall = args.reinstall
 
-    def build_and_install(self, deps):
+    def build_and_install_psutil(self, deps):
         self.run("%s/bin/getgcc" % READIES)
         self.install(deps)
         self.pip_install("psutil")
@@ -35,24 +35,22 @@ class RMPyToolsSetup(paella.Setup):
 
     def debian_compat(self):
         if not self.psutil_installed:
-            self.psutil_installed = self.install("python%s-psutil" % ("" if self.pyver == "2" else self.pyver),
-                                                 _try=True, output=False) == 0
-            if not self.psutil_installed:
-                self.build_and_install("python%s-dev" % self.pyver)
+            self.run("apt-get remove -y python%s-psutil" % ("" if self.pyver == "2" else self.pyver),
+                     _try=True, output=False)
+            self.build_and_install_psutil("python%s-dev" % self.pyver)
 
     def redhat_compat(self):
         if not self.psutil_installed:
-            self.build_and_install("python%s-devel" % self.pyver)
+            self.build_and_install_psutil("python%s-devel" % self.pyver)
 
     def archlinux(self):
         if not self.psutil_installed:
-            self.psutil_installed = self.install("python-psutil", _try=True, output=False) == 0
+            self.build_and_install_psutil("python%s-dev" % self.pyver)
 
     def fedora(self):
         if not self.psutil_installed:
-            self.psutil_installed = self.install("python%s-psutil" % self.pyver, _try=True, output=False) == 0
-            if not self.psutil_installed:
-                self.build_and_install("python%s-devel" % self.pyver)
+            self.run("dnf remove -y python%s-psutil" % self.pyver, _try=True, output=False) == 0
+            self.build_and_install_psutil("python%s-devel" % self.pyver)
 
     def macos(self):
         pass
