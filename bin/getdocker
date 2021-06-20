@@ -62,6 +62,16 @@ class DockerSetup(paella.Setup):
             self.run("systemctl restart docker")
         else:
             self.run("service docker restart")
+
+#----------------------------------------------------------------------------------------------
+
+class DockerComposeSetup(paella.Setup):
+    def __init__(self, nop=False, no_install=False, no_exp=False):
+        self.no_install = no_install
+        self.no_exp = no_exp
+        paella.Setup.__init__(self, nop)
+
+    def common_first(self):
         pass
 
 #----------------------------------------------------------------------------------------------
@@ -70,6 +80,11 @@ parser = argparse.ArgumentParser(description='Install Docker CE')
 parser.add_argument('-n', '--nop', action="store_true", help='no operation')
 parser.add_argument('--just-enable-exp', action="store_true", help='no install, just enable experimental features')
 parser.add_argument('--no-exp', action="store_true", help="don't enable experimental features")
+parser.add_argument('--compose', action="store_true", help='install Docker Compose')
+parser.add_argument('--just-compose', action="store_true", help='just install Docker Compose')
 args = parser.parse_args()
 
-DockerSetup(nop = args.nop, no_install=args.just_enable_exp, no_exp=args.no_exp).setup()
+if not args.just_compose:
+	DockerSetup(nop = args.nop, no_install=args.just_enable_exp, no_exp=args.no_exp).setup()
+if args.compose:
+	DockerComposeSetup(nop = args.nop, no_install=args.just_enable_exp, no_exp=args.no_exp).setup()
