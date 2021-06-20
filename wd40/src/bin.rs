@@ -1,6 +1,6 @@
 
 extern crate readies_wd40;
-use crate::readies_wd40::{BB, _BB, getenv};
+use crate::readies_wd40::{BB};
 
 fn main() {
     BB!();
