@@ -33,10 +33,13 @@ class CMakeSetupFromRepo(paella.Setup):
 
     def redhat_compat(self):
         self.run("%s/bin/getepel" % READIES)
-        self.install("cmake3")
-        self.run("ln -sf `command -v cmake3` /usr/local/bin/cmake")
-        self.run("ln -sf `command -v ctest3` /usr/local/bin/ctest")
-        self.run("ln -sf `command -v cpack3` /usr/local/bin/cpack")
+        if self.dist == 'centos' and self.os_version[0] == 8:
+            self.install("cmake")
+        else:
+            self.install("cmake3")
+            self.run("ln -sf `command -v cmake3` /usr/local/bin/cmake")
+            self.run("ln -sf `command -v ctest3` /usr/local/bin/ctest")
+            self.run("ln -sf `command -v cpack3` /usr/local/bin/cpack")
 
     def fedora(self):
         self.redhat_compat()
