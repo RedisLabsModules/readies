@@ -155,6 +155,19 @@ if __name__ == "__main__":
             if r != 0:
                 sys.stderr.write("docker build failed, exiting.\n")
                 sys.exit(r)
+    # get the docker options, for building
+    if opts.DOCKER_OPTS is None:
+        dock_opts = []
+    else:
+        dock_opts = opts.DOCKER_OPTS.split()
+
+    # build
+    r = db.build(opts.DEST, nop=opts.NOP, tag=opts.DOCKER_BASE_TAG,
+                 docker_options=dock_opts, verbose=opts.VERBOSE)
+    if opts.NOP is False:
+        if r != 0:
+            sys.stderr.write("docker build failed, exiting.\n")
+            sys.exit(r)
 
     # tag
     if opts.DOCKER_PUSH:
