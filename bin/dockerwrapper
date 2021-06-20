@@ -73,7 +73,7 @@ if __name__ == "__main__":
     parser.add_option('-n', '--nop', dest='NOP', action='store_true', help="NO OP")
     parser.add_option('-v', '--verbose', dest='VERBOSE', action='store_true', help="Echo commands being run")
     parser.add_option('-k', '--keep', dest='KEEP', action='store_true',
-                      help="Keep generated file (only relevant when used with a temp file). Can also be specified as en environment variable.")
+                      help="Keep generated file (when used with a temp file).")
     parser.add_option('-d', '--dest', dest='DEST', action='store', metavar="file",
                       default=tempfile.mkstemp()[1],
                       help="File to generate. *If not set, a temp file will be created)")
@@ -87,6 +87,8 @@ if __name__ == "__main__":
                       help="A quoted string, with options to pass to docker build - if building")
     parser.add_option('-P', '--publish', dest='DOCKER_PUSH', action="store_true",
                       help="Set, if you want to push dockers to dockerhub, after the build")
+    parser.add_option('-p', '--publish-only', dest='DOCKER_PUSH_ONLY', action="store_true",
+                      help="If set, push the built tags. Nothing is built or generated")
     parser.add_option('-t', '--tag', dest='DOCKER_BASE_TAG', type="str", default="dev/dev:latest",
                       help="The named tag to build for the docker image")
     parser.add_option('-T', '--docker-tags', dest='DOCKER_TAGS', action="append",
@@ -135,23 +137,24 @@ if __name__ == "__main__":
     db = DockerBuilder()
     db.generate(opts.SRC, opts.DEST, template_dirs, variables)
 
-    if opts.GENERATE_ONLY:
-        sys.stderr.write("Wrote generated file to {}. Exiting.\n".format(opts.DEST))
-        sys.exit(0)
+    # if we're only pushing, things are already built
+    if not opts.DOCKER_PUSH_ONLY:
+        if opts.GENERATE_ONLY:
+            sys.stderr.write("Wrote generated file to {}. Exiting.\n".format(opts.DEST))
+            sys.exit(0)
 
-    # get the docker options, for building
-    if opts.DOCKER_OPTS is None:
-        dock_opts = []
-    else:
-        dock_opts = opts.DOCKER_OPTS.split()
+        # get the docker options, for building
+        if opts.DOCKER_OPTS is None:
+            dock_opts = []
+        else:
+            dock_opts = opts.DOCKER_OPTS.split()
 
-    # build
-    r = db.build(opts.DEST, nop=opts.NOP, tag=opts.DOCKER_BASE_TAG,
-                 docker_options=dock_opts, verbose=opts.VERBOSE)
-    if opts.NOP is False:
-        if r != 0:
-            sys.stderr.write("docker build failed, exiting.\n")
-            sys.exit(r)
+        r = db.build(opts.DEST, nop=opts.NOP, tag=opts.DOCKER_BASE_TAG,
+                     docker_options=dock_opts, verbose=opts.VERBOSE)
+        if opts.NOP is False:
+            if r != 0:
+                sys.stderr.write("docker build failed, exiting.\n")
+                sys.exit(r)
 
     # tag
     if opts.DOCKER_PUSH:
