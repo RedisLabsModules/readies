@@ -65,3 +65,5 @@ endif
 # There are mappings between OSNICK to specific OS values, due to docker containers used
 # The global mappings are found here.
 include ${READIES}/mk/osnick.defs
+include ${READIES}/mk/help.defs
+include ${READIES}/mk/help.rules
