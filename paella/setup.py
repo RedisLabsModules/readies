@@ -97,7 +97,7 @@ class PackageManager(object):
     @staticmethod
     def detect(platform, runner):
         if platform.os == 'linux':
-            if platform.dist == 'fedora' or self.dist == 'centos' and self.os_version[0] == 8:
+            if platform.dist == 'fedora' or platform.dist == 'centos' and platform.os_version[0] == 8:
                 return Dnf(runner)
             elif platform.is_debian_compat():
                 return Apt(runner)
