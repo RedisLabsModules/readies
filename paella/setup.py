@@ -65,7 +65,7 @@ class Runner:
             os.close(fd)
             cmd = "{{ {CMD}; }} >{LOG} 2>&1".format(CMD=cmd, LOG=temppath)
         if at is None:
-            rc = subprocess.call(["bash", "-c", cmd])
+            rc = subprocess.call(["bash", "-e", "-c", cmd])
         else:
             with cwd(at):
                 rc = os.system(cmd)
@@ -458,7 +458,7 @@ class Setup(OnPlatform):
             raise Error("Cannot install gnu tar on non-x64 platform")
         self.run("""
             dir=$(mktemp -d /tmp/tar.XXXXXX)
-            (cd $dir; wget -q -O tar.tgz http://redismodules.s3.amazonaws.com/gnu/gnu-tar-1.32-x64-centos7.tgz; tar -xzf tar.tgz -C /; )
+            (cd $dir; wget --no-verbose -O tar.tgz http://redismodules.s3.amazonaws.com/readies/gnu/gnu-tar-1.32-x64-centos7.tgz; tar -xzf tar.tgz -C /; )
             rm -rf $dir
             """)
 
