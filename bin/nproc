@@ -1,14 +1,32 @@
 #!/usr/bin/env bash
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+READIES=$(cd $HERE/.. && pwd)
+. $READIES/shibumi/defs
+
+if [[ $1 == --help || $1 == help || $HELP == 1 ]]; then
+	cat <<-END
+		[ARGVARS...] nproc [--help|help]
+
+		Argument variables:
+		MAX_NPROC=n  Upper limit on nproc
+		HELP=1       Print help
+
+	END
+	exit 0
+fi
 
 os=$($HERE/platform --os)
 if [[ $os == linux ]]; then
-	nproc
+	n=`nproc`
 elif [[ $os == macos ]]; then
-	sysctl -n hw.physicalcpu
+	n=`sysctl -n hw.physicalcpu`
 elif [[ $os == freebsd ]]; then
-	sysctl -n hw.ncpu
+	n=`sysctl -n hw.ncpu`
 else
-	echo 4
-fi 
+	n=4
+fi
+if [[ -n $MAX_NPROC && $(( n > MAX_NPROC )) == 1 ]]; then
+	n="$MAX_NPROC"
+fi
+echo "$n"
