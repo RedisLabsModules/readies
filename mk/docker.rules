@@ -1,18 +1,19 @@
-# e.g redislabs/RedisTimeSeries:edge
-DEFAULT_TAG?=${DOCKER_ORG}/${PRODUCT}:${VERSION}
-
-# defaults
-PACK ?=0
-TEST ?=0
-
-
-DOCKER_SOURCES=""
-
 ARCH:=$(shell ${READIES}/bin/platform --arch)
+
+DOCKER_ORG?=redisfab
+
+# in case we separate them out in the future
+REDIS_DOCKER_ORG=redislabs
 
 # for artifact gathering
 export ART_DIR=$(ROOT)/bin/artifacts
 export ART_INT_DIR=/var/opt/redislabs/artifacts
+
+ifdef BRANCH
+ifdef VERSION
+$(error Either BRANCH or VERSION should be defined, but not both)
+endif
+endif
 
 # get the release version, unless one is defined
 # since in CI, branches with {d}.{d} push, we allow anything here
@@ -28,12 +29,52 @@ ifndef VERSION
 	endif
 endif
 
+ifdef BRANCH
+	VERSION=${BRANCH}
+endif
+
+# e.g redislabs/RedisTimeSeries:edge
+DEFAULT_TAG?=${DOCKER_ORG}/${PRODUCT}:${VERSION}
+
+DOCKER_SOURCES=""
+
+ifeq ($(OFFICIAL),1)
+OUR_DOCKER_ORG=$(REDIS_DOCKER_ORG)
+else
+OUR_DOCKER_ORG=$(DOCKER_ORG)
+endif
+
+# add the official
+ifeq ($(OFFICIAL),1)
+DOCKER_TAGS+=$(REDIS_DOCKER_ORG)/$(PRODUCT):$(VERSION)
+endif
+
+# edge
+ifeq ($(EDGE),1)
+ifneq ($(VERSION),edge)
+DOCKER_TAGS+=$(OUR_DOCKER_ORG)/$(PRODUCT):edge
+endif
+endif
+
+# latest tag
+ifeq ($(LATEST),1)
+DOCKER_TAGS+=$(OUR_DOCKER_ORG)/$(PRODUCT):latest
+endif
+
+# preview tag
+ifeq ($(PREVIEW),1)
+DOCKER_TAGS+=$(OUR_DOCKER_ORG)/$(PRODUCT):preview
+endif
+
+# defaults
+PACK ?=0
+TEST ?=0
+
 # defaults for wrapper script
 NOP=0
 PUBLISH=0
 KEEP=0
 VERBOSE=0
-
 
 ## This builds the docker
 build:
@@ -43,14 +84,6 @@ build:
 	DOCKER_PUSH=${PUBLISH} \
 	VERBOSE=${VERBOSE} \
 	KEEP=${KEEP} \
-	REDIS_VERSION=${REDIS_VERSION} \
-	REDIS_PRODUCT=${PRODUCT} \
-	REDIS_DOCKER_ORG=${DOCKER_ORG} \
-	REDIS_OSNICK=${OSNICK} \
-	REDIS_OS=${OS} \
-	REDIS_ARCH=${ARCH} \
-	REDIS_PACK=${PACK} \
-	REDIS_TEST=${TEST} \
 	${DOCKERWRAPPER_EXTRA_VARS} \
 	${READIES}/bin/dockerwrapper \
 		-d ${ROOT}/Dockerfile${DOCKER_SUFFIX} \
