@@ -106,6 +106,38 @@ publish:
 		-p -P \
 		${DOCKER_ARGS}
 
+#------------------------------------------------------------------------------
+define HELP
+make build		# build and optionally publish the docker, from a template file
+	DOCKER_SUFFIX=<>				# optional suffix for the generated dockerfile
+	DOCKER_ARGS=FOO=BAR				# key-value pairs of variables to pass into the docker build
+	PACK=1						# fetch generated artifacts
+	TEST=1						# run tests, if specified
+	DOCKER_TAGS=a,b,c				# tags to append and push to dockerhub
+	DEFAULT_TAG=redislabs/redisai			# default docker tag to build, and push
+	VERSION=x.y.z					# set the docker version
+	NOP=1						# set to echo files in docker generation, and not run
+	DOCKER_SOURCES=/a/path				# append paths to the template generator
+	PUBLISH=1					# if set, push to dockerhub (requires docker login), or use make publish
+	DOCKER_OPTS=XXX					# Options to pass to the docker build command
+
+make publish          # push Docker image to Dockerhub
+  GENERAL=0|1         # whether to publish non-official version
+  OFFICIAL=0|1        # whether to publish to official (redislabs/*) repos
+  LATEST=0|1          # whether to publish 'latest' version
+  EDGE=0|1            # whether to publish 'edge' version
+  PREVIEW=0|1         # for creating preview tags
+
+Common arguments:
+  OSNICK=nick        # nick=buster|stretch|bionic|centos7
+  VERSION=ver        # build and publish specified version
+  BRANCH=name        # build and publish from specified branch
+endef
+#------------------------------------------------------------------------------
+
+
 # There are mappings between OSNICK to specific OS values, due to docker containers used
 # The global mappings are found here.
 include ${READIES}/mk/osnick.defs
+include ${READIES}/mk/help.defs
+include ${READIES}/mk/help.rules
