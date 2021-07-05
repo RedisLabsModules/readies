@@ -1,11 +1,4 @@
-# e.g redislabs/RedisTimeSeries:edge
-DEFAULT_TAG?=${DOCKER_ORG}/${PRODUCT}:${VERSION}
-
-# defaults
-PACK ?=0
-TEST ?=0
-
-
+# directories in which to search for templates
 DOCKER_SOURCES=""
 
 ARCH:=$(shell ${READIES}/bin/platform --arch)
@@ -13,6 +6,12 @@ ARCH:=$(shell ${READIES}/bin/platform --arch)
 # for artifact gathering
 export ART_DIR=$(ROOT)/bin/artifacts
 export ART_INT_DIR=/var/opt/redislabs/artifacts
+
+ifdef BRANCH
+ifdef VERSION
+$(error Either BRANCH or VERSION must be defined, but not both)
+endif
+endif
 
 # get the release version, unless one is defined
 # since in CI, branches with {d}.{d} push, we allow anything here
@@ -28,12 +27,50 @@ ifndef VERSION
 	endif
 endif
 
+ifdef BRANCH
+VERSION=${BRANCH}
+endif
+
+# init for docker tags
+FAB_DOCKER_ORG=redisfab
+REDISLABS_DOCKER_ORG=redislabs
+
+# e.g redislabs/RedisTimeSeries:edge-bionic-x64
+DEFAULT_TAG?=${FAB_DOCKER_ORG}/${PRODUCT}:${VERSION}-${OSNICK}-${ARCH}
+
+
+# defaults
+PACK ?=0
+TEST ?=0
+
 # defaults for wrapper script
 NOP=0
 PUBLISH=0
 KEEP=0
 VERBOSE=0
 
+# tag library rules
+ifeq ($(OFFICIAL), 1)
+DOCKER_TAGS+=${REDISLABS_DOCKER_ORG}/${PRODUCT}:${VERSION}
+endif
+
+ifeq ($(LATEST),1)
+DOCKER_TAGS+=${REDISLABS_DOCKER_ORG}/${PRODUCT}:latest
+endif
+
+ifeq ($(PREVIEW),1)
+DOCKER_TAGS+=${REDISLABS_DOCKER_ORG}/${PRODUCT}:preview
+endif
+
+ifeq ($(EDGE),1)
+EDGE_TAG?=${REDISLABS_DOCKER_ORG}/${PRODUCT}:edge
+DOCKER_TAGS+=${EDGE_TAG}
+endif
+
+# optionally add additional tags
+ifdef DOCKER_EXT_TAGS
+DOCKER_TAGS+=${DOCKER_EXT_TAGS}
+endif
 
 ## This builds the docker
 build:
@@ -43,14 +80,6 @@ build:
 	DOCKER_PUSH=${PUBLISH} \
 	VERBOSE=${VERBOSE} \
 	KEEP=${KEEP} \
-	REDIS_VERSION=${REDIS_VERSION} \
-	REDIS_PRODUCT=${PRODUCT} \
-	REDIS_DOCKER_ORG=${DOCKER_ORG} \
-	REDIS_OSNICK=${OSNICK} \
-	REDIS_OS=${OS} \
-	REDIS_ARCH=${ARCH} \
-	REDIS_PACK=${PACK} \
-	REDIS_TEST=${TEST} \
 	${DOCKERWRAPPER_EXTRA_VARS} \
 	${READIES}/bin/dockerwrapper \
 		-d ${ROOT}/Dockerfile${DOCKER_SUFFIX} \
@@ -61,6 +90,21 @@ build:
 ifeq ($(PACK),1)
 	IMAGE=${DEFAULT_TAG} ${READIES}/mk/docker-collect-artifacts
 endif
+
+publish:
+	DOCKER_SOURCES=${DOCKER_SOURCES} \
+	DOCKER_TAGS="${DOCKER_TAGS}" \
+	NOP=${NOP} \
+	VERBOSE=${VERBOSE} \
+	KEEP=${KEEP} \
+	${DOCKERWRAPPER_EXTRA_VARS} \
+	${READIES}/bin/dockerwrapper \
+		-d ${ROOT}/Dockerfile${DOCKER_SUFFIX} \
+		-t ${DEFAULT_TAG} \
+		-e REDIS \
+		-D "${DOCKER_OPTS}" \
+		-p -P \
+		${DOCKER_ARGS}
 
 # There are mappings between OSNICK to specific OS values, due to docker containers used
 # The global mappings are found here.
