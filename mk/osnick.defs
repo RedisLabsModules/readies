@@ -26,7 +26,7 @@ OS.archlinux=archlinux:latest
 
 endif # OS
 
-OS=$(OS.$(OSNICK))
+OS?=$(OS.$(OSNICK))
 ifeq ($(OS),)
 $(error Invalid OSNICK. Aborting.)
 endif

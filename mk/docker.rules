@@ -34,7 +34,7 @@ ifdef BRANCH
 endif
 
 # e.g redislabs/RedisTimeSeries:edge
-DEFAULT_TAG?=${DOCKER_ORG}/${PRODUCT}:${VERSION}
+DEFAULT_TAG=${DOCKER_ORG}/${PRODUCT}:${VERSION}
 
 DOCKER_SOURCES=""
 
@@ -44,6 +44,7 @@ else
 OUR_DOCKER_ORG=$(DOCKER_ORG)
 endif
 
+DOCKER_TAGS=
 # add the official
 ifeq ($(OFFICIAL),1)
 DOCKER_TAGS+=$(REDIS_DOCKER_ORG)/$(PRODUCT):$(VERSION)
@@ -66,6 +67,11 @@ ifeq ($(PREVIEW),1)
 DOCKER_TAGS+=$(OUR_DOCKER_ORG)/$(PRODUCT):preview
 endif
 
+# append custom docker tags
+ifdef DOCKER_EXT_TAGS
+DOCKER_TAGS+=$(DOCKER_EXT_TAGS)
+endif
+
 # defaults
 PACK ?=0
 TEST ?=0
@@ -79,11 +85,13 @@ VERBOSE=0
 ## This builds the docker
 build:
 	DOCKER_SOURCES=${DOCKER_SOURCES} \
-	DOCKER_TAGS="${DOCKER_TAGS}" \
+	DOCKER_TAGS=${DOCKER_TAGS} \
 	NOP=${NOP} \
 	DOCKER_PUSH=${PUBLISH} \
 	VERBOSE=${VERBOSE} \
 	KEEP=${KEEP} \
+	PACK=${PACK} \
+	TEST=${TEST} \
 	${DOCKERWRAPPER_EXTRA_VARS} \
 	${READIES}/bin/dockerwrapper \
 		-d ${ROOT}/Dockerfile${DOCKER_SUFFIX} \
