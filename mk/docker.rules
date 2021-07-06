@@ -44,6 +44,7 @@ else
 OUR_DOCKER_ORG=$(DOCKER_ORG)
 endif
 
+
 DOCKER_TAGS=
 # add the official
 ifeq ($(OFFICIAL),1)
@@ -83,6 +84,7 @@ KEEP=0
 VERBOSE=0
 
 ## This builds the docker
+## Variables (OSNICK) are prefixed with REDIS_ to allow for automatic use as a variable.
 build:
 	DOCKER_SOURCES=${DOCKER_SOURCES} \
 	DOCKER_TAGS=${DOCKER_TAGS} \
@@ -90,8 +92,11 @@ build:
 	DOCKER_PUSH=${PUBLISH} \
 	VERBOSE=${VERBOSE} \
 	KEEP=${KEEP} \
-	PACK=${PACK} \
-	TEST=${TEST} \
+	REDIS_PACK=${PACK} \
+	REDIS_TEST=${TEST} \
+	REDIS_OSNICK=${OSNICK} \
+	REDIS_ARCH=${ARCH} \
+	REDIS_OS=${ARCH} \
 	${DOCKERWRAPPER_EXTRA_VARS} \
 	${READIES}/bin/dockerwrapper \
 		-d ${ROOT}/Dockerfile${DOCKER_SUFFIX} \
