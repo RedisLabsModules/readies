@@ -96,7 +96,7 @@ build:
 	REDIS_TEST=${TEST} \
 	REDIS_OSNICK=${OSNICK} \
 	REDIS_ARCH=${ARCH} \
-	REDIS_OS=${ARCH} \
+	REDIS_OS=${OS} \
 	${DOCKERWRAPPER_EXTRA_VARS} \
 	${READIES}/bin/dockerwrapper \
 		-d ${ROOT}/Dockerfile${DOCKER_SUFFIX} \
