@@ -34,7 +34,7 @@ ifdef BRANCH
 endif
 
 # e.g redislabs/RedisTimeSeries:edge
-DEFAULT_TAG=${DOCKER_ORG}/${PRODUCT}:${VERSION}
+DEFAULT_TAG?=${DOCKER_ORG}/${PRODUCT}:${VERSION}
 
 DOCKER_SOURCES=""
 
