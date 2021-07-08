@@ -438,15 +438,18 @@ class Setup(OnPlatform):
 
     def install_gnu_utils(self, _try=False):
         packs = ""
+        path = "/usr/local/bin"
         if self.os == 'macos':
             packs= "make coreutils findutils gnu-sed gnu-tar gawk"
+            if os.path.exists("/opt/homebrew/bin/"):
+                path = "/opt/homebrew/bin/"
         elif self.os == 'freebsd':
             packs = "gmake coreutils findutils gsed gtar gawk"
         self.install(packs)
         for x in ['make', 'find', 'sed', 'tar', 'mktemp']:
-            p = "/usr/local/bin/{}".format(x)
+            p =(path+"{}").format(x)
             if not os.path.exists(p):
-                self.run("ln -sf /usr/local/bin/g{} {}".format(x, p))
+                self.run("ln -sf {}g{} {}".format(path, x, p))
             else:
                 eprint("Warning: {} exists - not replaced".format(p))
 
