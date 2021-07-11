@@ -441,8 +441,9 @@ class Setup(OnPlatform):
         path = "/usr/local/bin"
         if self.os == 'macos':
             packs= "make coreutils findutils gnu-sed gnu-tar gawk"
-            if os.path.isdir("/opt/homebrew/bin"):
-                path = "/opt/homebrew/bin"
+            path = os.path.abspath(os.path.join(os.path.expanduser("~"), ".cache", "readies", "bin"))
+            if not os.path.isdir(path):
+                os.makedirs(path)
         elif self.os == 'freebsd':
             packs = "gmake coreutils findutils gsed gtar gawk"
         self.install(packs)
