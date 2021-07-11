@@ -360,7 +360,7 @@ class Setup(OnPlatform):
     @property
     def profile_d(self):
         if self.os == 'macos':
-            return os.path.join(os.getenv('HOME'), ".profile.d")
+            return os.path.abspath(os.path.join(os.path.expanduser('~'), ".profile.d"))
         else:
             return "/etc/profile.d"
 
@@ -454,6 +454,11 @@ class Setup(OnPlatform):
                 os.symlink(os.path.join(path, "g{}".format(x)), dest)
             else:
                 eprint("Warning: {} exists - not replaced".format(dest))
+
+        if self.os == 'macos':
+            destfile = os.path.join(self.profile_d, 'readies-gnu-utils.sh')
+            with open(destfile, 'w+') as fp:
+                fp.write("PATH={}:$PATH".format(path))
 
     def install_linux_gnu_tar(self, _try=False):
         if self.os != 'linux':
