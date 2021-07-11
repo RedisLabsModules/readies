@@ -458,7 +458,7 @@ class Setup(OnPlatform):
         if self.os == 'macos':
             destfile = os.path.join(self.profile_d, 'readies-gnu-utils.sh')
             with open(destfile, 'w+') as fp:
-                fp.write("PATH={}:$PATH".format(path))
+                fp.write("export PATH=$PATH:{}".format(path))
 
     def install_linux_gnu_tar(self, _try=False):
         if self.os != 'linux':
