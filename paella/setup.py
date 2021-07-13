@@ -365,7 +365,7 @@ class Setup(OnPlatform):
     @property
     def profile_d(self):
         if self.os == 'macos':
-            return os.path.join(os.getenv('HOME'), ".profile.d")
+            return os.path.abspath(os.path.join(os.path.expanduser('~'), ".profile.d"))
         else:
             return "/etc/profile.d"
 
@@ -443,17 +443,27 @@ class Setup(OnPlatform):
 
     def install_gnu_utils(self, _try=False):
         packs = ""
+        path = "/usr/local/bin"
         if self.os == 'macos':
             packs= "make coreutils findutils gnu-sed gnu-tar gawk"
+            path = os.path.abspath(os.path.join(os.path.expanduser("~"), ".cache", "readies", "bin"))
+            if not os.path.isdir(path):
+                os.makedirs(path)
         elif self.os == 'freebsd':
             packs = "gmake coreutils findutils gsed gtar gawk"
         self.install(packs)
+
         for x in ['make', 'find', 'sed', 'tar', 'mktemp']:
-            p = "/usr/local/bin/{}".format(x)
-            if not os.path.exists(p):
-                self.run("ln -sf /usr/local/bin/g{} {}".format(x, p))
+            dest = os.path.join(path, x)
+            if not os.path.exists(dest):
+                os.symlink(os.path.join(path, "g{}".format(x)), dest)
             else:
-                eprint("Warning: {} exists - not replaced".format(p))
+                eprint("Warning: {} exists - not replaced".format(dest))
+
+        if self.os == 'macos':
+            destfile = os.path.join(self.profile_d, 'readies-gnu-utils.sh')
+            with open(destfile, 'w+') as fp:
+                fp.write("export PATH=$PATH:{}".format(path))
 
     def install_linux_gnu_tar(self, _try=False):
         if self.os != 'linux':
