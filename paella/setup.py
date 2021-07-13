@@ -30,6 +30,9 @@ class OutputMode:
     def __eq__(self, x):
         return self.mode == OutputMode(x).mode
 
+    def __ne__(self, x):
+        return not self.__eq__(x)
+
     def __bool__(self):
         return self.mode == "True"
 
@@ -45,7 +48,7 @@ class Runner:
         self.has_sudo = False
         self.output = OutputMode(output)
 
-    def run(self, cmd, at=None, output=None, _try=False, sudo=False):
+    def run(self, cmd, at=None, output=None, nop=None, _try=False, sudo=False):
         if output is None:
             output = self.output
         else:
@@ -58,7 +61,9 @@ class Runner:
             cmd = "sudo " + cmd
         print(cmd)
         sys.stdout.flush()
-        if self.nop:
+        if nop is None:
+            nop = self.nop
+        if nop:
             return
         if output != True:
             fd, temppath = tempfile.mkstemp()
@@ -118,8 +123,8 @@ class PackageManager(object):
         else:
             raise Error("Cannot determine package manager for OS %s" % platform.os)
 
-    def run(self, cmd, at=None, output="on_error", _try=False, sudo=False):
-        return self.runner.run(cmd, at=at, output=output, _try=_try, sudo=sudo)
+    def run(self, cmd, at=None, output="on_error", nop=None, _try=False, sudo=False):
+        return self.runner.run(cmd, at=at, output=output, nop=nop, _try=_try, sudo=sudo)
 
     def has_command(self, cmd):
         return self.runner.has_command(cmd)
@@ -350,8 +355,8 @@ class Setup(OnPlatform):
 
         self.invoke()
 
-    def run(self, cmd, at=None, output="on_error", _try=False, sudo=False):
-        return self.runner.run(cmd, at=at, output=output, _try=_try, sudo=sudo)
+    def run(self, cmd, at=None, output="on_error", nop=None, _try=False, sudo=False):
+        return self.runner.run(cmd, at=at, output=output, nop=nop, _try=_try, sudo=sudo)
 
     @staticmethod
     def has_command(cmd):
