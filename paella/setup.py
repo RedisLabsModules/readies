@@ -456,7 +456,8 @@ class Setup(OnPlatform):
         for x in ['make', 'find', 'sed', 'tar', 'mktemp']:
             dest = os.path.join(path, x)
             if not os.path.exists(dest):
-                os.symlink(os.path.join(path, "g{}".format(x)), dest)
+                src = paella.sh("command -v g{}".format(x)).strip()
+                os.symlink(src, dest)
             else:
                 eprint("Warning: {} exists - not replaced".format(dest))
 
