@@ -101,6 +101,7 @@ install_python() {
 		runn apk update
 		runn apk add python2
 	elif is_command brew; then
+		:
 		# runn brew install python2
 	elif is_command pkg; then
 		runn pkg install -y python2
