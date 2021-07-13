@@ -300,12 +300,10 @@ class Platform:
             self.arch = 'x64'
         elif self.arch == 'i386' or self.arch == 'i686' or self.arch == 'i86pc':
             self.arch = 'x86'
-        elif self.arch == 'aarch64':
+        elif self.arch == 'aarch64' or self.arch == 'arm64':
             self.arch = 'arm64v8'
         elif self.arch == 'armv7l':
             self.arch = 'arm32v7'
-        elif self.arch == 'arm64' and self.os == 'macos':
-            self.arch = 'arm64v8'
 
     #------------------------------------------------------------------------------------------
 
