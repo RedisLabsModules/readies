@@ -110,7 +110,14 @@ install_python() {
 
 install_pip() {
 	if [[ $FORCE != 1 ]]; then
-		[[ $($MYPY -m pip --version > /dev/null 2>&1; echo $?) == 0 ]] && return
+		pipver=$(mktemp /tmp/pipver.XXXXXX)
+		if [[ $($MYPY -m pip --version > $pipver 2> /dev/null; echo $?) == 0 ]]; then
+			if [[ $((`cat $pipver | awk '{print $2}' | cut -f1 -d.` >= 19 )) == 1 ]]; then
+				rm -f $pipver
+				return
+			fi
+		fi
+		rm -f $pipver
 	fi
 	
 	pipspec=""
