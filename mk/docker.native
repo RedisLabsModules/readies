@@ -109,6 +109,7 @@ endef
 #----------------------------------------------------------------------------------------------
 
 BRANCH=${BRANCH//[^A-Za-z0-9._-]/_}
+VERSION=${VERSION//[^A-Za-z0-9._-]/_}
 
 ifeq ($(findstring master,$(INT_BRANCHES)),)
 INT_BRANCHES += master
