@@ -108,8 +108,8 @@ endef
 
 #----------------------------------------------------------------------------------------------
 
-BRANCH=${BRANCH//[^A-Za-z0-9._-]/_}
-VERSION=${VERSION//[^A-Za-z0-9._-]/_}
+override BRANCH:=$(shell X="$(BRANCH)"; echo $${X//[^A-Za-z0-9._-]/_})
+override VERSION:=$(shell X="$(VERSION)"; echo $${X//[^A-Za-z0-9._-]/_})
 
 ifeq ($(findstring master,$(INT_BRANCHES)),)
 INT_BRANCHES += master
@@ -155,6 +155,8 @@ endif
 endif
 
 endif # OFFICIAL
+
+D_VERSION:=$(shell X="$(D_VERSION)"; echo $${X//[^A-Za-z0-9._-]/_})
 
 ifeq ($(VERBOSE),1)
 $(info REPO=$(REPO))
