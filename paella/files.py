@@ -28,8 +28,8 @@ def flines(fname, mode = 'r'):
 
 #----------------------------------------------------------------------------------------------
 
-def tempfilepath():
-    fd, path = tempfile.mkstemp()
+def tempfilepath(prefix=None, suffix=None):
+    fd, path = tempfile.mkstemp(prefix=prefix, suffix=suffix)
     os.close(fd)
     return path
 
