@@ -11,7 +11,7 @@ if [[ ! -f /etc/redhat-release ]]; then
 fi
 
 EPEL=$(source /etc/os-release; echo $VERSION_ID;)
-if [[ $EPEL != 7 && $EPEL != 8 ]]; then
+if [[ $EPEL != 7* && $EPEL != 8* ]]; then
 	eprint "Cannot determine EPEL version."
 	exit 1
 fi
