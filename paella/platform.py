@@ -333,6 +333,9 @@ class Platform:
     def is_arm(self):
         return self.arch == 'arm64v8' or self.arch == 'arm32v7'
 
+    def is_arm64(self):
+        return self.arch == 'arm64v8'
+
     def is_container(self):
         with open('/proc/1/cgroup', 'r') as conf:
             for line in conf:

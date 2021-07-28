@@ -17,7 +17,7 @@ os.environ["PYTHONWARNINGS"] = 'ignore:DEPRECATION::pip._internal.cli.base_comma
 
 #----------------------------------------------------------------------------------------------
 
-CMAKE_VER='3.20.2'
+CMAKE_VER='3.21.1'
 
 #----------------------------------------------------------------------------------------------
 
@@ -63,7 +63,7 @@ class CMakeSetup(paella.Setup):
     def __init__(self, args):
         paella.Setup.__init__(self, nop=args.nop)
         # check whether it is possible to download a pre-built cmake
-        self.build = args.build or not (self.os == 'linux' and (self.arch == 'x64' or self.arch.find("arm64") != -1))
+        self.build = args.build or not (self.os == 'linux' and (self.arch == 'x64' or self.platform.is_arm64()))
 
     def common_first(self):
         self.install_downloaders()
@@ -86,8 +86,8 @@ class CMakeSetup(paella.Setup):
         pass
 
     def linux_last(self):
-        if self.arch.find("arm64") != -1:
-            url = "https://github.com/Kitware/CMake/releases/download/v3.20.2/cmake-{CMAKE_VER}-linux-aarch64.sh".format(CMAKE_VER=CMAKE_VER)
+        if self.platform.is_arm64():
+            url = "https://github.com/Kitware/CMake/releases/download/v{CMAKE_VER}/cmake-{CMAKE_VER}-linux-aarch64.sh".format(CMAKE_VER=CMAKE_VER)
         else:
             url="https://github.com/Kitware/CMake/releases/download/v{CMAKE_VER}/cmake-{CMAKE_VER}-`uname`-`uname -m`.sh".format(CMAKE_VER=CMAKE_VER)
         if not self.build:
@@ -117,13 +117,13 @@ class CMakeSetup(paella.Setup):
 
 parser = argparse.ArgumentParser(description='Install CMake')
 parser.add_argument('-n', '--nop', action="store_true", help='no operation')
-parser.add_argument('--no-repo', action="store_true", help='do not install from distribution repository')
+parser.add_argument('--from-repo', action="store_true", help='install from distribution repository')
 parser.add_argument('--build', action="store_true", help='build from source')
 args = parser.parse_args()
 
 try:
     platform = paella.Platform()
-    if not args.no_repo and not args.build and (platform.os == 'linux' and platform.arch == 'x64' or platform.os == 'macos'):
+    if args.from_repo and not args.build or platform.os == 'macos':
         CMakeSetupFromRepo(args).setup()
     CMakeSetup(args).setup()
 except Exception as x:
