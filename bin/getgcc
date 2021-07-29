@@ -20,7 +20,9 @@ class SystemSetup(paella.Setup):
     def ubuntu(self):
         self.install("build-essential")
         if self.modern:
-            self.add_repo("ppa:ubuntu-toolchain-r/test")
+            paella.fwrite('/etc/apt/apt.conf.d/80-retries', 'APT::Acquire::Retries "3";')
+            if self.os_version[0] < 20:
+                self.add_repo("ppa:ubuntu-toolchain-r/test")
             if self.install("gcc-10 g++-10", output=False, _try=True) == 0:
                 self.run("update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 60 --slave /usr/bin/g++ g++ /usr/bin/g++-10")
             else:
@@ -31,6 +33,7 @@ class SystemSetup(paella.Setup):
         if not self.modern:
             self.install("build-essential")
         else:
+            paella.fwrite('/etc/apt/apt.conf.d/80-retries', 'APT::Acquire::Retries "3";')
             self.run("echo 'deb http://deb.debian.org/debian testing main' > /etc/apt/sources.list.d/testing.list")
             self.run("apt-get update -qq")
             self.run("apt-get install -y -t testing build-essential")
