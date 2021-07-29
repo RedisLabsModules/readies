@@ -11,15 +11,17 @@ xinstall git
 if is_command python2; then
 	runn python2 -m pip install pudb
 fi
-if ! runn python3 -m pip install --no-cache-dir git+https://github.com/inducer/pudb.git@main; then
-	cd /tmp
-	runn git clone https://github.com/inducer/pudb.git
-	cd pudb
-	# this is debian-specific right now, as pip/git install is failing on arm
-	xinstall python3-dev
-	runn python3 setup.py install
-	cd ..
-	$OP rm -rf pudb
+if is_command python3; then
+	if ! runn python3 -m pip install --no-cache-dir git+https://github.com/inducer/pudb.git@main; then
+		cd /tmp
+		runn git clone https://github.com/inducer/pudb.git
+		cd pudb
+		# this is debian-specific right now, as pip/git install is failing on arm
+		xinstall python3-dev
+		runn python3 setup.py install
+		cd ..
+		$OP rm -rf pudb
+	fi
 fi
 
 cfg="$HOME/.config/pudb/pudb.cfg"
@@ -48,11 +50,13 @@ if [[ ! -e $cfg ]]; then
 EOF
 fi
 
-pudb=/usr/local/bin/pudb
-if [[ ! -e $pudb ]]; then
-	cat <<-EOF > $pudb
+if is_command python3; then
+	pudb=/usr/local/bin/pudb
+	if [[ ! -e $pudb ]]; then
+		cat <<-EOF > $pudb
 #!/bin/bash
 
 python3 -m pudb "$@"
 EOF
+	fi
 fi
