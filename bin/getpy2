@@ -15,6 +15,7 @@ if [[ $1 == --help || $1 == help || $HELP == 1 ]]; then
 		[ARGVARS...] getpy2 [--help|help]
 
 		Argument variables:
+		MYPY=path    Use specific Python interpreter (install pip & requirements)
 		CHECK=1      Only check and report, do not install
 		PIP=0        Avoid installing pip
 		PIP=version  Also install pip of the specified version
@@ -57,6 +58,12 @@ fix_variants() {
 }
 
 check_variants() {
+	if [[ -n $MYPY ]]; then
+		PYTHON=$MYPY
+		PYTHON2=$MYPY
+		PYTHON27=$MYPY
+		return
+	fi
 	PYTHON=$(command -v python)
 	PYTHON2=$(command -v python2)
 	PYTHON27=$(command -v python2.7)
@@ -65,7 +72,7 @@ check_variants() {
 	PYTHON_VER=""
 	
 	if [[ ! -z $PYTHON ]]; then
-		PYTHON_VER="$(python --version 2>&1 | cut -d" " -f2 | cut -d. -f1)"
+		PYTHON_VER="$(python --version 2>&1 | awk '{print $2}' | cut -d. -f1)"
 		[[ $PYTHON_VER == 2 ]] && MYPY=$PYTHON
 	fi
 	

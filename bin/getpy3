@@ -15,6 +15,7 @@ if [[ $1 == --help || $1 == help || $HELP == 1 ]]; then
 		[ARGVARS...] getpy3 [--help|help]
 
 		Argument variables:
+		MYPY=path    Use specific Python interpreter (install pip & requirements)
 		CHECK=1      Only check and report, do not install
 		PIP=0        Avoid installing pip
 		PIP=version  Also install pip of the specified version
@@ -56,6 +57,12 @@ fix_variants() {
 }
 
 check_variants() {
+	if [[ -n $MYPY ]]; then
+		PYTHON=$MYPY
+		PYTHON2=$MYPY
+		PYTHON27=$MYPY
+		return
+	fi
 	PYTHON=$(command -v python)
 	PYTHON3=$(command -v python3)
 
