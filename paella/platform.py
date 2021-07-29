@@ -317,7 +317,7 @@ class Platform:
 
     @property
     def os_version(self):
-        return tuple(map(lambda x: int(x) if is_numeric(x) else x, self.os_full_ver))
+        return tuple(map(lambda x: int(x) if is_numeric(x) else x, self.os_full_ver.split('.')))
 
     #------------------------------------------------------------------------------------------
 
