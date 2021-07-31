@@ -7,20 +7,33 @@ READIES=$(cd $HERE/.. && pwd)
 OP=""
 [[ $NOP == 1 ]] && OP=echo
 
-xinstall git
-if is_command python2; then
-	runn python2 -m pip install pudb
+if [[ $NO_PY2 != 1 ]]; then
+	if is_command python2; then
+		runn python2 -m pip install pudb
+	fi
 fi
-if is_command python3; then
-	if ! runn python3 -m pip install --no-cache-dir git+https://github.com/inducer/pudb.git@main; then
-		cd /tmp
-		runn git clone https://github.com/inducer/pudb.git
-		cd pudb
-		# this is debian-specific right now, as pip/git install is failing on arm
-		xinstall python3-dev
-		runn python3 setup.py install
-		cd ..
-		$OP rm -rf pudb
+if [[ $NO_PY3 != 1 ]]; then
+	if is_command python3; then
+		xinstall git
+		if ! runn python3 -m pip install --no-cache-dir git+https://github.com/inducer/pudb.git@main; then
+			cd /tmp
+			runn git clone https://github.com/inducer/pudb.git
+			cd pudb
+			# this is debian-specific right now, as pip/git install is failing on arm
+			xinstall python3-dev
+			runn python3 setup.py install
+			cd ..
+			$OP rm -rf pudb
+		fi
+
+		pudb=/usr/local/bin/pudb
+		if [[ ! -e $pudb ]]; then
+			cat <<-EOF > $pudb
+#!/bin/bash
+
+python3 -m pudb "$@"
+EOF
+		fi
 	fi
 fi
 
@@ -48,15 +61,4 @@ if [[ ! -e $cfg ]]; then
 		variables_weight = 1
 		wrap_variables = True
 EOF
-fi
-
-if is_command python3; then
-	pudb=/usr/local/bin/pudb
-	if [[ ! -e $pudb ]]; then
-		cat <<-EOF > $pudb
-#!/bin/bash
-
-python3 -m pudb "$@"
-EOF
-	fi
 fi
