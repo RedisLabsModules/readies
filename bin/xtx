@@ -70,7 +70,8 @@ if args.strict:
     undefined = find_undeclared_variables(ast)
     if undefined:
         nl = '\n'
-        eprint(f"error: the following vars are undefined:{nl}{nl.join(undefined)}")
+        u = nl.join(undefined)
+        eprint(f"error: the following vars are undefined:{nl}{u}")
         exit(1)
 
 if not args.skip_undef:
