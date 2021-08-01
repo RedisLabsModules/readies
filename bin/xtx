@@ -69,9 +69,8 @@ if args.strict:
     ast = jenv.parse(jr)
     undefined = find_undeclared_variables(ast)
     if undefined:
-        nl = '\n'
-        u = nl.join(undefined)
-        eprint(f"error: the following vars are undefined:{nl}{u}")
+        u = '\n'.join(undefined)
+        eprint("error: the following vars are undefined:\n{u}".format(u=u))
         exit(1)
 
 if not args.skip_undef:
