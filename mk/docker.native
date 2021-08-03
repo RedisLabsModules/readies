@@ -127,8 +127,16 @@ else ifneq ($(BRANCH),)
 D_VERSION=$(BRANCH)
 
 else
+
+# when no version is defined, attempt to use the tag
+TAG_NAME:=$(shell git describe --exact-match --tags $$(git log -n1 --pretty='%h') 2> /dev/null | cut -d 'v' -f 2-2)
+ifneq ($(TAG_NAME),)
+D_VERSION=$(TAG_NAME)
+else
 BRANCH=$(GIT_BRANCH)
 D_VERSION=$(BRANCH)
+endif
+
 endif
 
 ifneq ($(findstring $(BRANCH),$(INT_BRANCHES)),)
@@ -141,19 +149,6 @@ ifeq ($(BRANCH),master)
 PUSH_EDGE=1
 endif
 
-# when no version is defined, attempt to use the tag
-# if the tag is defined, and it matches our last
-ifeq ($(VERSION),)
-TAG_NAME=$(shell git describe --exact-match --tags $$(git log -n1 --pretty='%h')|cut -d 'v' -f 2-2)
-ifneq ($(TAG_NAME),)
-BASE_TAG=$(shell echo $(TAG_NAME) | cut -d '.' -f 1-2)
-ifeq ($(BASE_TAG),$(LATEST_BRANCH))
-D_VERSION=$(TAG_NAME)
-PUSH_LATEST=1
-endif
-endif
-endif
-
 endif # OFFICIAL
 
 D_VERSION:=$(shell X="$(D_VERSION)"; echo $${X//[^A-Za-z0-9._-]/_})
@@ -164,13 +159,13 @@ $(info VERSION=$(VERSION))
 $(info LATEST_VERSION=$(LATEST_VERSION))
 $(info BRANCH=$(BRANCH))
 $(info GIT_BRANCH=$(GIT_BRANCH))
+$(info TAG_NAME=$(TAG_NAME))
 $(info LATEST_BRANCH=$(LATEST_BRANCH))
 $(info INT_BRANCHES=$(INT_BRANCHES))
 $(info OFFICIAL=$(OFFICIAL))
 $(info PUSH_GENERAL=$(PUSH_GENERAL))
 $(info PUSH_EDGE=$(PUSH_EDGE))
 $(info PUSH_LATEST=$(PUSH_LATEST))
-$(info TAG_NAME=$(TAG_NAME))
 endif
 
 #----------------------------------------------------------------------------------------------
@@ -264,10 +259,6 @@ endif # OFFICIAL
 	@true
 
 .PHONY: publish
-
-#----------------------------------------------------------------------------------------------
-
-# publish: $(PUSH_TARGETS) ;
 
 #----------------------------------------------------------------------------------------------
 
