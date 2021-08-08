@@ -24,3 +24,6 @@ if [[ -d $READIES ]]; then
 fi
 
 setup_profile_d
+
+OP=""
+[[ $NOP == 1 ]] && OP=echo
