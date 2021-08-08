@@ -133,7 +133,7 @@ TAG_NAME:=$(shell git describe --exact-match --tags $$(git log -n1 --pretty='%h'
 ifneq ($(TAG_NAME),)
 D_VERSION=$(TAG_NAME)
 else
-BRANCH=$(GIT_BRANCH)
+override BRANCH=$(GIT_BRANCH)
 D_VERSION=$(BRANCH)
 endif
 
@@ -166,6 +166,7 @@ $(info OFFICIAL=$(OFFICIAL))
 $(info PUSH_GENERAL=$(PUSH_GENERAL))
 $(info PUSH_EDGE=$(PUSH_EDGE))
 $(info PUSH_LATEST=$(PUSH_LATEST))
+$(info D_VERSION=$(D_VERSION))
 endif
 
 #----------------------------------------------------------------------------------------------
