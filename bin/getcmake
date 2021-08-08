@@ -64,6 +64,7 @@ class CMakeSetup(paella.Setup):
         paella.Setup.__init__(self, nop=args.nop)
         # check whether it is possible to download a pre-built cmake
         self.build = args.build or not (self.os == 'linux' and (self.arch == 'x64' or self.platform.is_arm64()))
+        self.prefix = '/usr' if args.usr else '/usr/local'
 
     def common_first(self):
         self.install_downloaders()
@@ -93,9 +94,9 @@ class CMakeSetup(paella.Setup):
         if not self.build:
             self.run(r"""
                 wget -q -O /tmp/cmake.sh {url}
-                sh /tmp/cmake.sh --skip-license --prefix=/usr/local
+                sh /tmp/cmake.sh --skip-license --prefix={prefix}
                 rm -f /tmp/cmake.sh
-                """.format(url=url))
+                """.format(url=url, prefix=self.prefix))
 
     def common_last(self):
         if self.build:
@@ -119,6 +120,7 @@ parser = argparse.ArgumentParser(description='Install CMake')
 parser.add_argument('-n', '--nop', action="store_true", help='no operation')
 parser.add_argument('--from-repo', action="store_true", help='install from distribution repository')
 parser.add_argument('--build', action="store_true", help='build from source')
+parser.add_argument('--usr', action="store_true", help='install into /usr instead of into /usr/local')
 args = parser.parse_args()
 
 try:
