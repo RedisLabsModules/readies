@@ -25,5 +25,5 @@ fi
 
 setup_profile_d
 
-OP=""
-[[ $NOP == 1 ]] && OP=echo
+# OP=""
+# [[ $NOP == 1 ]] && OP=echo
