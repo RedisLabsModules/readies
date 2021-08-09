@@ -1,6 +1,7 @@
 addict
 click
 jinja2
+requests
 semantic_version
 six
 toml
