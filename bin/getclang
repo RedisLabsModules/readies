@@ -60,6 +60,8 @@ class CLangSetup(paella.Setup):
         if self.osnick != "trusty":
             if self.platform.is_arm():
                 clang_ver = "10"
+            elif self.osnick == "xenial":
+                clang_ver = "12"
             else:
                 clang_ver = "" # auto-detect
             self.run(r"""
