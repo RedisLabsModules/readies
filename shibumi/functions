@@ -43,16 +43,31 @@ fi
 #
 
 runn() {
-	(( NOP == 1 || V >= 1 )) && { echo "${@:1}"; }
-	[[ $NOP == 1 ]] && { return; }
-	if (( V < 2 )); then
-		__runn_log=$(mktemp)
-		{ eval "${@:1}" > $__runn_log 2>&1 ; E=$?; } || true
-		[ $E != 0 ] && cat $__runn_log
-		rm -f $__runn_log
-		return $E
+	if [[ $1 == @ ]]; then
+		cmd="$(cat $2)"
+		(( NOP == 1 || V >= 1 )) && { echo "$cmd"; }
+		[[ $NOP == 1 ]] && { return; }
+		if (( V < 2 )); then
+			__runn_log=$(mktemp)
+			{ eval "$cmd" > $__runn_log 2>&1 ; E=$?; } || true
+			[ $E != 0 ] && cat $__runn_log
+			rm -f $__runn_log
+			return $E
+		else
+			eval "$cmd"
+		fi
 	else
-		eval "${@:1}"
+		(( NOP == 1 || V >= 1 )) && { echo "${@:1}"; }
+		[[ $NOP == 1 ]] && { return; }
+		if (( V < 2 )); then
+			__runn_log=$(mktemp)
+			{ eval "${@:1}" > $__runn_log 2>&1 ; E=$?; } || true
+			[ $E != 0 ] && cat $__runn_log
+			rm -f $__runn_log
+			return $E
+		else
+			eval "${@:1}"
+		fi
 	fi
 }
 
