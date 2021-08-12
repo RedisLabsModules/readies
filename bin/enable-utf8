@@ -34,9 +34,11 @@ elif command -v yum &> /dev/null; then
 	EPEL=$(source /etc/os-release; echo $VERSION_ID;)
 	if [[ $EPEL == 8 ]]; then
 		runn dnf install -y langpacks-en glibc-all-langpacks
-	elif [[ -f /etc/yum.conf && -z $(grep '^override_install_langs=' /etc/yum.conf) ]]; then
-		runn sed -i 's/^\(override_install_langs=\)/# \1/' /etc/yum.conf
-		runn yum reinstall -y glibc-common
+	elif [[ -f /etc/yum.conf && -n $(grep '^override_install_langs=' /etc/yum.conf) ]]; then
+		runn @ <<-EOF
+			sed -i 's/^\(override_install_langs=\)/# \1/' /etc/yum.conf
+EOF
+		runn "yum reinstall -y glibc-common || yum install -y glibc-common"
 	fi
 	create_utf8_profile_script
 
