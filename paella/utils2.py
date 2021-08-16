@@ -7,7 +7,8 @@ def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
 def sh(cmd, join=True):
-    proc = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
+    shell = isinstance(cmd, str)
+    proc = Popen(cmd, shell=shell, stdout=PIPE, stderr=PIPE)
     out, err = proc.communicate()
     if proc.returncode != 0:
         raise RuntimeError(err)
