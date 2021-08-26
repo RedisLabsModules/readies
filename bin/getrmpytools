@@ -58,7 +58,11 @@ class RMPyToolsSetup(paella.Setup):
     def common_last(self):
         self.install("git")
         if self.reinstall:
-            self.pip_uninstall("redis redis-py-cluster ramp-packer RLTest")
+            self.uninstall("redis")
+            self.uninstall("redis-py-cluster", ["rediscluster", "redis_py_cluster"])
+            self.uninstall("ramp-packer", ["RAMP", "ramp_packer"])
+            self.uninstall("RLTest", ["RLTest"])
+            self.uninstall("click", ["Click"])
         # redis-py-cluster should be installed from git due to redis-py dependency
         # self.pip_install("--no-cache-dir git+https://github.com/Grokzen/redis-py-cluster.git@master")
         self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/redisfab/redis-py.git@3.5")
@@ -66,12 +70,50 @@ class RMPyToolsSetup(paella.Setup):
         self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/RedisLabsModules/RLTest.git@master")
         self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/RedisLabs/RAMP@master")
 
+    def uninstall(self, package, pack_dirs=[]):
+        # self.pip_uninstall(package) # this does not damage than good
+        if package not in pack_dirs:
+            pack_dirs += [package]
+        base_dirs = sh("{PYTHON} -m pip list -v | grep '^{PACK}\s' | awk '{{print $3}}'".format(PYTHON=self.python, PACK=package)).strip()
+        n_base_dirs = len(base_dirs.split())
+        if n_base_dirs == 0:
+            return
+        if n_base_dirs > 1:
+            eprint("cannot determine base python installation dir for '{}'".format(package))
+            return
+        base_dir = base_dirs
+        pack_re_suffixes = ['', 
+            r'\.dist-info',
+            r'-\d+\.\d+\.\d+',
+            r'-\d+\.\d+\.\d+\.dist-info',
+            r'-\d+\.\d+\.\d+\.post\d+',
+            r'-\d+\.\d+\.\d+\.post\d+\.dist-info',
+            r'-\d+\.\d+\.\d+\.post\d+',
+            r'-\d+\.\d+\.\d+\.dev\d+\.dist-info']
+        with paella.cwd(base_dir):
+            print("cd {}".format(base_dir))
+            rm_d = []
+            for pack_dir in pack_dirs:
+                try:
+                    dirs = sh("ls -d {DIR}*".format(DIR=pack_dir))
+                    for d in dirs.split():
+                        for re_suff in pack_re_suffixes:
+                            re1 = r'^{PACK}{SUFF}$'.format(PACK=pack_dir, SUFF=re_suff)
+                            if paella.match(re1, d):
+                                rm_d += [d]
+                                break
+                except:
+                    pass
+            if rm_d != []:
+                self.run("rm -rf {DIR}".format(DIR=' '.join(rm_d)))
+            print("cd -")
+
 #----------------------------------------------------------------------------------------------
 
 parser = argparse.ArgumentParser(description='Install RedisLabs Modules Python tools')
 parser.add_argument('-n', '--nop', action="store_true", help='no operation')
 parser.add_argument('--no-reinstall', action="store_true", default=False, help='Not not reinstall everything')
-parser.add_argument('--reinstall', action="store_true", default=True, help='Reinstall everything (the default behavior)')
+parser.add_argument('--reinstall', action="store_true", default=False, help='Reinstall everything (the default behavior)')
 args = parser.parse_args()
 
 try:
