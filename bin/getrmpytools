@@ -98,7 +98,7 @@ class RMPyToolsSetup(paella.Setup):
                     dirs = sh("ls -d {DIR}*".format(DIR=pack_dir))
                     for d in dirs.split():
                         for re_suff in pack_re_suffixes:
-                            re1 = r'^{PACK}{SUFF}$'.format(PACK=pack_dir, SUFF=re_suff)
+                            re1 = r'^{DIR}{SUFF}$'.format(DIR=pack_dir, SUFF=re_suff)
                             if paella.match(re1, d):
                                 rm_d += [d]
                                 break
