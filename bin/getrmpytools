@@ -71,7 +71,7 @@ class RMPyToolsSetup(paella.Setup):
         self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/RedisLabs/RAMP@master")
 
     def uninstall(self, package, pack_dirs=[]):
-        # self.pip_uninstall(package) # this does not damage than good
+        # self.pip_uninstall(package) # this does more damage than good
         if package not in pack_dirs:
             pack_dirs += [package]
         base_dirs = sh("{PYTHON} -m pip list -v | grep '^{PACK}\s' | awk '{{print $3}}'".format(PYTHON=self.python, PACK=package)).strip()
