@@ -66,8 +66,8 @@ class RMPyToolsSetup(paella.Setup):
         # redis-py-cluster should be installed from git due to redis-py dependency
         # self.pip_install("--no-cache-dir git+https://github.com/Grokzen/redis-py-cluster.git@master")
         self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/redisfab/redis-py.git@3.5")
-        self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/redisfab/redis-py-cluster@rafi-conn-args1")
-        self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/RedisLabsModules/RLTest.git@rafi-redispy2")
+        self.pip_install("--no-cache-dir --ignore-installed redis-py-cluster")
+        self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/RedisLabsModules/RLTest.git@master")
         self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/RedisLabs/RAMP@master")
 
     def uninstall(self, package, pack_dirs=[]):
