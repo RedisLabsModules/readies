@@ -78,7 +78,7 @@ check_variants() {
 
 	export MINOR="$($MYPY --version 2>&1 | awk '{print $2}' | cut -d. -f2)"
 	# Python3 <= 3.4 breaks contemporary pip
-	if (( MINOR < 5 )); then export FORCE=1; fi
+	if (( MINOR <= 5 )); then export FORCE=1; fi
 
 	if [[ ! -z $FIX ]]; then fix_variants; fi
 }
@@ -111,8 +111,23 @@ install_python() {
 		osver=$(source /etc/os-release; echo ${ID}${VERSION_ID})
 		if [[ $osver == ubuntu14.04 || $osver == ubuntu16.04 ]]; then
 			install_python_on_old_ubuntu
+		elif [[ $osver == debian9 ]]; then
+			$READIES/bin/getget
+
+			runn apt-get install -y \
+				software-properties-common apt-transport-https \
+				unzip lsb-release gnupg2 \
+				libbz2-dev libssl-dev libsqlite3-dev libreadline-dev libgdbm-dev tk-dev libncursesw5-dev liblzma-dev uuid-dev
+
+			runn wget -q https://people.debian.org/~paravoid/python-all/unofficial-python-all.asc -O /etc/apt/trusted.gpg.d/unofficial-python-all.asc
+			runn @ <<-EOF
+				echo "deb http://people.debian.org/~paravoid/python-all $(lsb_release -sc) main" > /etc/apt/sources.list.d/python-all.list
+EOF
+			runn apt update -qq
+			runn apt-get install -y python3.6
+			[[ -f /usr/bin/python3.6 ]] && ln -sf /usr/bin/python3.6 /usr/local/bin/python3
 		else
-			runn apt-get -qq install -y python3
+			runn apt-get install -y python3
 		fi
 	elif is_command dnf; then
 		runn dnf install -y python3
