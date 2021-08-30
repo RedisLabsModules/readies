@@ -113,7 +113,11 @@ class RMPyToolsSetup(paella.Setup):
 parser = argparse.ArgumentParser(description='Install RedisLabs Modules Python tools')
 parser.add_argument('-n', '--nop', action="store_true", help='no operation')
 parser.add_argument('--no-reinstall', action="store_true", default=False, help='Not not reinstall everything')
+<<<<<<< HEAD
 parser.add_argument('--reinstall', action="store_true", default=False, help='Reinstall everything')
+=======
+parser.add_argument('--reinstall', action="store_true", default=False, help='Reinstall everything (the default behavior)')
+>>>>>>> 8899d8ad157d553ebed378bfe40e04c0b61daceb
 args = parser.parse_args()
 
 try:
