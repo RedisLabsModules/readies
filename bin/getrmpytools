@@ -61,7 +61,7 @@ class RMPyToolsSetup(paella.Setup):
             self.uninstall("redis")
             self.uninstall("redis-py-cluster", ["rediscluster", "redis_py_cluster"])
             self.uninstall("ramp-packer", ["RAMP", "ramp_packer"])
-            self.uninstall("RLTest", ["RLTest"])
+            self.uninstall("rltest", ["RLTest"])
             self.uninstall("click", ["Click"])
         # redis-py-cluster should be installed from git due to redis-py dependency
         # self.pip_install("--no-cache-dir git+https://github.com/Grokzen/redis-py-cluster.git@master")
@@ -71,7 +71,6 @@ class RMPyToolsSetup(paella.Setup):
         self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/RedisLabs/RAMP@master")
 
     def uninstall(self, package, pack_dirs=[]):
-        # self.pip_uninstall(package) # this does more damage than good
         if package not in pack_dirs:
             pack_dirs += [package]
         base_dirs = sh("{PYTHON} -m pip list -v | grep '^{PACK}\s' | awk '{{print $3}}'".format(PYTHON=self.python, PACK=package)).strip()
@@ -82,6 +81,7 @@ class RMPyToolsSetup(paella.Setup):
             eprint("cannot determine base python installation dir for '{}'".format(package))
             return
         base_dir = base_dirs
+        self.pip_uninstall(package) # this does more damage than good
         pack_re_suffixes = ['', 
             r'\.dist-info',
             r'-\d+\.\d+\.\d+',
