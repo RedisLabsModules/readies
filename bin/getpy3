@@ -207,6 +207,7 @@ if is_command brew; then
 	runn brew upgrade python
 fi
 
+MYPY=""
 check_variants
 if ! is_command $MYPY; then
 	eprint "Cannot install Python3. Aborting."
