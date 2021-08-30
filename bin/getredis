@@ -177,7 +177,7 @@ index f6e5f3e3f..def02b80d 100644
             build_args += ['PROG_SUFFIX="-%s"' % self.suffix]
 
         if args.clang_san_blacklist is not None:
-            blacklist_arg = '-fsanitize-blacklist=%s' % args.clang_san_blacklist
+            blacklist_arg = '-fsanitize-ignorelist=%s' % args.clang_san_blacklist
         else:
             blacklist_arg = ''
         if self.clang_asan:
