@@ -50,14 +50,14 @@ class SystemSetup(paella.Setup):
         self.group_install("'Development Tools'")
         if self.modern:
             if self.dist == 'centos' and self.os_version[0] == 8:
-                self.install("gcc-toolset-9-gcc gcc-toolset-9-gcc-c++")
-                self.install("gcc-toolset-9-libatomic-devel")
-                self.cp_to_profile_d("/opt/rh/gcc-toolset-9/enable", "gcc-toolset-9.sh")
+                self.install("gcc-toolset-10-gcc gcc-toolset-10-gcc-c++")
+                self.install("gcc-toolset-10-libatomic-devel")
+                self.cp_to_profile_d("/opt/rh/gcc-toolset-10/enable", "gcc-toolset-10.sh")
             else:
                 self.install("centos-release-scl")
-                self.install("devtoolset-9")
-                self.install("devtoolset-9-libatomic-devel")
-                self.cp_to_profile_d("/opt/rh/devtoolset-9/enable", "scl-devtoolset-9.sh")
+                self.install("devtoolset-10")
+                self.install("devtoolset-10-libatomic-devel")
+                self.cp_to_profile_d("/opt/rh/devtoolset-10/enable", "scl-devtoolset-10.sh")
 
     def fedora(self):
         self.group_install("'Development Tools'")
