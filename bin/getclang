@@ -17,7 +17,7 @@ os.environ["PYTHONWARNINGS"] = 'ignore:DEPRECATION::pip._internal.cli.base_comma
 
 #----------------------------------------------------------------------------------------------
 
-CLANG_FORMAT_BASE_URL = "https://github.com/muttleyxd/clang-tools-static-binaries/releases/download/master-22538c65"
+CLANG_FORMAT_BASE_URL = "https://github.com/muttleyxd/clang-tools-static-binaries/releases/download/master-a37b22cd"
 
 class CLangFormatSetup(paella.Setup):
     def __init__(self, args):
@@ -27,9 +27,9 @@ class CLangFormatSetup(paella.Setup):
         self.install_downloaders()
 
         if self.arch == 'x64':
-            self.run("wget -q -O /usr/local/bin/clang-format-10 %s/clang-format-10_linux-amd64" % CLANG_FORMAT_BASE_URL)
-            self.run("chmod +x /usr/local/bin/clang-format-10")
-            self.run("ln -sf /usr/local/bin/clang-format-10 /usr/local/bin/clang-format")
+            self.run("wget -q -O /usr/local/bin/clang-format-12 %s/clang-format-12_linux-amd64" % CLANG_FORMAT_BASE_URL)
+            self.run("chmod +x /usr/local/bin/clang-format-12")
+            self.run("ln -sf /usr/local/bin/clang-format-12 /usr/local/bin/clang-format")
         elif self.platform.is_arm():
             self.install("clang-format-10")
             self.run("ln -sf `command -v clang-format-10` /usr/local/bin/clang-format")
