@@ -79,6 +79,7 @@ endif
 #----------------------------------------------------------------------------------------------
 
 MACH:=$(shell uname -m)
+CPUSET:=0-$(shell /bin/bash -c "echo $$((`nproc`-1))")
 
 #----------------------------------------------------------------------------------------------
 
@@ -221,6 +222,7 @@ include $(MK)/rules
 
 build:
 	$(SHOW)docker build $(BUILD_OPT) -t $(D_NAME) -f $(DOCKERFILE_STEM) \
+		--cpuset-cpus $(CPUSET) \
 		$(foreach A,$(DOCKER_BUILD_ARGS),--build-arg $(A)) \
 		$(ROOT)
 ifeq ($(ARTIFACTS),1)
