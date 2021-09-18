@@ -1,5 +1,6 @@
 
 OS:=$(shell $(READIES)/bin/platform --os)
+OSNICK:=$(shell $(READIES)/bin/platform --osnick)
 # ifeq ($(OS),linux)
 # OS:=$(shell $(READIES)/bin/platform --dist)
 # endif

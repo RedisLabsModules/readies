@@ -33,31 +33,31 @@ class SystemSetup(paella.Setup):
         if not self.modern:
             self.install("build-essential")
         else:
+            if self.os_version[0] < 10:
+                eprint("cannot install modern gcc for {}".format(self.osnick))
+                sys.exit(1)
+            self.install("gcc") # workaround for testing repo installations
             paella.fwrite('/etc/apt/apt.conf.d/80-retries', 'APT::Acquire::Retries "3";')
             self.run("echo 'deb http://deb.debian.org/debian testing main' > /etc/apt/sources.list.d/testing.list")
             self.run("apt-get update -qq")
             self.run("apt-get install -y -t testing build-essential")
-
-        #  we cannot use gcc10 in many contexts - this change allows compilation on new ubuntus, and
-        # gcc10 (for now)
-        if self.modern is False and self.osnick in ['hirsute', 'focal']:
-            self.install("gcc-9 g++-9")
-            self.run("update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 9")
-            self.run("update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 9")
-
+            self.run("update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 10")
+            self.run("update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 10")
 
     def redhat_compat(self):
         self.group_install("'Development Tools'")
         if self.modern:
             if self.dist == 'centos' and self.os_version[0] == 8:
-                self.install("gcc-toolset-9-gcc gcc-toolset-9-gcc-c++")
-                self.install("gcc-toolset-9-libatomic-devel")
-                self.cp_to_profile_d("/opt/rh/gcc-toolset-9/enable", "gcc-toolset-9.sh")
+                self.install("gcc-toolset-10-gcc gcc-toolset-10-gcc-c++")
+                self.install("gcc-toolset-10-libatomic-devel")
+                self.run("rm -f {}/gcc-toolset-*.sh".format(self.profile_d))
+                self.cp_to_profile_d("/opt/rh/gcc-toolset-10/enable", "gcc-toolset-10.sh")
             else:
                 self.install("centos-release-scl")
-                self.install("devtoolset-9")
-                self.install("devtoolset-9-libatomic-devel")
-                self.cp_to_profile_d("/opt/rh/devtoolset-9/enable", "scl-devtoolset-9.sh")
+                self.install("devtoolset-10")
+                self.install("devtoolset-10-libatomic-devel")
+                self.run("rm -f {}/scl-devtoolset-*.sh".format(self.profile_d))
+                self.cp_to_profile_d("/opt/rh/devtoolset-10/enable", "scl-devtoolset-10.sh")
 
     def fedora(self):
         self.group_install("'Development Tools'")

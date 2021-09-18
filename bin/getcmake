@@ -97,6 +97,8 @@ class CMakeSetup(paella.Setup):
                 sh /tmp/cmake.sh --skip-license --prefix={prefix}
                 rm -f /tmp/cmake.sh
                 """.format(url=url, prefix=self.prefix))
+            if args.usr and os.path.exists("/usr/local/bin/cmake"):
+                self.run("cd /usr/local/bin; rm -f cmake cmake-gui ctest cpack ccmake")
 
     def common_last(self):
         if self.build:

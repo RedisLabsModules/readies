@@ -324,6 +324,7 @@ class Setup(OnPlatform):
     def __init__(self, nop=False, verbose=False):
         OnPlatform.__init__(self)
         self.verbose = verbose
+        self.nop = nop
         if verbose:
             self.runner = Runner(nop=nop, output=True)
         else:
