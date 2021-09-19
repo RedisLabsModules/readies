@@ -117,15 +117,14 @@ install_python() {
 			runn apt-get install -y \
 				software-properties-common apt-transport-https \
 				unzip lsb-release gnupg2 \
-				libbz2-dev libssl-dev libsqlite3-dev libreadline-dev libgdbm-dev tk-dev libncursesw5-dev liblzma-dev uuid-dev
-
-			runn wget -q https://people.debian.org/~paravoid/python-all/unofficial-python-all.asc -O /etc/apt/trusted.gpg.d/unofficial-python-all.asc
-			runn @ <<-EOF
-				echo "deb http://people.debian.org/~paravoid/python-all $(lsb_release -sc) main" > /etc/apt/sources.list.d/python-all.list
-EOF
-			runn apt update -qq
-			runn apt-get install -y python3.6
+				libbz2-dev libssl-dev libsqlite3-dev libreadline-dev libgdbm-dev tk-dev libncursesw5-dev liblzma-dev uuid-dev libexpat1-dev
+            mkdir -p /tmp/PKGS
+            amhere=`pwd`
+            cd /tmp/PKGS
+            runn wget https://github.com/chriskuehl/python3.6-debian-stretch/releases/download/v3.6.3-1-deb9u1/{python3.6_3.6.3-1.deb9u1_amd64,python3.6-minimal_3.6.3-1.deb9u1_amd64,python3.6-dev_3.6.3-1.deb9u1_amd64,libpython3.6_3.6.3-1.deb9u1_amd64,libpython3.6-minimal_3.6.3-1.deb9u1_amd64,libpython3.6-stdlib_3.6.3-1.deb9u1_amd64,libpython3.6-dev_3.6.3-1.deb9u1_amd64}.deb
+            runn dpkg -i *.deb
 			[[ -f /usr/bin/python3.6 ]] && ln -sf /usr/bin/python3.6 /usr/local/bin/python3
+            cd $amhere
 		else
 			runn apt-get install -y python3
 		fi
