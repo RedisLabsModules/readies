@@ -115,7 +115,7 @@ class PackageManager(object):
             elif platform.dist == 'alpine':
                 return Alpine(runner)
             else:
-                raise self.Error("Cannot determine package manager for distibution %s" % platform.dist)
+                raise Error("Cannot determine package manager for distibution %s" % platform.dist)
         elif platform.os == 'macos':
             return Brew(runner)
         elif platform.os == 'freebsd':
@@ -372,7 +372,7 @@ class Setup(OnPlatform):
 
     def cp_to_profile_d(self, file, as_file=None):
         if not os.path.isfile(file):
-            raise self.Error("file not found: %s" % file)
+            raise Error("file not found: %s" % file)
         d = self.profile_d
         if as_file is None:
             as_file = os.path.basename(file)
