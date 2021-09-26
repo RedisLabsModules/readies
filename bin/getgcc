@@ -62,6 +62,9 @@ class SystemSetup(paella.Setup):
     def fedora(self):
         self.group_install("'Development Tools'")
 
+    def alpine(self):
+        self.install("build-base musl-dev gcc g++")
+
     def macos(self):
         if self.modern:
             self.install("gcc@9")
