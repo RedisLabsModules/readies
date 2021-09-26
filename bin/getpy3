@@ -137,7 +137,7 @@ install_python() {
 		runn zypper install -y python3
 	elif is_command apk; then
 		runn apk update
-		runn apk add python3
+		runn apk add python3 python3-dev
 	elif is_command brew; then
 		runn brew install python3
 	elif is_command pkg; then

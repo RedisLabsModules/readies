@@ -70,15 +70,15 @@ check_variants() {
 
 	MYPY=""
 	PYTHON_VER=""
-	
+
 	if [[ ! -z $PYTHON ]]; then
 		PYTHON_VER="$(python --version 2>&1 | awk '{print $2}' | cut -d. -f1)"
 		[[ $PYTHON_VER == 2 ]] && MYPY=$PYTHON
 	fi
-	
+
 	[[ ! -z $PYTHON2 ]]  && MYPY=$PYTHON2
 	[[ ! -z $PYTHON27 ]] && MYPY=$PYTHON27
-	
+
 	if [[ ! -z $FIX ]]; then fix_variants; fi
 }
 
@@ -106,7 +106,7 @@ install_python() {
 		runn zypper install -y python2
 	elif is_command apk; then
 		runn apk update
-		runn apk add python2
+		runn apk add python2 python2-dev
 	elif is_command brew; then
 		:
 		# runn brew install python2
@@ -126,10 +126,10 @@ install_pip() {
 		fi
 		rm -f $pipver
 	fi
-	
+
 	pipspec=""
 	[[ $PIP != 1 ]] && pipspec="pip==$PIP"
-	
+
 	local packs="ca-certificates wget"
 	# local packs=""
 
@@ -159,7 +159,7 @@ install_pip() {
 	runn wget -q -O /tmp/get-pip.py https://bootstrap.pypa.io/pip/2.7/get-pip.py
 	runn $MYPY /tmp/get-pip.py $pipspec
 	rm -f /tmp/get-pip.py
-	
+
 	# runn $MYPY -m pip install $PIP_USER --upgrade $pipspec
 }
 

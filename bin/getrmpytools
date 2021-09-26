@@ -55,6 +55,9 @@ class RMPyToolsSetup(paella.Setup):
     def macos(self):
         pass
 
+    def alpine(self):
+        self.install("linux-headers")
+
     def common_last(self):
         self.install("git")
         if self.reinstall:
