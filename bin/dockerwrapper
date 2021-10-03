@@ -129,7 +129,7 @@ if __name__ == "__main__":
             pass
 
     # template directories, for generating the docker file
-    default_includes = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "docker-parts"))
+    default_includes = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "templates", "dockers"))
     if opts.SRCDIR is None:
         opts.SRCDIR = []
     template_dirs = opts.SRCDIR + [os.path.abspath(os.path.dirname(opts.SRC)), os.getcwd(), default_includes]
