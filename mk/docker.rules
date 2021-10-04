@@ -1,10 +1,6 @@
-# e.g redislabs/RedisTimeSeries:edge
-DEFAULT_TAG?=${DOCKER_ORG}/${PRODUCT}:${VERSION}
-
 # defaults
 PACK ?=0
 TEST ?=0
-
 
 DOCKER_SOURCES=""
 
@@ -30,12 +26,25 @@ ifndef VERSION
 	endif
 endif
 
+# e.g redisfab/RedisTimeSeries:edge
+DOCKER_ORG ?= redisfab
+DEFAULT_TAG=${DOCKER_ORG}/${PRODUCT}:${VERSION}
+
+# if OSNICK and OSNICK_OFFICIAL match, then we're building the docker
+# that we should push upstream to dockerhub as edge/1.2/etc.
+ifeq ($(OSNICK_OFFICIAL),$(OSNICK))
+DOCKER_TAGS+=redislabs/${PRODUCT}:${VERSION}
+endif
+
+ifeq ($(DOCKER_ORG),redisfab)
+DOCKER_TAGS+=redislabs/${PRODUCT}:${VERSION}-${ARCH}-${OSNICK}
+endif
+
 # defaults for wrapper script
 NOP=0
 PUBLISH=0
 KEEP=0
 VERBOSE=0
-
 
 ## This builds the docker
 build:
