@@ -322,7 +322,7 @@ class Platform:
     #------------------------------------------------------------------------------------------
 
     def is_debian_compat(self):
-        return self.dist == 'debian' or self.dist == 'ubuntu' or self.dist == 'linuxmint'
+        return self.dist in ['debian', 'ubuntu', 'linuxmint', 'rasbpian']
 
     def is_redhat_compat(self):
         return self.dist == 'redhat' or self.dist == 'centos' or self.dist == 'amzn'
@@ -404,6 +404,8 @@ class OnPlatform:
                     self.amzn()
                 elif dist == 'alpine':
                     self.alpine()
+                elif dist == 'raspbian':
+                    self.raspbian()
                 else:
                     assert(False), "Cannot determine installer"
 
@@ -482,4 +484,7 @@ class OnPlatform:
         pass
 
     def alpine(self):
+        pass
+
+    def raspbian(self):
         pass
