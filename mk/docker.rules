@@ -37,7 +37,7 @@ DOCKER_TAGS+=redislabs/${PRODUCT}:${VERSION}
 endif
 
 ifeq ($(DOCKER_ORG),redisfab)
-DOCKER_TAGS+=redislabs/${PRODUCT}:${VERSION}-${ARCH}-${OSNICK}
+DOCKER_TAGS+=redisfab/${PRODUCT}:${VERSION}-${ARCH}-${OSNICK}
 endif
 
 # defaults for wrapper script
