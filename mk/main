@@ -9,6 +9,7 @@ endif
 ifeq ($(ROOT),)
 $(error ROOT is undefined)
 endif
+override ROOT:=$(shell cd $(ROOT) && pwd)
 
 ifeq ($(READIES),)
 ifneq ($(wildcard $(ROOT)/deps/readies),)
