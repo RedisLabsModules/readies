@@ -60,7 +60,7 @@ class CLangSetup(paella.Setup):
         if self.osnick != "trusty":
             if self.platform.is_arm():
                 clang_ver = "10"
-            elif self.osnick in ["xenial", "stretch", "buster"]:
+            elif self.osnick in ["xenial", "stretch", "buster", "bionic"]:
                 clang_ver = "12"
             else:
                 clang_ver = "" # auto-detect
@@ -87,13 +87,13 @@ class CLangSetup(paella.Setup):
                          "libclang-common-8-dev libclang-8-dev libclang1-8 libc++-8-dev libc++abi-8-dev libfuzzer-8-dev "
                          "clang-format-8 python-clang-8 "
                          "lldb-8 lld-8")
-        
+
         # arrange llvm-* and clang-* version-neutral symlinks
         self.run(r"""
             cd /usr/bin
             for f in `ls llvm*-{CLANG_VER} clang*-{CLANG_VER} 2>/dev/null`; do ln -sf $f ${{f/%-{CLANG_VER}/}}; done
             """.format(CLANG_VER=clang_ver))
-        
+
     def redhat_compat(self):
         if not self.modern:
             return
@@ -119,7 +119,7 @@ class CLangSetup(paella.Setup):
 parser = argparse.ArgumentParser(description='Install CLang tools')
 parser.add_argument('-n', '--nop', action="store_true", help='no operation')
 parser.add_argument('--format', action="store_true", default=False, help='Install clang-format')
-parser.add_argument('--modern', action="store_true", help="Install modern CLang/LLVM version") 
+parser.add_argument('--modern', action="store_true", help="Install modern CLang/LLVM version")
 args = parser.parse_args()
 
 try:
