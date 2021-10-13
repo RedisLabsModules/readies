@@ -72,6 +72,9 @@ build:
 ifeq ($(PACK),1)
 	IMAGE=${DEFAULT_TAG} ${READIES}/mk/docker-collect-artifacts
 endif
+ifdef CIRCLE_CACHE_SRC
+	IMAGE=${DEFAULT_TAG} ART_INT_DIR=${CIRCLE_CACHE_SRC} ART_DIR=${CIRCLE_CACHE_DEST} ${READIES}/mk/docker-collect-artifacts
+endif
 
 # There are mappings between OSNICK to specific OS values, due to docker containers used
 # The global mappings are found here.
