@@ -4,6 +4,7 @@
 import subprocess
 import copy
 import os
+import re
 import sys
 from optparse import OptionParser
 import tempfile
@@ -36,11 +37,17 @@ class DockerBuilder(object):
         res = self.nop_runner(build_cmd, nop=nop, verbose=verbose)
         return res
 
-    def push(self, tag="dev/dev:latest", source_tag=None, nop=True, verbose=False):
+    def push(self, tag="dev/dev:latest", source_tag=None, nop=True, verbose=False, force=False):
         """Pushes the docker images upstream, optionally retagging them first, if necessary."""
         if source_tag is not None:  # retag
             tag_cmd = ["docker", "tag", source_tag, tag.lower()]
             self.nop_runner(tag_cmd, opts.NOP, verbose=verbose)
+
+        # disallow pushing upstream from non-integration branches - unless explicitly requested
+        version = tag.lower().split(':')[-1]
+        reg = 'edge|[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}'
+        if re.findall(reg, version) == [] and force is False:
+            return
 
         push_cmd = ["docker", "push", tag.lower()]
         self.nop_runner(push_cmd, opts.NOP)
@@ -93,6 +100,8 @@ if __name__ == "__main__":
                       help="The named tag to build for the docker image")
     parser.add_option('-T', '--docker-tags', dest='DOCKER_TAGS', action="append",
                       help="An appendable list of docker tags to push")
+    parser.add_option('-f', '--force-push', dest='DOCKER_FORCE_PUSH', action='store_true', default=False,
+                      help='Push the branch upstream - even if it does not match the version strategy')
     opts, args = parser.parse_args()
 
     # any environment variable with the same name as a variable in opts, overrides.
@@ -171,7 +180,7 @@ if __name__ == "__main__":
 
     # tag
     if opts.DOCKER_PUSH:
-        db.push(tag=opts.DOCKER_BASE_TAG, nop=opts.NOP, verbose=opts.VERBOSE)
+        db.push(tag=opts.DOCKER_BASE_TAG, nop=opts.NOP, verbose=opts.VERBOSE, force=opts.DOCKER_FORCE_PUSH)
         if opts.DOCKER_TAGS is not None:
             for tag in opts.DOCKER_TAGS:
-                db.push(tag=tag, source_tag=opts.DOCKER_BASE_TAG, nop=opts.NOP, verbose=opts.VERBOSE)
+                db.push(tag=tag, source_tag=opts.DOCKER_BASE_TAG, nop=opts.NOP, verbose=opts.VERBOSE, force=opts.DOCKER_FORCE_PUSH)
