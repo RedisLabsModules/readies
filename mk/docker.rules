@@ -7,8 +7,10 @@ DOCKER_SOURCES=""
 ARCH:=$(shell ${READIES}/bin/platform --arch)
 
 # for artifact gathering
-export ART_DIR=$(ROOT)/bin/artifacts
-export ART_INT_DIR=/var/opt/redislabs/artifacts
+ART_DIR?=$(ROOT)/bin/artifacts
+ART_INT_DIR?=/var/opt/redislabs/artifacts
+export ART_DIR
+export ART_INT_DIR
 
 # get the release version, unless one is defined
 # since in CI, branches with {d}.{d} push, we allow anything here
