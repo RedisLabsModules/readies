@@ -7,8 +7,8 @@ DOCKER_SOURCES=""
 ARCH:=$(shell ${READIES}/bin/platform --arch)
 
 # for artifact gathering
-ART_DIR?=$(ROOT)/bin/artifacts
-ART_INT_DIR?=/var/opt/redislabs/artifacts
+ART_DIR ?= $(ROOT)/bin/artifacts
+ART_INT_DIR ?= /var/opt/redislabs/artifacts
 export ART_DIR
 export ART_INT_DIR
 
@@ -21,7 +21,7 @@ ifndef VERSION
 	VERSION:=$(shell git name-rev --name-only HEAD | cut -f2 -d/ | cut -f1 -d^ | grep '^v' | sed -e 's/^v\(.*\)/\1/g')
 	ifeq ($(VERSION),)
     # branch
-	VERSION=$(shell git branch|grep \*|cut -d ' ' -f 2-|sed -e 's/v//g'|grep -v 'no branch')
+	VERSION:=$(shell git branch | grep \* | cut -d ' ' -f 2- | sed -e 's/v//g' | grep -v 'no branch')
 	ifeq ($(VERSION),master)
 		VERSION=edge
 	endif
@@ -35,11 +35,11 @@ DEFAULT_TAG=${DOCKER_ORG}/${PRODUCT}:${VERSION}
 # if OSNICK and OSNICK_OFFICIAL match, then we're building the docker
 # that we should push upstream to dockerhub as edge/1.2/etc.
 ifeq ($(OSNICK_OFFICIAL),$(OSNICK))
-DOCKER_TAGS+=redislabs/${PRODUCT}:${VERSION}
+DOCKER_TAGS += redislabs/${PRODUCT}:${VERSION}
 endif
 
 ifeq ($(DOCKER_ORG),redisfab)
-DOCKER_TAGS+=redisfab/${PRODUCT}:${VERSION}-${ARCH}-${OSNICK}
+DOCKER_TAGS += redisfab/${PRODUCT}:${VERSION}-${ARCH}-${OSNICK}
 endif
 
 # defaults for wrapper script
