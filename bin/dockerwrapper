@@ -45,7 +45,8 @@ class DockerBuilder(object):
         redisarch = os.environ.get("REDIS_ARCH", "").lower()
         if redisarch.find("arm") != -1 or redisarch.find("aarch") != -1:
             arm_tag = "{}-{}".format(tag.strip(), redisarch)
-            tag_cmd = ["docker", "tag", source_tag, arm_tag]
+            arm_tag_cmd = ["docker", "tag", source_tag, arm_tag]
+            self.nop_runner(arm_tag_cmd, opts.NOP, verbose=verbose)
         push_cmd = ["docker", "push", tag.lower()]
         self.nop_runner(push_cmd, opts.NOP)
 
