@@ -220,9 +220,10 @@ include $(MK)/rules
 
 #----------------------------------------------------------------------------------------------
 
+# docker build cpuset arg: --cpuset-cpus $(CPUSET)
+
 build:
 	$(SHOW)docker build $(BUILD_OPT) -t $(D_NAME) -f $(DOCKERFILE_STEM) \
-		--cpuset-cpus $(CPUSET) \
 		$(foreach A,$(DOCKER_BUILD_ARGS),--build-arg $(A)) \
 		$(ROOT)
 ifeq ($(ARTIFACTS),1)

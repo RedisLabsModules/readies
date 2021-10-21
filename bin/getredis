@@ -24,6 +24,7 @@ import paella  # noqa: F401
 os.environ["PYTHONWARNINGS"] = 'ignore:DEPRECATION::pip._internal.cli.base_command'
 
 DEFAULT_REDIS_VERSION = "6"
+DEFAULT_OPENSSL_VER = "1.1.1l"
 
 #----------------------------------------------------------------------------------------------
 
@@ -47,6 +48,9 @@ class RedisSourceSetup(paella.Setup):
         self.llvm_dir = args.llvm_dir
 
         self.tls = not args.no_tls
+        self.own_openssl = self.tls and args.own_openssl
+        self.openssl_ver = args.own_openssl_version
+
         self.just_prepare = args.prepare
         self.no_prepare = args.no_prepare
         self.no_install = args.no_install
@@ -106,7 +110,77 @@ class RedisSourceSetup(paella.Setup):
             br = '{}.{}'.format(sv.major, sv.minor)
         # select the latest version of the major.minor branch
         return list(filter(lambda v: v.startswith(br + '.'), self.redis_versions))
-    
+
+    def patch_redis(self):
+            patch = r"""
+diff --git a/src/Makefile b/src/Makefile
+index f6e5f3e3f..def02b80d 100644
+--- a/src/Makefile
++++ b/src/Makefile
+@@ -249,2 +249,2 @@ endif
+-REDIS_SERVER_NAME=redis-server
+-REDIS_SENTINEL_NAME=redis-sentinel
++REDIS_SERVER_NAME=redis-server$(PROG_SUFFIX)
++REDIS_SENTINEL_NAME=redis-sentinel$(PROG_SUFFIX)
+@@ -252 +252 @@ REDIS_SERVER_OBJ=adlist.o quicklist.o ae.o anet.o dict.o server.o sds.o zmalloc.
+-REDIS_CLI_NAME=redis-cli
++REDIS_CLI_NAME=redis-cli$(PROG_SUFFIX)
+@@ -254 +254 @@ REDIS_CLI_OBJ=anet.o adlist.o dict.o redis-cli.o zmalloc.o release.o ae.o crcspe
+-REDIS_BENCHMARK_NAME=redis-benchmark
++REDIS_BENCHMARK_NAME=redis-benchmark$(PROG_SUFFIX)
+@@ -256,2 +256,2 @@ REDIS_BENCHMARK_OBJ=ae.o anet.o redis-benchmark.o adlist.o dict.o zmalloc.o siph
+-REDIS_CHECK_RDB_NAME=redis-check-rdb
+-REDIS_CHECK_AOF_NAME=redis-check-aof
++REDIS_CHECK_RDB_NAME=redis-check-rdb$(PROG_SUFFIX)
++REDIS_CHECK_AOF_NAME=redis-check-aof$(PROG_SUFFIX)
+"""
+            patch_file = os.path.join(self.base_dir, 'redis-prog-sufffix.patch')
+            paella.fwrite(patch_file, patch[1:])
+            self.run("patch -p1 -i %s" % patch_file, at=self.build_dir)
+
+    def install_openssl(self, version, build_args, prefix="ssl"):
+        file = os.path.join(self.base_dir, 'openssl.tgz')
+        self.wget('https://www.openssl.org/source/openssl-{VER}.tar.gz'.format(VER=version), file)
+        ssl_dir = '{DIR}/openssl'.format(DIR=self.base_dir)
+        ssl_srcdir = '{DIR}/openssl-{VER}'.format(DIR=self.base_dir, VER=version)
+        self.run('tar -C {DIR} -xzf {FILE}'.format(DIR=self.base_dir, FILE=file))
+        paella.mkdir_p(ssl_dir)
+        prefix_dir = '{DIR}/{PREFIX}'.format(DIR=self.base_dir, PREFIX=prefix)
+        
+        platform = paella.Platform()
+        arch = ''
+        if platform.os == 'linux':
+            if platform.arch == 'x64':
+                arch = 'x86_64'
+            elif platform.arch == 'x86':
+                arch = 'x86'
+            elif platform.arch == 'arm64v8':
+                arch = 'arm64'
+            elif platform.arch == 'arm32v7':
+                arch = 'arm'
+            openssl_platform = 'linux-{}'.format(arch) if arch != '' else 'gcc'
+        elif platform.os == 'macos':
+            if platform.arch == 'x64':
+                openssl_platform = 'darwin64-x86_64-cc'
+            elif platform.arch == 'x86':
+                openssl_platform = 'darwin-i386-cc'
+            elif platform.arch == 'arm64v8':
+                openssl_platform = 'darwin64-arm64-cc'
+            elif platform.arch == 'arm32v7':
+                openssl_platform = 'darwin-arm-cc'
+            else:
+                openssl_platform = 'gcc'
+        else:
+            openssl_platform = 'gcc'
+
+        self.run("""
+            cd {DIR}
+            {SRCDIR}/config
+            {SRCDIR}/Configure no-shared --prefix={PREFIX} --openssldir={PREFIX} {PLATFORM}
+            MAKEFLAGS="" make {ARGS}
+            make install_sw
+        """.format(DIR=ssl_dir, SRCDIR=ssl_srcdir, PREFIX=prefix_dir, PLATFORM=openssl_platform, ARGS=' '.join(build_args)))
+
     def download_redis(self):
         from semantic_version import Version
         if self.workdir is not None:
@@ -141,32 +215,8 @@ class RedisSourceSetup(paella.Setup):
                 branch = self.branch
             self.run('cd {DIR}; git clone https://github.com/redis/redis.git --branch {BRA}'.format(DIR=self.base_dir, BRA=branch))
         self.build_dir = os.path.join(self.base_dir, 'redis')
-        if self.suffix:
-            patch = r"""
-diff --git a/src/Makefile b/src/Makefile
-index f6e5f3e3f..def02b80d 100644
---- a/src/Makefile
-+++ b/src/Makefile
-@@ -249,2 +249,2 @@ endif
--REDIS_SERVER_NAME=redis-server
--REDIS_SENTINEL_NAME=redis-sentinel
-+REDIS_SERVER_NAME=redis-server$(PROG_SUFFIX)
-+REDIS_SENTINEL_NAME=redis-sentinel$(PROG_SUFFIX)
-@@ -252 +252 @@ REDIS_SERVER_OBJ=adlist.o quicklist.o ae.o anet.o dict.o server.o sds.o zmalloc.
--REDIS_CLI_NAME=redis-cli
-+REDIS_CLI_NAME=redis-cli$(PROG_SUFFIX)
-@@ -254 +254 @@ REDIS_CLI_OBJ=anet.o adlist.o dict.o redis-cli.o zmalloc.o release.o ae.o crcspe
--REDIS_BENCHMARK_NAME=redis-benchmark
-+REDIS_BENCHMARK_NAME=redis-benchmark$(PROG_SUFFIX)
-@@ -256,2 +256,2 @@ REDIS_BENCHMARK_OBJ=ae.o anet.o redis-benchmark.o adlist.o dict.o zmalloc.o siph
--REDIS_CHECK_RDB_NAME=redis-check-rdb
--REDIS_CHECK_AOF_NAME=redis-check-aof
-+REDIS_CHECK_RDB_NAME=redis-check-rdb$(PROG_SUFFIX)
-+REDIS_CHECK_AOF_NAME=redis-check-aof$(PROG_SUFFIX)
-"""
-            patch_file = os.path.join(self.base_dir, 'redis-prog-sufffix.patch')
-            paella.fwrite(patch_file, patch[1:])
-            # self.run("patch -p1 -i %s" % patch_file, at=self.build_dir)
+        # if self.suffix:
+        #   self.patch_redis()
 
     def build_redis(self):
         build_args = []
@@ -176,6 +226,8 @@ index f6e5f3e3f..def02b80d 100644
         if self.suffix:
             build_args += ['PROG_SUFFIX="-%s"' % self.suffix]
 
+        openssl_build_args = []
+        
         if args.clang_san_blacklist is not None:
             blacklist_arg = '-fsanitize-blacklist=%s' % args.clang_san_blacklist
         else:
@@ -190,7 +242,17 @@ index f6e5f3e3f..def02b80d 100644
                     '-fno-omit-frame-pointer -fno-optimize-sibling-calls -fsanitize-address-use-after-scope ' +
                     blacklist_arg + ' ' + 
                     '"',
-                'LDFLAGS="-fsanitize=address"']
+                'LDFLAGS="-fsanitize=address"',
+                ]
+            openssl_build_args += [
+                'CC=clang',
+                'LD=clang',
+                'CFLAGS="-O1 -fsanitize=address ' +
+                    '-fno-omit-frame-pointer -fno-optimize-sibling-calls -fsanitize-address-use-after-scope ' +
+                    blacklist_arg + ' ' + 
+                    '"',
+                'LDFLAGS="-fsanitize=address"',
+                ]
 
         if self.clang_msan:
             if self.llvm_dir is None:
@@ -203,7 +265,7 @@ index f6e5f3e3f..def02b80d 100644
                 'OPTIMIZATION="-O2"',
                 'MALLOC=libc',
                 'CFLAGS="-fsanitize=memory ' +
-                    '-fno-omit-frame-pointer -pie -fPIC -fsanitize-memory-track-origins ' + 
+                    '-fno-omit-frame-pointer -fPIC -fsanitize-memory-track-origins ' + 
                     blacklist_arg + ' ' + 
 #                    '-stdlib=libc++ ' +
 #                     ('-Wl,-rpath=%s/lib ' % llvm_dir) +
@@ -211,12 +273,27 @@ index f6e5f3e3f..def02b80d 100644
 #                     '-lc++abi ' +
 #                     ('-I{base}/include -I{base}/include/c++/v1 '.format(base=llvm_dir)) +
                      '"',
+                'LDFLAGS="-fsanitize=memory"',
+                ]
+            openssl_build_args += [
+                'CC=clang',
+                'LD=clang',
+                'CFLAGS="-O2 -fsanitize=memory ' +
+                    '-fno-omit-frame-pointer -fPIC -fsanitize-memory-track-origins ' + 
+                    blacklist_arg + ' ' + 
+                     '"',
                 'LDFLAGS="-fsanitize=memory"']
 
-        install_args = []
-        install_args += ['BUILD_TLS=yes'] if self.tls else ''
-        if self.suffix:
-            install_args += ['PROG_SUFFIX="-%s"' % self.suffix]
+        if self.own_openssl:
+            openssl_build_args += ['-j', '`%s/bin/nproc`' % ROOT]
+            self.install_openssl(version=self.openssl_ver, build_args=openssl_build_args, prefix="ssl")
+            build_args += ['OPENSSL_PREFIX={DIR}/ssl'.format(DIR=self.base_dir) if self.own_openssl else '']
+
+        #install_args = []
+        #install_args += ['BUILD_TLS=yes'] if self.tls else ''
+        #if self.suffix:
+        #    install_args += ['PROG_SUFFIX="-%s"' % self.suffix]
+        install_args = build_args
 
         if self.into:
             install_args += ['PREFIX=' + self.into]
@@ -354,6 +431,8 @@ parser.add_argument('--clang-san-blacklist', type=str, help="Clang sanitizer bla
 parser.add_argument('--llvm-dir', type=str, help="LLVM directory for memory sanitizer build")
 parser.add_argument('--libc-malloc', action="store_true", help="Build with libc malloc instead of jemalloc")
 parser.add_argument('--no-tls', action="store_true", help="Do not support TLS")
+parser.add_argument('--own-openssl', action="store_true", help="Link statically to OpenSSL")
+parser.add_argument('--own-openssl-version', type=str, default=DEFAULT_OPENSSL_VER, help="OpenSSL version (implies --own-openssl)")
 parser.add_argument('--repo', action="store_true", help='Install from package repo')
 parser.add_argument('--force', action="store_true", help="Install even if redis-server is present")
 parser.add_argument('--prepare', action="store_true", help="Only install prerequisites, do not build")

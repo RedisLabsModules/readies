@@ -4,7 +4,7 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 READIES=$(cd $HERE/.. && pwd)
 . $READIES/shibumi/defs
 
-VALGRIND_VER=3.17.0
+VALGRIND_VER=3.18.1
 
 OP=""
 [[ $NOP == 1 ]] && OP=echo
@@ -26,4 +26,14 @@ if [[ $NOP != 1 ]]; then
 	cat <<-EOF > $profile_d/valgrind.sh
 		export VALGRIND_LIB=/usr/local/libexec/valgrind/
 EOF
+fi
+
+if is_command apt-get; then
+	export DEBIAN_FRONTEND=noninteractive
+	runn apt-get update -qq
+	runn apt-get install -y libc6-dbg
+elif is_command yum; then
+	runn yum install -y glibc-debuginfo
+elif is_command zypper; then
+	runn zypper install -y glibc-debuginfo
 fi

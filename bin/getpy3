@@ -10,6 +10,8 @@ ROOT=$(cd $HERE/../.. && pwd)
 READIES=$ROOT/readies
 . $READIES/shibumi/defs
 
+osver=$(source /etc/os-release; echo ${ID}${VERSION_ID})
+
 if [[ $1 == --help || $1 == help || $HELP == 1 ]]; then
 	cat <<-END
 		[ARGVARS...] getpy3 [--help|help]
@@ -108,7 +110,6 @@ install_python() {
 	if is_command apt-get; then
 		export DEBIAN_FRONTEND=noninteractive
 		runn apt-get -qq update
-		osver=$(source /etc/os-release; echo ${ID}${VERSION_ID})
 		if [[ $osver == ubuntu14.04 || $osver == ubuntu16.04 ]]; then
 			install_python_on_old_ubuntu
 		elif [[ $osver == debian9 ]]; then

@@ -183,7 +183,7 @@ xinstall() {
 
 	if is_command apt-get; then
 		export DEBIAN_FRONTEND=noninteractive
-		[[ $NO_UPDATE == 1 ]] && runn apt-get update -qq
+		[[ $NO_UPDATE != 1 ]] && runn apt-get update -qq
 		runn apt-get install -y "$packs"
 	elif is_command dnf; then
 		runn dnf install -y "$packs"
@@ -192,10 +192,11 @@ xinstall() {
 	elif is_command zypper; then
 		runn zypper install -y "$packs"
 	elif is_command apk; then
-		[[ $NO_UPDATE == 1 ]] && runn apk update
+		[[ $NO_UPDATE != 1 ]] && runn apk update
 		runn apk add "$packs"
 	elif is_command pacman; then
-		pacman --noconfirm -S "$packs"
+		[[ $NO_UPDATE != 1 ]] && runn pacman --noprogressbar -Sy
+		runn pacman --noconfirm --noprogressbar -S "$packs"
 	elif is_command brew; then
 		runn brew install "$packs"
 	elif is_command pkg; then

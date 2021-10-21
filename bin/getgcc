@@ -30,19 +30,21 @@ class SystemSetup(paella.Setup):
                 self.run("update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-9")
 
     def debian(self):
-        if not self.modern:
+        if not self.modern or self.os_version[0] > 10:
             self.install("build-essential")
         else:
-            if self.os_version[0] < 10:
-                eprint("cannot install modern gcc for {}".format(self.osnick))
-                sys.exit(1)
-            self.install("gcc") # workaround for testing repo installations
-            paella.fwrite('/etc/apt/apt.conf.d/80-retries', 'APT::Acquire::Retries "3";')
-            self.run("echo 'deb http://deb.debian.org/debian testing main' > /etc/apt/sources.list.d/testing.list")
-            self.run("apt-get update -qq")
-            self.run("apt-get install -y -t testing build-essential")
-            self.run("update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 10")
-            self.run("update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 10")
+            eprint("cannot install modern gcc for {}".format(self.osnick))
+            sys.exit(1)
+#            if self.os_version[0] < 10:
+#                eprint("cannot install modern gcc for {}".format(self.osnick))
+#                sys.exit(1)
+#            self.install("gcc") # workaround for testing repo installations
+#            paella.fwrite('/etc/apt/apt.conf.d/80-retries', 'APT::Acquire::Retries "3";')
+#            self.run("echo 'deb http://deb.debian.org/debian testing main' > /etc/apt/sources.list.d/testing.list")
+#            self.run("apt-get update -qq")
+#            self.run("apt-get install -y -t testing build-essential")
+#            self.run("update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 10")
+#            self.run("update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 10")
 
     def redhat_compat(self):
         self.group_install("'Development Tools'")
