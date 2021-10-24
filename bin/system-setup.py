@@ -15,7 +15,6 @@ import paella
 class SystemSetup(paella.Setup):
     def __init__(self, nop=False):
         paella.Setup.__init__(self, nop)
-        print("# readies version: {}".format(sh("cd {} && git rev-parse --short HEAD".format(ROOT))))
 
 
     def common_first(self):

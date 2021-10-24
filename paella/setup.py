@@ -348,6 +348,7 @@ class Setup(OnPlatform):
         else:
             self.pyver = "3"
         os.environ["PYTHONWARNINGS"] = 'ignore:DEPRECATION::pip._internal.cli.base_command'
+        print("# readies version: {}".format(sh("cd {} && git rev-parse --short HEAD".format(ROOT))))
 
     def setup(self):
         if self.repo_refresh:
