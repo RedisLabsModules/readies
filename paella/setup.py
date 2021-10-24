@@ -348,13 +348,14 @@ class Setup(OnPlatform):
         else:
             self.pyver = "3"
         os.environ["PYTHONWARNINGS"] = 'ignore:DEPRECATION::pip._internal.cli.base_command'
-        print("# readies version: {}".format(sh("cd {} && git rev-parse --short HEAD".format(ROOT))))
 
     def setup(self):
         if self.repo_refresh:
             self.package_manager.update()
             self.python = paella.sh("command -v python" + self.pyver)
 
+        print("# readies version: {}".format(sh("cd {} && git rev-parse --short HEAD".format(ROOT))))
+        
         self.invoke()
 
     def run(self, cmd, at=None, output="on_error", nop=None, _try=False, sudo=False):
