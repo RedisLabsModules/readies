@@ -4,7 +4,6 @@
 import sys
 import os
 import argparse
-import git
 
 HERE = os.path.dirname(__file__)
 ROOT = os.path.abspath(os.path.join(HERE, ".."))
@@ -16,8 +15,7 @@ import paella
 class SystemSetup(paella.Setup):
     def __init__(self, nop=False):
         paella.Setup.__init__(self, nop)
-        repo = git.Repo(search_parent_directories=True)
-        print(f"readies commit {repo.head.object.hexsha} {repo.head.commit.message} by {repo.head.commit.author}, {repo.head.commit.authored_datetime}")
+        print("# readies version: {}".format(sh("cd {} && git rev-parse --short HEAD".format(ROOT))))
 
 
     def common_first(self):

@@ -5,4 +5,3 @@ requests
 semantic_version
 six
 toml
-gitpython
