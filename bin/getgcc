@@ -20,7 +20,7 @@ class SystemSetup(paella.Setup):
     def ubuntu(self):
         self.install("build-essential")
         if self.modern:
-            paella.fwrite('/etc/apt/apt.conf.d/80-retries', 'APT::Acquire::Retries "3";')
+            paella.fwrite('/etc/apt/apt.conf.d/80-retries', 'APT::Acquire::Retries "7";')
             if self.os_version[0] < 20:
                 self.add_repo("ppa:ubuntu-toolchain-r/test")
             if self.install("gcc-10 g++-10", output=False, _try=True) == 0:
