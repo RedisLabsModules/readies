@@ -38,3 +38,5 @@ CMakeCache.txt
 # Eclipse
 .cproject
 .project
+
+venv/
