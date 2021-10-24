@@ -16,7 +16,6 @@ class SystemSetup(paella.Setup):
     def __init__(self, nop=False):
         paella.Setup.__init__(self, nop)
 
-
     def common_first(self):
         # self.install("")
         # self.group_install("")
