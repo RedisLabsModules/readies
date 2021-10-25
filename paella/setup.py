@@ -354,6 +354,11 @@ class Setup(OnPlatform):
             self.package_manager.update()
             self.python = paella.sh("command -v python" + self.pyver)
 
+        try:
+            print("# readies version: {}".format(sh("cd {} && git rev-parse --short HEAD".format(os.path.abspath(os.path.dirname(__file__))))))
+        except RuntimeError:
+            print("failed to rev parse, passing for now since this is debug only.")
+
         self.invoke()
 
     def run(self, cmd, at=None, output="on_error", nop=None, _try=False, sudo=False):
