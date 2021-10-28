@@ -451,7 +451,7 @@ class Setup(OnPlatform):
         packs = ""
         path = "/usr/local/bin"
         if self.os == 'macos':
-            packs= "make coreutils findutils gnu-sed gnu-tar gawk"
+            packs= "make coreutils findutils gnu-sed gnu-tar gawk gpatch"
             path = os.path.abspath(os.path.join(os.path.expanduser("~"), ".cache", "readies", "bin"))
             if not os.path.isdir(path):
                 os.makedirs(path)
