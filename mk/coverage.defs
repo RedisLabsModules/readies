@@ -32,7 +32,7 @@ endef
 define COVERAGE_REPORT
 $(SHOW)set -e ;\
 lcov -l $(COV_INFO) ;\
-genhtml --legend -o $(COV_DIR) $(COV_INFO) > /dev/null 2>&1 ;\
+genhtml --legend --ignore-errors source -o $(COV_DIR) $(COV_INFO) > /dev/null 2>&1 ;\
 echo "Coverage info at $$(realpath $(COV_DIR))/index.html"
 endef
 
