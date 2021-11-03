@@ -223,7 +223,7 @@ include $(MK)/rules
 # docker build cpuset arg: --cpuset-cpus $(CPUSET)
 
 build:
-	$(SHOW)docker build $(BUILD_OPT) -t $(D_NAME) -f $(DOCKERFILE_STEM) \
+	$(SHOW)time docker build $(BUILD_OPT) -t $(D_NAME) -f $(DOCKERFILE_STEM) \
 		$(foreach A,$(DOCKER_BUILD_ARGS),--build-arg $(A)) \
 		$(ROOT)
 ifeq ($(ARTIFACTS),1)
