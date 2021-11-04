@@ -39,9 +39,9 @@ class CMakeSetupFromRepo(paella.Setup):
             self.install("cmake")
         else:
             self.install("cmake3")
-            self.run("ln -sf `command -v cmake3` /usr/local/bin/cmake")
-            self.run("ln -sf `command -v ctest3` /usr/local/bin/ctest")
-            self.run("ln -sf `command -v cpack3` /usr/local/bin/cpack")
+            self.run("ln -sf `command -v cmake` /usr/local/bin/cmake")
+            self.run("ln -sf `command -v ctest` /usr/local/bin/ctest")
+            self.run("ln -sf `command -v cpack` /usr/local/bin/cpack")
 
     def alpine(self):
         self.install("cmake")
@@ -51,14 +51,23 @@ class CMakeSetupFromRepo(paella.Setup):
 
     def macos(self):
         self.install("cmake")
+        base_dir = paella.sh("brew --prefix")
+        ver = paella.sh("brew ls --versions cmake | head -1 | awk '{print $2}'").strip()
+        dir = "{base_dir}/Cellar/cmake/{ver}//bin".format(base_dir=base_dir, ver=ver)
+        self.run("ln -sf {dir}/cmake /usr/local/bin/cmake".format(dir=dir))
+        self.run("ln -sf {dir}/ctest /usr/local/bin/ctest".format(dir=dir))
+        self.run("ln -sf {dir}/cpack /usr/local/bin/cpack".format(dir=dir))
 
     def common_last(self):
-        verstr = paella.sh("cmake --version | head -1 | awk '{print $3}'").strip()
-        ver = int(verstr.split('.')[0])
-        if ver >= 3:
-            print("# installed cmake " + verstr)
-            sys.exit(0)
-        self.uninstall("cmake", output=False)
+        try:
+            verstr = paella.sh("cmake --version | head -1 | awk '{print $3}'").strip()
+            ver = int(verstr.split('.')[0])
+            if ver >= 3:
+                print("# installed cmake " + verstr)
+                sys.exit(0)
+            self.uninstall("cmake", output=False)
+        except:
+            pass
 
 #----------------------------------------------------------------------------------------------
 

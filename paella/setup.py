@@ -463,6 +463,8 @@ class Setup(OnPlatform):
             dest = os.path.join(path, x)
             if not os.path.exists(dest):
                 src = paella.sh("command -v g{}".format(x)).strip()
+                if os.path.exists(dest):
+                    os.unlink(dest)
                 os.symlink(src, dest)
             else:
                 eprint("Warning: {} exists - not replaced".format(dest))
