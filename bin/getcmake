@@ -59,15 +59,14 @@ class CMakeSetupFromRepo(paella.Setup):
         self.run("ln -sf {dir}/cpack /usr/local/bin/cpack".format(dir=dir))
 
     def common_last(self):
-        try:
-            verstr = paella.sh("cmake --version | head -1 | awk '{print $3}'").strip()
-            ver = int(verstr.split('.')[0])
-            if ver >= 3:
-                print("# installed cmake " + verstr)
-                sys.exit(0)
-            self.uninstall("cmake", output=False)
-        except:
-            pass
+        verstr = paella.sh("cmake --version | head -1 | awk '{print $3}'").strip()
+        if verstr == '':
+            return
+        ver = int(verstr.split('.')[0])
+        if ver >= 3:
+            print("# installed cmake " + verstr)
+            sys.exit(0)
+        self.uninstall("cmake", output=False)
 
 #----------------------------------------------------------------------------------------------
 
