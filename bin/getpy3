@@ -10,8 +10,8 @@ ROOT=$(cd $HERE/../.. && pwd)
 READIES=$ROOT/readies
 . $READIES/shibumi/defs
 
-if [ -f /etc/os-release]; then
-    osver=$(source /etc/os-release; echo ${ID}${VERSION_ID})
+if [[ -f /etc/os-release ]]; then
+    osver=$(source /etc/os-release; echo "${ID}${VERSION_ID}")
 fi
 
 if [[ $1 == --help || $1 == help || $HELP == 1 ]]; then
