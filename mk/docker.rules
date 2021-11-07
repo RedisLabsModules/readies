@@ -25,6 +25,9 @@ ifndef VERSION
 	ifeq ($(VERSION),) # no version means disconnected head, so a tag
 	VERSION:=$(shell git name-rev --name-only HEAD | cut -f2 -d/ | cut -f1 -d^ | grep '^v' | sed -e 's/^v\(.*\)/\1/g')
 	endif
+	ifneq (,$(findstring HEAD,$(VERSION))) # sometimes detached HEAD returns as a real value
+	VERSION:=$(shell git name-rev --name-only HEAD | cut -f2 -d/ | cut -f1 -d^ | grep '^v' | sed -e 's/^v\(.*\)/\1/g')
+	endif
 endif
 
 # e.g redisfab/RedisTimeSeries:edge
