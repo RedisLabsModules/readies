@@ -17,20 +17,19 @@ export ART_INT_DIR
 # but, master is remapped to edge
 # if this is a tag (v1.2.3), we remove the v
 ifndef VERSION
-    # first check the tag
-	VERSION:=$(shell git name-rev --name-only HEAD | cut -f2 -d/ | cut -f1 -d^ | grep '^v' | sed -e 's/^v\(.*\)/\1/g')
-	ifeq ($(VERSION),)
-    # branch
+    # branch (2.0, 1.2, etc)
 	VERSION:=$(shell git branch | grep \* | cut -d ' ' -f 2- | sed -e 's/v//g' | grep -v 'no branch')
-	ifeq ($(VERSION),master)
+	ifeq ($(VERSION),master)  # override for master to == edge
 		VERSION=edge
 	endif
+	ifeq ($(VERSION),) # no version means disconnected head, so a tag
+	VERSION:=$(shell git name-rev --name-only HEAD | cut -f2 -d/ | cut -f1 -d^ | grep '^v' | sed -e 's/^v\(.*\)/\1/g')
 	endif
 endif
 
 # e.g redisfab/RedisTimeSeries:edge
 DOCKER_ORG ?= redisfab
-DEFAULT_TAG=${DOCKER_ORG}/${PRODUCT}:${VERSION}
+DEFAULT_TAG?=${DOCKER_ORG}/${PRODUCT}:${VERSION}
 
 # if OSNICK and OSNICK_OFFICIAL match, then we're building the docker
 # that we should push upstream to dockerhub as edge/1.2/etc.
