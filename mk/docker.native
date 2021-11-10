@@ -1,4 +1,34 @@
 
+define HELP
+make build      # build Docker images
+  REDIS_VER=ver   # use Redis version `ver`
+  TEST=1          # test aftar build
+  PACK=1          # create packages
+  ARTIFACTS=1     # copy artifacts from docker image
+
+make publish        # push Docker image to Dockerhub
+  OFFICIAL=0|1        # whether to publish to official (redislabs/*) repos
+  PUSH_GENERAL=0|1    # whether to publish non-official version
+  PUSH_LATEST=0|1     # whether to publish 'latest' version
+  PUSH_EDGE=0|1       # whether to publish 'edge' version
+
+make clean     # remove docker images
+
+make show      # display registry information from Docker repo
+
+Common arguments:
+  OSNICK=nick        # nick=buster|stretch|bionic|centos7
+  INT_BRNACHES=list  # list of intergration branch names
+  VERSION=ver        # build and publish specified version
+  BRANCH=name        # build and publish from specified branch
+endef
+
+#----------------------------------------------------------------------------------------------
+
+ifneq ($(filter help,$(MAKECMDGOALS)),)
+SHOW_HELP=1
+endif
+
 .NOTPARALLEL:
 
 MK.nobindir=1
@@ -9,8 +39,10 @@ MK_CUSTOM_CLEAN=1
 
 #----------------------------------------------------------------------------------------------
 
+ifneq ($(SHOW_HELP),1)
 ifeq ($(REPO),)
 $(error REPO is undefined. Aborting.)
+endif
 endif
 
 OFFICIAL ?= 1
@@ -72,40 +104,16 @@ OS.archlinux=archlinux:latest
 endif # OS
 
 OS=$(OS.$(OSNICK))
+ifneq ($(SHOW_HELP),1)
 ifeq ($(OS),)
 $(error Invalid OSNICK. Aborting.)
+endif
 endif
 
 #----------------------------------------------------------------------------------------------
 
 MACH:=$(shell uname -m)
 CPUSET:=0-$(shell /bin/bash -c "echo $$((`nproc`-1))")
-
-#----------------------------------------------------------------------------------------------
-
-define HELP
-make build      # build Docker images
-  REDIS_VER=ver   # use Redis version `ver`
-  TEST=1          # test aftar build
-  PACK=1          # create packages
-  ARTIFACTS=1     # copy artifacts from docker image
-
-make publish        # push Docker image to Dockerhub
-  OFFICIAL=0|1        # whether to publish to official (redislabs/*) repos
-  PUSH_GENERAL=0|1    # whether to publish non-official version
-  PUSH_LATEST=0|1     # whether to publish 'latest' version
-  PUSH_EDGE=0|1       # whether to publish 'edge' version
-
-make clean     # remove docker images
-
-make show      # display registry information from Docker repo
-
-Common arguments:
-  OSNICK=nick        # nick=buster|stretch|bionic|centos7
-  INT_BRNACHES=list  # list of intergration branch names
-  VERSION=ver        # build and publish specified version
-  BRANCH=name        # build and publish from specified branch
-endef
 
 #----------------------------------------------------------------------------------------------
 
