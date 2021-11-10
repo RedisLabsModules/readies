@@ -101,7 +101,7 @@ MACH:=$(shell uname -m)
 
 #----------------------------------------------------------------------------------------------
 
-define HELP
+define HELPTEXT
 make build      # build Docker images
   REDIS_VER=ver   # use Redis version `ver`
   TEST=1          # test aftar build

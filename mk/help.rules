@@ -1,10 +1,10 @@
 
-ifneq ($(HELP),) 
+ifeq ($(HELP),1)
 
 .PHONY: help
 
 help:
-	$(file >$(HELPFILE),$(HELP))
+	$(file >$(HELPFILE),$(HELPTEXT))
 	@echo
 	@cat $(HELPFILE)
 	@echo

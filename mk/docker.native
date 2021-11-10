@@ -1,5 +1,5 @@
 
-define HELP
+define HELPTEXT
 make build      # build Docker images
   REDIS_VER=ver   # use Redis version `ver`
   TEST=1          # test aftar build
@@ -25,10 +25,6 @@ endef
 
 #----------------------------------------------------------------------------------------------
 
-ifneq ($(filter help,$(MAKECMDGOALS)),)
-SHOW_HELP=1
-endif
-
 .NOTPARALLEL:
 
 MK.nobindir=1
@@ -39,7 +35,7 @@ MK_CUSTOM_CLEAN=1
 
 #----------------------------------------------------------------------------------------------
 
-ifneq ($(SHOW_HELP),1)
+ifneq ($(HELP),1)
 ifeq ($(REPO),)
 $(error REPO is undefined. Aborting.)
 endif
@@ -104,7 +100,7 @@ OS.archlinux=archlinux:latest
 endif # OS
 
 OS=$(OS.$(OSNICK))
-ifneq ($(SHOW_HELP),1)
+ifneq ($(HELP),1)
 ifeq ($(OS),)
 $(error Invalid OSNICK. Aborting.)
 endif

@@ -11,6 +11,10 @@ $(error ROOT is undefined)
 endif
 override ROOT:=$(shell cd $(ROOT) && pwd)
 
+ifneq ($(filter help,$(MAKECMDGOALS)),)
+override HELP:=1
+endif
+
 ifeq ($(READIES),)
 ifneq ($(wildcard $(ROOT)/deps/readies),)
 READIES:=$(ROOT)/deps/readies
