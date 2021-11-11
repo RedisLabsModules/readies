@@ -1,5 +1,5 @@
 
-default: $(DEFAULT_TARGETS)
+default: build
 
 include $(MK)/common.rules
 include $(MK)/variant.rules

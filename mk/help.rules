@@ -1,10 +1,15 @@
 
-ifeq ($(HELP),1)
+# ifeq ($(HELP),1)
+ifneq ($(HELP),)
 
 .PHONY: help
 
 help:
+ifeq ($(HELPTEXT),)
+	$(file >$(HELPFILE),$(HELP))
+else
 	$(file >$(HELPFILE),$(HELPTEXT))
+endif
 	@echo
 	@cat $(HELPFILE)
 	@echo
