@@ -29,7 +29,7 @@ endef
 
 MK.nobindir=1
 
-MK_ALL_TARGETS=build publish clean
+MK_ALL_TARGETS ?= build publish clean
 MK_CUSTOM_BUILD=1
 MK_CUSTOM_CLEAN=1
 

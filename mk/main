@@ -12,7 +12,10 @@ endif
 override ROOT:=$(shell cd $(ROOT) && pwd)
 
 ifneq ($(filter help,$(MAKECMDGOALS)),)
+HELPTEXT:=$(HELP)
 override HELP:=1
+else ifeq ($(HELP),1)
+MK_ALL_TARGETS:=help
 endif
 
 ifeq ($(READIES),)
@@ -41,8 +44,13 @@ endif
 __NO_PYTHON=1
 endif
 
+ifneq ($(HELP),1)
 MK_ALL_TARGETS:=bindirs build
 DEFAULT_TARGETS:=bindirs
+else
+MK_ALL_TARGETS:=help
+DEFAULT_TARGETS:=help
+endif
 
 SUDO:=$(shell [ $$( command -v sudo >/dev/null 2>&1; echo $$? ) = 0 ] && echo sudo)
 USER:=$(shell whoami)
