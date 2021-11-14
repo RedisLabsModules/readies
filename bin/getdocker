@@ -86,5 +86,5 @@ args = parser.parse_args()
 
 if not args.just_compose:
 	DockerSetup(nop = args.nop, no_install=args.just_enable_exp, no_exp=args.no_exp).setup()
-if args.compose:
+if args.compose or args.just_compose:
 	DockerComposeSetup(nop = args.nop, no_install=args.just_enable_exp, no_exp=args.no_exp).setup()
