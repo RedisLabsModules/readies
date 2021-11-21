@@ -24,6 +24,7 @@ class RMPyToolsSetup(paella.Setup):
             self.reinstall = False
         else:
             self.reinstall = args.reinstall
+        self.modern = args.modern
 
     def build_and_install_psutil(self, deps):
         self.run("%s/bin/getgcc" % READIES)
@@ -62,12 +63,25 @@ class RMPyToolsSetup(paella.Setup):
         self.install("git")
         if self.reinstall:
             self.pip_uninstall("redis redis-py-cluster ramp-packer RLTest")
+        if self.modern:
+            self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/redis/redis-py.git@master")
+        else:
+            self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/redisfab/redis-py.git@3.5")
+
         # redis-py-cluster should be installed from git due to redis-py dependency
         # self.pip_install("--no-cache-dir git+https://github.com/Grokzen/redis-py-cluster.git@master")
-        self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/redisfab/redis-py.git@3.5")
-        self.pip_install("--no-cache-dir --ignore-installed redis-py-cluster")
+        # self.pip_install("--no-cache-dir --ignore-installed redis-py-cluster")
+        self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/redisfab/redis-py-cluster@2.1")
+
         self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/RedisLabsModules/RLTest.git@master")
         self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/RedisLabs/RAMP@master")
+
+#----------------------------------------------------------------------------------------------
+
+class RMPyToolsUninstall(paella.Setup):
+    def __init__(self, args):
+        paella.Setup.__init__(self, nop=args.nop)
+        self.pip_uninstall("redis redis-py-cluster ramp-packer RLTest")
 
 #----------------------------------------------------------------------------------------------
 
@@ -75,10 +89,17 @@ parser = argparse.ArgumentParser(description='Install RedisLabs Modules Python t
 parser.add_argument('-n', '--nop', action="store_true", help='no operation')
 parser.add_argument('--no-reinstall', action="store_true", default=False, help='Not not reinstall everything')
 parser.add_argument('--reinstall', action="store_true", default=False, help='Reinstall everything')
+parser.add_argument('--remove', action="store_true", default=False, help='Uninstall everything')
+parser.add_argument('--modern', action="store_true", default=False, help='Install redis-py 4.0')
 args = parser.parse_args()
 
 try:
-    RMPyToolsSetup(args).setup()
+    if args.modern and sys.version_info < (3, 6):
+        fatal("Cannot use redis-py 4.0 with Python 2")
+    if args.remove:
+        RMPyToolsUninstall(args).setup()
+    else:
+        RMPyToolsSetup(args).setup()
 except Exception as x:
     traceback.print_exc()
     fatal(str(x))
