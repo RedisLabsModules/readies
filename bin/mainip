@@ -6,8 +6,8 @@ READIES=$(cd $HERE/.. && pwd)
 . $READIES/shibumi/defs
 
 if [[ $($READIES/bin/isec2) == yes ]]; then
-        curl http://169.254.169.254/latest/meta-data/public-ipv4
-        exit 0
+	curl http://169.254.169.254/latest/meta-data/public-ipv4
+	exit 0
 fi
 
 # is GCP?
@@ -27,8 +27,8 @@ if is_command jq; then
 fi
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
-        if=$(route -n get 8.8.8.8 | grep interface | awk '{print $2}')
-        ifconfig $if | grep inet | grep netmask| awk '{print $2}'
+	if=$(route -n get 8.8.8.8 | grep interface | awk '{print $2}')
+	ifconfig $if | grep inet | grep netmask| awk '{print $2}'
 else
-        ip route get 8.8.8.8 | head -1 | awk '{print $7}'
+	ip route get 8.8.8.8 | head -1 | awk '{print $7}'
 fi
