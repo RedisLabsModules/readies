@@ -4,7 +4,7 @@ TEST ?=0
 
 DOCKER_SOURCES=""
 
-ARCH:=$(shell ${READIES}/bin/platform --arch)
+ARCH:=$(shell $(READIES)/bin/platform --arch)
 
 # for artifact gathering
 ART_DIR ?= $(ROOT)/bin/artifacts
@@ -32,16 +32,16 @@ endif
 
 # e.g redisfab/RedisTimeSeries:edge
 DOCKER_ORG ?= redisfab
-DEFAULT_TAG?=${DOCKER_ORG}/${PRODUCT}:${VERSION}
+DEFAULT_TAG?=$(DOCKER_ORG)/$(PRODUCT):$(VERSION)
 
 # if OSNICK and OSNICK_OFFICIAL match, then we're building the docker
 # that we should push upstream to dockerhub as edge/1.2/etc.
 ifeq ($(OSNICK_OFFICIAL),$(OSNICK))
-DOCKER_TAGS += redislabs/${PRODUCT}:${VERSION}
+DOCKER_TAGS += redislabs/$(PRODUCT):$(VERSION)
 endif
 
 ifeq ($(DOCKER_ORG),redisfab)
-DOCKER_TAGS += redisfab/${PRODUCT}:${VERSION}-${ARCH}-${OSNICK}
+DOCKER_TAGS += redisfab/$(PRODUCT):$(VERSION)-$(ARCH)-$(OSNICK)
 endif
 
 # defaults for wrapper script
@@ -50,35 +50,36 @@ PUBLISH=0
 KEEP=0
 VERBOSE=0
 
-## This builds the docker
-build:
-	DOCKER_SOURCES=${DOCKER_SOURCES} \
-	DOCKER_TAGS="${DOCKER_TAGS}" \
-	NOP=${NOP} \
-	DOCKER_PUSH=${PUBLISH} \
-	VERBOSE=${VERBOSE} \
-	KEEP=${KEEP} \
-	REDIS_VERSION=${REDIS_VERSION} \
-	REDIS_PRODUCT=${PRODUCT} \
-	REDIS_DOCKER_ORG=${DOCKER_ORG} \
-	REDIS_OSNICK=${OSNICK} \
-	REDIS_OS=${OS} \
-	REDIS_ARCH=${ARCH} \
-	REDIS_PACK=${PACK} \
-	REDIS_TEST=${TEST} \
-	${DOCKERWRAPPER_EXTRA_VARS} \
-	${READIES}/bin/dockerwrapper \
-		-d ${ROOT}/Dockerfile${DOCKER_SUFFIX} \
-		-t ${DEFAULT_TAG} \
-		-e REDIS \
-		-D "${DOCKER_OPTS}" \
-		${DOCKER_ARGS}
-ifeq ($(PACK),1)
-	IMAGE=${DEFAULT_TAG} ${READIES}/mk/docker-collect-artifacts
-endif
-
 # There are mappings between OSNICK to specific OS values, due to docker containers used
 # The global mappings are found here.
-include ${READIES}/mk/osnick.defs
-include ${READIES}/mk/help.defs
-include ${READIES}/mk/help.rules
+include $(MK)/osnick.defs
+include $(MK)/help.defs
+
+## This builds the docker
+build:
+	DOCKER_SOURCES=$(DOCKER_SOURCES) \
+	DOCKER_TAGS="$(DOCKER_TAGS)" \
+	NOP=$(NOP) \
+	DOCKER_PUSH=$(PUBLISH) \
+	VERBOSE=$(VERBOSE) \
+	KEEP=$(KEEP) \
+	REDIS_VERSION=$(REDIS_VERSION) \
+	REDIS_PRODUCT=$(PRODUCT) \
+	REDIS_DOCKER_ORG=$(DOCKER_ORG) \
+	REDIS_OSNICK=$(OSNICK) \
+	REDIS_OS=$(OS) \
+	REDIS_ARCH=$(ARCH) \
+	REDIS_PACK=$(PACK) \
+	REDIS_TEST=$(TEST) \
+	$(DOCKERWRAPPER_EXTRA_VARS) \
+	$(READIES)/bin/dockerwrapper \
+		-d $(ROOT)/Dockerfile$(DOCKER_SUFFIX) \
+		-t $(DEFAULT_TAG) \
+		-e REDIS \
+		-D "$(DOCKER_OPTS)" \
+		$(DOCKER_ARGS)
+ifeq ($(PACK),1)
+	IMAGE=$(DEFAULT_TAG) $(MK)/docker-collect-artifacts
+endif
+
+include $(MK)/help.rules
