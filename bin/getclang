@@ -31,8 +31,8 @@ class CLangFormatSetup(paella.Setup):
             self.run("chmod +x /usr/local/bin/clang-format-13")
             self.run("ln -sf /usr/local/bin/clang-format-13 /usr/local/bin/clang-format")
         elif self.platform.is_arm():
-            self.install("clang-format-10")
-            self.run("ln -sf `command -v clang-format-10` /usr/local/bin/clang-format")
+            self.install("clang-format-13")
+            self.run("ln -sf `command -v clang-format-13` /usr/local/bin/clang-format")
         else:
             raise paella.Error("Error installing CLang Format on not-x64 platform")
 
@@ -58,9 +58,7 @@ class CLangSetup(paella.Setup):
         self.install("unzip lsb-release gnupg2")
 
         if self.osnick != "trusty":
-            if self.platform.is_arm():
-                clang_ver = "11"
-            elif self.osnick in ["xenial", "stretch", "buster", "bionic"]:
+            if self.osnick in ["xenial", "stretch", "buster"]:
                 clang_ver = "12"
             else:
                 clang_ver = "" # auto-detect
