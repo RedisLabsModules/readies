@@ -321,7 +321,7 @@ index f6e5f3e3f..def02b80d 100644
                     self.redis_server = os.path.join(into_bindir, 'redis-server')
                     
         if not self.keep:
-            shutil.rmtree(self.base_dir)
+            paella.rm_rf(self.base_dir)
         if self.info_file is not None:
             info = """
                 base_dir {base_dir}

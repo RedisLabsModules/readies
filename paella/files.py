@@ -3,6 +3,7 @@ from contextlib import contextmanager
 import errno
 import os
 import os.path
+import shutil
 import tempfile
 try:
     from urllib2 import urlopen
@@ -73,6 +74,14 @@ def mkdir_p(dir):
     except OSError as e:
         if e.errno != errno.EEXIST or os.path.isfile(dir):
             raise
+
+#----------------------------------------------------------------------------------------------
+
+def rm_rf(path):
+    if os.path.isdir(path) and not os.path.islink(path):
+        shutil.rmtree(path)
+    elif os.path.exists(path):
+        os.remove(path)
 
 #----------------------------------------------------------------------------------------------
 
