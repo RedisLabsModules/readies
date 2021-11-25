@@ -102,10 +102,11 @@ fi
 #----------------------------------------------------------------------------------------------
 
 eprint() {
+	local pref="$(basename "${BASH_SOURCE[0]}")"
 	if [[ -t 2 ]]; then
-		>&2 echo "${RED}$@${NOCOLOR}"
+		>&2 echo "${RED}${pref}: $@${NOCOLOR}"
 	else
-		>&2 echo "$@"
+		>&2 echo "${pref}: $@"
 	fi
 }
 
