@@ -12,7 +12,6 @@ endif
 override ROOT:=$(shell cd $(ROOT) && pwd)
 
 ifneq ($(filter help,$(MAKECMDGOALS)),)
-HELPTEXT:=$(HELP)
 override HELP:=1
 else ifeq ($(HELP),1)
 MK_ALL_TARGETS:=help
