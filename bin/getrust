@@ -9,13 +9,18 @@ if [[ -f $HOME/.cargo/env ]]; then
 	source $HOME/.cargo/env
 fi
 if ! is_command rustup; then
+	runn $READIES/bin/getget
 	runn "curl --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/rust-lang/rustup/master/rustup-init.sh -sSf | sh -s -- -y"
-else
-	if ! runn rustup update stable; then
-		runn rustup toolchain uninstall stable
-		runn rustup toolchain install stable
-	fi
+	source $HOME/.cargo/env
+elif ! runn rustup update stable; then
+	runn rustup toolchain uninstall stable
+	runn rustup toolchain install stable
 fi
+
+runn rustup toolchain install nightly
+runn rustup component add --toolchain nightly rust-src
+
+rustup show
 
 profile_d=`get_profile_d`
 if [[ -f $HOME/.cargo/env ]]; then
