@@ -1,6 +1,7 @@
 
 # ifeq ($(HELP),1)
 ifneq ($(HELP),)
+ifneq ($(MK_CUSTOM_HELP),1)
 
 .PHONY: help
 
@@ -15,4 +16,5 @@ endif
 	@echo
 	@-rm -f $(HELPFILE)
 
-endif
+endif # MK_CUSTOM_HELP
+endif # HELP
