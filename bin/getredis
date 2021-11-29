@@ -422,7 +422,7 @@ class RedisRepoSetup(paella.Setup):
 parser = argparse.ArgumentParser(description='Set up system for build.')
 parser.add_argument('-n', '--nop', action="store_true", help='no operation')
 parser.add_argument('-s', '--source', action="store_true", help="Build from source")
-parser.add_argument('-v', '--version', type=str, default=DEFAULT_REDIS_VERSION, help='Redis version (e.g. 6, 6.0, 6.0.1')
+parser.add_argument('-v', '--version', type=str, help='Redis version (e.g. 6, 6.0, 6.0.1')
 parser.add_argument('-b', '--branch', type=str, help='Redis branch (e.g. 6, 6.0)')
 parser.add_argument('--valgrind', action="store_true", help="Build a Valgdind-compatible Redis (i.e. with libc & -O0)")
 parser.add_argument('--clang-asan', action="store_true", help="Build with Clang address sanitizer")
@@ -462,6 +462,8 @@ if args.version and args.repo:
     fatal('--version and --repo are incompatible. Aborting.')
 if args.version and args.branch:
     fatal('conflicting options: --version, --branch. Aborting.')
+if not args.version and not args.branch:
+	args.version = DEFAULT_REDIS_VERSION
 
 if args.just_print_version:
     setup = RedisSourceSetup(args)
