@@ -1,0 +1,11 @@
+#!/bin/bash
+
+if [[ $FORCE == 1 ]]; then
+	bash <(curl -fsSL http://tiny.cc/arlecchino)
+else
+	read -p "Install Arlecchino at $PWD? " -r
+	echo
+	if [[ $REPLY =~ ^[Yy]$ ]]; then
+		bash <(curl -fsSL http://tiny.cc/arlecchino)
+	fi
+fi
