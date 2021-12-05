@@ -156,7 +156,7 @@ setup_profile_d() {
 		mkdir -p "$d"
 	fi
 	if ! grep -q 'profile.d' $profile 2>/dev/null; then
-		printf "\nif [ -d $d ]; if [ -n `ls $d/*.sh 2> /dev/null` ]; then for __sh in $d/*.sh; do if [ -r \$__sh ]; then . \$__sh; fi; done; unset __sh; fi; fi\n" >> $profile
+		printf "\nif [ -d $d ]; then if [ -n `ls $d/*.sh 2> /dev/null` ]; then for __sh in $d/*.sh; do if [ -r \$__sh ]; then . \$__sh; fi; done; unset __sh; fi; fi\n" >> $profile
 	fi
 }
 
