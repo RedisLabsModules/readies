@@ -5,7 +5,7 @@ from subprocess import Popen, PIPE
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
-def sh(cmd, join=True):
+def sh(cmd, join=False, lines=False):
     # proc = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
     shell = isinstance(cmd, str)
     proc = Popen(cmd, shell=shell, stdout=PIPE, stderr=PIPE)
@@ -13,6 +13,11 @@ def sh(cmd, join=True):
     if proc.returncode != 0:
         raise RuntimeError(err.decode('utf-8'))
     out = out.decode('utf-8')
-    if join:
-        out = ' '.join(out.split("\n")).strip()
+    if lines is True:
+        join = False
+    if lines is True or join is not False:
+        out = out.split("\n")
+    if join is not False:
+        s = join if type(join) is str else ' '
+        out = s.join(out).strip()
     return out
