@@ -1,6 +1,8 @@
 # defaults
 PACK ?=0
 TEST ?=0
+LATEST ?=0
+PREVIEW ?=0
 
 DOCKER_SOURCES=""
 
@@ -12,14 +14,34 @@ ART_INT_DIR ?= /var/opt/redislabs/artifacts
 export ART_DIR
 export ART_INT_DIR
 
-# get the release version, unless one is defined
-# since in CI, branches with {d}.{d} push, we allow anything here
-# but, master is remapped to edge
-# if this is a tag (v1.2.3), we remove the v
+# In CIRCLECI we have variables set by the environment
+# If CIRCLE_BRANCH has a value other than blank  and CIRCLE_TAG
+# has no value, CIRCLE_BRANCH is our variable. Otherwise
+# CIRCLE_TAG is our variable.
+# examples::
+# make CIRCLE_BRANCH=my_branch --- the version is be my_branch
+# make CIRCLE_BRANCH=my_branch --- the version is be my_branch
+# make CIRCLE_TAG= CIRCLE_BRANCH=my_branch --- the version is my_branch
+# make CIRCLE_TAG=1.23 CIRCLE_BRANCH=my_branch --- the version is 1.23
+# make CIRCLE_TAG=1.23 CIRCLE_BRANCH= --- the version is 1.23
+ifdef CIRCLE_BRANCH
+VERSION=${CIRCLE_BRANCH}
+endif
+
+ifdef CIRCLE_TAG
+VERSION=${CIRCLE_TAG}
+endif
+
+# If VERSION is defined (say a local checkout) it overrides all
+# If none of the above (no CIRCLE_TAG, CIRCLE_BRANCH, and no VERSION)
+#    we attempt to guess the version
 ifndef VERSION
     # branch (2.0, 1.2, etc)
 	VERSION:=$(shell git branch | grep \* | cut -d ' ' -f 2- | sed -e 's/v//g' | grep -v 'no branch')
 	ifeq ($(VERSION),master)  # override for master to == edge
+		VERSION=edge
+	endif
+	ifeq ($(VERSION),main)  # override for master to == edge
 		VERSION=edge
 	endif
 	ifeq ($(VERSION),) # no version means disconnected head, so a tag
@@ -29,19 +51,26 @@ ifndef VERSION
 	VERSION:=$(shell git name-rev --name-only HEAD | cut -f2 -d/ | cut -f1 -d^ | grep '^v' | sed -e 's/^v\(.*\)/\1/g')
 	endif
 endif
-
 # e.g redisfab/RedisTimeSeries:edge
 DOCKER_ORG ?= redisfab
 DEFAULT_TAG?=$(DOCKER_ORG)/$(PRODUCT):$(VERSION)
 
-# if OSNICK and OSNICK_OFFICIAL match, then we're building the docker
+# if OSNICK and PUBLISH_OSNICK match, then we're building the docker
 # that we should push upstream to dockerhub as edge/1.2/etc.
-ifeq ($(OSNICK_OFFICIAL),$(OSNICK))
+ifeq ($(PUBLISH_OSNICK),$(OSNICK))
 DOCKER_TAGS += redislabs/$(PRODUCT):$(VERSION)
 endif
 
 ifeq ($(DOCKER_ORG),redisfab)
 DOCKER_TAGS += redisfab/$(PRODUCT):$(VERSION)-$(ARCH)-$(OSNICK)
+endif
+
+ifeq ($(LATEST),1)
+DOCKER_TAGS += redislabs/$(PRODUCT):latest
+endif
+
+ifeq ($(PREVIEW),1)
+DOCKER_TAGS += redislabs/$(PRODUCT):preview
 endif
 
 # defaults for wrapper script
@@ -52,8 +81,12 @@ VERBOSE=0
 
 # There are mappings between OSNICK to specific OS values, due to docker containers used
 # The global mappings are found here.
-include $(MK)/osnick.defs
-include $(MK)/help.defs
+include $(READIES)/mk/osnick.defs
+include $(READIES)/mk/help.defs
+
+ifndef DOCKER_SUFFIX
+DOCKER_SUFFIX=.${OSNICK}
+endif
 
 ## This builds the docker
 build:
@@ -82,4 +115,4 @@ ifeq ($(PACK),1)
 	IMAGE=$(DEFAULT_TAG) $(MK)/docker-collect-artifacts
 endif
 
-include $(MK)/help.rules
+include $(READIES)/mk/help.rules
