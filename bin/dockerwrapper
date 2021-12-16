@@ -37,13 +37,13 @@ class DockerBuilder(object):
         res = self.nop_runner(build_cmd, nop=nop, verbose=verbose)
         return res
 
-    def push(self, tag="dev/dev:latest", source_tag=None, nop=True, verbose=False, force=False):
+    def tagpush(self, tag="dev/dev:latest", source_tag=None, nop=True, verbose=False, force=False, publish=False):
         """Pushes the docker images upstream, optionally retagging them first, if necessary."""
 
         # disallow pushing upstream from non-integration branches - unless explicitly requested
         version = tag.lower().split(':')[-1]
 
-        reg = '^edge$|^[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}$'
+        reg = '^edge$|^preview$|^latest$|^[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}$'
         reg_edge_version = '^[0-9]{1,3}.[0-9]{1,3}$'
 
         regedgefind = re.findall(reg_edge_version, version)
@@ -59,8 +59,9 @@ class DockerBuilder(object):
             arm_tag_cmd = ["docker", "tag", tag.lower(), arm_tag]
             self.nop_runner(arm_tag_cmd, opts.NOP, verbose=verbose)
 
-            push_cmd = ["docker", "push", arm_tag]
-            self.nop_runner(push_cmd, opts.NOP)
+            if publish:
+                push_cmd = ["docker", "push", arm_tag]
+                self.nop_runner(push_cmd, opts.NOP)
             return
 
         else:
@@ -70,8 +71,9 @@ class DockerBuilder(object):
                 tag_cmd = ["docker", "tag", source_tag, tag.lower()]
                 self.nop_runner(tag_cmd, opts.NOP, verbose=verbose)
 
-        push_cmd = ["docker", "push", tag.lower()]
-        self.nop_runner(push_cmd, opts.NOP)
+        if publish:
+            push_cmd = ["docker", "push", tag.lower()]
+            self.nop_runner(push_cmd, opts.NOP)
 
     def generate(self, src, dest, template_dirs, context={}):
         """Generate the docker file
@@ -92,7 +94,6 @@ class DockerBuilder(object):
 # redislabs/redisai:edge-cpu-somethingspecial
 
 if __name__ == "__main__":
-
     parser = OptionParser()
     parser.add_option('-s', '--src', dest='SRC', type="str", metavar="file", help="Dockerfile template",
                       default="dockerfile.tmpl")
@@ -167,41 +168,28 @@ if __name__ == "__main__":
     db = DockerBuilder()
     db.generate(opts.SRC, opts.DEST, template_dirs, variables)
 
-    # if we're only pushing, things are already built
-    if not opts.DOCKER_PUSH_ONLY:
-        if opts.GENERATE_ONLY:
-            sys.stderr.write("Wrote generated file to {}. Exiting.\n".format(opts.DEST))
-            sys.exit(0)
+    if opts.GENERATE_ONLY:
+        sys.stderr.write("Wrote generated file to {}. Exiting.\n".format(opts.DEST))
+        sys.exit(0)
 
-        # get the docker options, for building
-        if opts.DOCKER_OPTS is None:
-            dock_opts = []
-        else:
-            dock_opts = opts.DOCKER_OPTS.split()
-
-        r = db.build(opts.DEST, nop=opts.NOP, tag=opts.DOCKER_BASE_TAG,
-                     docker_options=dock_opts, verbose=opts.VERBOSE)
-        if opts.NOP is False:
-            if r != 0:
-                sys.stderr.write("docker build failed, exiting.\n")
-                sys.exit(r)
     # get the docker options, for building
     if opts.DOCKER_OPTS is None:
         dock_opts = []
     else:
         dock_opts = opts.DOCKER_OPTS.split()
 
-    # build
-    r = db.build(opts.DEST, nop=opts.NOP, tag=opts.DOCKER_BASE_TAG,
-                 docker_options=dock_opts, verbose=opts.VERBOSE)
-    if opts.NOP is False:
-        if r != 0:
+    # if we're only pushing, things are already built
+    if opts.DOCKER_PUSH_ONLY is None:
+        r = db.build(opts.DEST, nop=opts.NOP, tag=opts.DOCKER_BASE_TAG,
+            docker_options=dock_opts, verbose=opts.VERBOSE)
+        if opts.NOP is False and r != 0:
             sys.stderr.write("docker build failed, exiting.\n")
+            sys.exit(r)
+        if opts.DOCKER_PUSH is False:
             sys.exit(r)
 
     # tag
-    if opts.DOCKER_PUSH:
-        db.push(tag=opts.DOCKER_BASE_TAG, nop=opts.NOP, verbose=opts.VERBOSE, force=opts.DOCKER_FORCE_PUSH)
-        if opts.DOCKER_TAGS is not None:
-            for tag in opts.DOCKER_TAGS:
-                db.push(tag=tag, source_tag=opts.DOCKER_BASE_TAG, nop=opts.NOP, verbose=opts.VERBOSE, force=opts.DOCKER_FORCE_PUSH)
+    db.tagpush(tag=opts.DOCKER_BASE_TAG, nop=opts.NOP, verbose=opts.VERBOSE, force=opts.DOCKER_FORCE_PUSH, publish=opts.DOCKER_PUSH)
+    if opts.DOCKER_TAGS is not None:
+        for tag in opts.DOCKER_TAGS:
+            db.tagpush(tag=tag, source_tag=opts.DOCKER_BASE_TAG, nop=opts.NOP, verbose=opts.VERBOSE, force=opts.DOCKER_FORCE_PUSH, publish=opts.DOCKER_PUSH)
