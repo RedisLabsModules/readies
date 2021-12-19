@@ -17,6 +17,8 @@ elif ! runn rustup update stable; then
 	runn rustup toolchain install stable
 fi
 
+# workaround for nightly install issues https://github.com/rust-lang/rls/issues/623
+runn rustup toolchain uninstall nightly
 runn rustup toolchain install nightly
 runn rustup component add --toolchain nightly rust-src
 
