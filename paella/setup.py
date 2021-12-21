@@ -43,7 +43,7 @@ class OutputMode:
 class Runner:
     def __init__(self, nop=False, output="on_error"):
         self.nop = nop
-        self.is_root = os.geteuid()
+        self.is_root = os.geteuid() == 0
         self.has_sudo = sh('command -v sudo') != ''
         self.output = OutputMode(output)
 
@@ -275,13 +275,14 @@ class Brew(PackageManager):
         rc = True
         for pack in packs.split():
             rc = self.run("brew list {PACK} &>/dev/null || brew install {PACK}".format(PACK=pack),
-                     output=output, _try=_try) and rc
+                     output=output, _try=_try, sudo=False) and rc
         return rc
 
     def uninstall(self, packs, group=False, output="on_error", _try=False):
         rc = True
         for pack in packs.split():
-            rc = self.run("brew remove {PACK}".format(PACK=pack), output=output, _try=_try) and rc
+            rc = self.run("brew remove {PACK}".format(PACK=pack), output=output, _try=_try,
+                          sudo=False) and rc
         return rc
 
     def add_repo(self, repourl, repo="", output="on_error", _try=False):
@@ -404,19 +405,19 @@ class Setup(OnPlatform):
 
     def pip(self, cmd, output="on_error", _try=False):
         return self.run(self.python + " -m pip --disable-pip-version-check " + cmd,
-                        output=output, _try=_try, sudo=True)
+                        output=output, _try=_try, sudo=False)
 
     def pip_install(self, cmd, output="on_error", _try=False):
         pip_user = ''
         if self.os == 'macos' and 'VIRTUAL_ENV' not in os.environ:
             pip_user = '--user '
         return self.run(self.python + " -m pip install --disable-pip-version-check " + pip_user + cmd,
-                        output=output, _try=_try, sudo=True)
+                        output=output, _try=_try, sudo=False)
 
     def pip_uninstall(self, cmd, output="on_error", _try=False):
         return self.run("{PYTHON} -m pip uninstall --disable-pip-version-check -y {CMD} || true".
                         format(PYTHON=self.python, CMD=cmd),
-                        output=output, _try=_try, sudo=True)
+                        output=output, _try=_try, sudo=False)
 
     # deprecated
     def setup_pip(self, output="on_error", _try=False):
