@@ -11,7 +11,6 @@ from .error import *
 import paella
 
 GIT_LFS_VER = '2.12.1'
-PIP_VER = '19.3.1'
 
 #----------------------------------------------------------------------------------------------
 
@@ -44,11 +43,13 @@ class OutputMode:
 class Runner:
     def __init__(self, nop=False, output="on_error"):
         self.nop = nop
-        # self.has_sudo = sh('command -v sudo') != ''
-        self.has_sudo = False
+        self.is_root = os.geteuid()
+        self.has_sudo = sh('command -v sudo') != ''
         self.output = OutputMode(output)
 
     def run(self, cmd, at=None, output=None, nop=None, _try=False, sudo=False):
+        if (self.is_root or not self.has_sudo) and sudo:
+            sudo = False
         if output is None:
             output = self.output
         else:
@@ -57,7 +58,7 @@ class Runner:
             cmds1 = str.lstrip(textwrap.dedent(cmd))
             cmds = filter(lambda s: str.lstrip(s) != '', cmds1.split("\n"))
             cmd = "; ".join(cmds)
-        if self.has_sudo and sudo:
+        if sudo:
             cmd = "sudo " + cmd
         print(cmd)
         sys.stdout.flush()
