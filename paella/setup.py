@@ -44,7 +44,7 @@ class Runner:
     def __init__(self, nop=False, output="on_error"):
         self.nop = nop
         self.is_root = os.geteuid() == 0
-        self.has_sudo = sh('command -v sudo') != ''
+        self.has_sudo = sh('command -v sudo', fail=False) != ''
         self.output = OutputMode(output)
 
     def run(self, cmd, at=None, output=None, nop=None, _try=False, sudo=False):
