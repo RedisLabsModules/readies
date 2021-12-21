@@ -48,9 +48,9 @@ class DockerSetup(paella.Setup):
         # self.install("docker-ce docker-ce-cli containerd.io")
 
     def common_last(self):
-		# enable running docker as non-root user
-		self.run("groupadd docker || true")
-		self.run("usermod -aG docker $USER || true")
+        # enable running docker as non-root user
+        self.run("groupadd docker || true")
+        self.run("usermod -aG docker $USER || true")
 
         if self.no_exp:
             return
@@ -89,6 +89,6 @@ parser.add_argument('--just-compose', action="store_true", help='just install Do
 args = parser.parse_args()
 
 if not args.just_compose:
-	DockerSetup(nop = args.nop, no_install=args.just_enable_exp, no_exp=args.no_exp).setup()
+    DockerSetup(nop = args.nop, no_install=args.just_enable_exp, no_exp=args.no_exp).setup()
 if args.compose or args.just_compose:
-	DockerComposeSetup(nop = args.nop, no_install=args.just_enable_exp, no_exp=args.no_exp).setup()
+    DockerComposeSetup(nop = args.nop, no_install=args.just_enable_exp, no_exp=args.no_exp).setup()
