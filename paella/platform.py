@@ -59,6 +59,7 @@ MACOS_VERSIONS = {
     "mojave":       "10.14",
     "catalina":     "10.15",
     "bigsur":       "11.0",
+    "monterey":     "12.0",
 }
 
 MACOS_VERSIONS_NICKS = {v: k for k, v in MACOS_VERSIONS.items()}
