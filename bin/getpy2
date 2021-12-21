@@ -44,14 +44,14 @@ fi
 #   optional: `python` command (don't fix)
 
 fix_variants() {
-	if [[ ! -z $VIRTUAL_ENV ]]; then
-		[[ ! -z $PYTHON && "$PYTHON_VER" == "2"  ]] && return
+	if [[ -n $VIRTUAL_ENV ]]; then
+		[[ -n $PYTHON && "$PYTHON_VER" == "2"  ]] && return
 	fi
 
 	if [[ -z $PYTHON2 ]]; then
-		if [[ ! -z $PYTHON27 ]]; then
+		if [[ -n $PYTHON27 ]]; then
 			ln -sf $PYTHON27 /usr/local/bin/python2
-		elif [[ ! -z $PYTHON && "$PYTHON_VER" == "2"  ]]; then
+		elif [[ -n $PYTHON && "$PYTHON_VER" == "2"  ]]; then
 			ln -sf $PYTHON /usr/local/bin/python2
 		fi
 	fi
@@ -71,15 +71,15 @@ check_variants() {
 	MYPY=""
 	PYTHON_VER=""
 
-	if [[ ! -z $PYTHON ]]; then
+	if [[ -n $PYTHON ]]; then
 		PYTHON_VER="$(python --version 2>&1 | awk '{print $2}' | cut -d. -f1)"
 		[[ $PYTHON_VER == 2 ]] && MYPY=$PYTHON
 	fi
 
-	[[ ! -z $PYTHON2 ]]  && MYPY=$PYTHON2
-	[[ ! -z $PYTHON27 ]] && MYPY=$PYTHON27
+	[[ -n $PYTHON2 ]]  && MYPY=$PYTHON2
+	[[ -n $PYTHON27 ]] && MYPY=$PYTHON27
 
-	if [[ ! -z $FIX ]]; then fix_variants; fi
+	if [[ -n $FIX ]]; then fix_variants; fi
 }
 
 install_python() {
@@ -165,7 +165,7 @@ install_pip() {
 
 check_variants
 
-[[ ! -z $MYPY && $PIP == 0 && $FORCE != 1 ]] && exit 0
+# [[ -n $MYPY && $PIP == 0 && $FORCE != 1 ]] && exit 0
 if [[ $CHECK == 1 ]]; then
 	if $MYPY -m pip --version 2>&1 > /dev/null; then exit 0; fi
 	exit 1
@@ -193,7 +193,7 @@ fi
 [[ $PIP != 0 ]] && install_pip
 
 REQ=$READIES/paella/requirements.txt
-if [[ ! -z $VENV && $VENV != 0 ]]; then
+if [[ -n $VENV && $VENV != 0 ]]; then
 	runn $MYPY -m pip install ${PIP_USER} virtualenv
 	[[ $VENV == 1 ]] && VENV=$HOME/venv
 	runn $MYPY -m virtualenv $VENV --system-site-packages

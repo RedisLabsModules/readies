@@ -49,12 +49,12 @@ fi
 #   optional: `python` command (don't fix)
 
 fix_variants() {
-	if [[ ! -z $VIRTUAL_ENV ]]; then
-		[[ ! -z $PYTHON && "$PYTHON_VER" == "3"  ]] && return
+	if [[ -n $VIRTUAL_ENV ]]; then
+		[[ -n $PYTHON && "$PYTHON_VER" == "3"  ]] && return
 	fi
 
 	if [[ -z $PYTHON3 ]]; then
-		if [[ ! -z $PYTHON && "$PYTHON_VER" == "3"  ]]; then
+		if [[ -n $PYTHON && "$PYTHON_VER" == "3"  ]]; then
 			ln -sf $PYTHON /usr/local/bin/python3
 		fi
 	fi
@@ -73,18 +73,18 @@ check_variants() {
 	MYPY=""
 	PYTHON_VER=""
 
-	if [[ ! -z $PYTHON ]]; then
+	if [[ -n $PYTHON ]]; then
 		PYTHON_VER="$(python --version 2>&1 | awk '{print $2}' | cut -d. -f1)"
 		[[ $PYTHON_VER == 3 ]] && MYPY=$PYTHON
 	fi
 
-	[[ ! -z $PYTHON3 ]] && MYPY=$PYTHON3
+	[[ -n $PYTHON3 ]] && MYPY=$PYTHON3
 
 	export MINOR="$($MYPY --version 2>&1 | awk '{print $2}' | cut -d. -f2)"
 	# Python3 <= 3.4 breaks contemporary pip
 	if (( MINOR <= 5 )); then export FORCE=1; fi
 
-	if [[ ! -z $FIX ]]; then fix_variants; fi
+	if [[ -n $FIX ]]; then fix_variants; fi
 }
 
 install_python_on_old_ubuntu() {
@@ -164,7 +164,7 @@ install_pip() {
 		export DEBIAN_FRONTEND=noninteractive
 		runn apt-get -qq update
 		runn apt-get install -y $packs
-		if [[ ! -z $(apt-cache search --names-only '^python3-distutils$')  ]]; then
+		if [[ -n $(apt-cache search --names-only '^python3-distutils$')  ]]; then
 			runn apt-get install -y python3-distutils
 		fi
 	elif is_command dnf; then
@@ -195,7 +195,7 @@ install_pip() {
 
 check_variants
 
-[[ ! -z $MYPY && $PIP == 0 && $FORCE != 1 ]] && exit 0
+# [[ -n $MYPY && $PIP == 0 && $FORCE != 1 ]] && exit 0
 if [[ $CHECK == 1 ]]; then
 	if $MYPY -m pip --version 2>&1 > /dev/null; then exit 0; fi
 	exit 1
@@ -224,7 +224,7 @@ if [[ $(uname) == Darwin ]]; then
 fi
 
 REQ=$READIES/paella/requirements.txt
-if [[ ! -z $VENV && $VENV != 0 ]]; then
+if [[ -n $VENV && $VENV != 0 ]]; then
 	runn $MYPY -m pip install ${PIP_USER} virtualenv
 	[[ $VENV == 1 ]] && VENV=$HOME/venv
 	runn $MYPY -m virtualenv $VENV --system-site-packages
