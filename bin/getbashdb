@@ -25,8 +25,9 @@ else
 	exit 1
 fi
 
-$OP wget -q -O /tmp/bashdb.tgz $url
-$OP tar -C / -xzf /tmp/bashdb.tgz
-$OP rm /tmp/bashdb.tgz
+tgzfile=$(mktemp /tmp/bashdb.tgz.XXXXXX)
+$OP wget -q -O $tgzfile $url
+$OP tar -C / -xzf $tgzfile
+$OP rm $tgzfile
 
 exit 0
