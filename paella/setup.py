@@ -357,9 +357,10 @@ class Setup(OnPlatform):
             self.python = paella.sh("command -v python" + self.pyver)
 
         try:
-            print("# readies version: {}".format(sh("cd {} && git rev-parse --short HEAD".format(os.path.abspath(os.path.dirname(__file__))))))
-        except RuntimeError:
-            print("failed to rev parse, passing for now since this is debug only.")
+            gitver = sh("cd {} && git rev-parse --short HEAD".format(os.path.abspath(os.path.dirname(__file__))))
+        except:
+            gitver = "?"
+        print("# readies version: {}".format(gitver))
 
         self.invoke()
 
