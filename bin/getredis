@@ -178,8 +178,11 @@ index f6e5f3e3f..def02b80d 100644
             {SRCDIR}/config
             {SRCDIR}/Configure no-shared --prefix={PREFIX} --openssldir={PREFIX} {PLATFORM}
             MAKEFLAGS="" make {ARGS}
-            make install_sw
         """.format(DIR=ssl_dir, SRCDIR=ssl_srcdir, PREFIX=prefix_dir, PLATFORM=openssl_platform, ARGS=' '.join(build_args)))
+        self.run("""
+            cd {DIR}
+            make install_sw
+        """.format(DIR=ssl_dir), sudo=True)
 
     def download_redis(self):
         from semantic_version import Version
@@ -309,7 +312,7 @@ index f6e5f3e3f..def02b80d 100644
             else:
                 self.run("""
                     make install {ARGS}
-                    """.format(ARGS=' '.join(install_args)))
+                    """.format(ARGS=' '.join(install_args)), sudo=True)
 
                 if self.into:
                     into_bindir = os.path.join(self.into, 'bin')
@@ -352,11 +355,11 @@ index f6e5f3e3f..def02b80d 100644
         self.install("build-essential")
         if self.osnick == 'trusty':
             self.install("software-properties-common")
-            self.run("add-apt-repository -y ppa:ubuntu-toolchain-r/test")
-            self.run("apt-get -qq update")
+            self.run("add-apt-repository -y ppa:ubuntu-toolchain-r/test", sudo=True)
+            self.run("apt-get -qq update", sudo=True)
             self.install("gcc-7 g++-7")
-            self.run("update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 60 --slave /usr/bin/g++ g++ /usr/bin/g++-7")
-            self.run("update-alternatives --config gcc")
+            self.run("update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 60 --slave /usr/bin/g++ g++ /usr/bin/g++-7", sudo=True)
+            self.run("update-alternatives --config gcc", sudo=True)
         self.install("libssl-dev")
 
     def redhat_compat(self):
@@ -400,7 +403,7 @@ class RedisRepoSetup(paella.Setup):
         self.install("epel-release yum-utils")
 
         self.install("http://rpms.remirepo.net/enterprise/remi-release-7.rpm")
-        self.run("yum-config-manager -y --enable remi")
+        self.run("yum-config-manager -y --enable remi", sudo=True)
         self.install("redis")
 
     def fedora(self):
@@ -408,7 +411,7 @@ class RedisRepoSetup(paella.Setup):
         
         self.install("--allowerasing https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm")
         self.install("http://rpms.remirepo.net/enterprise/remi-release-7.rpm")
-        self.run("dnf config-manager -y --set-enabled remi")
+        self.run("dnf config-manager -y --set-enabled remi", sudo=True)
         self.install("redis")
 
     def macos(self):
