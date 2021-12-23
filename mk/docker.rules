@@ -59,18 +59,20 @@ DEFAULT_TAG?=$(DOCKER_ORG)/$(PRODUCT):$(VERSION)
 # that we should push upstream to dockerhub as edge/1.2/etc.
 ifeq ($(PUBLISH_OSNICK),$(OSNICK))
 DOCKER_TAGS += redislabs/$(PRODUCT):$(VERSION)
-endif
 
-ifeq ($(DOCKER_ORG),redisfab)
-DOCKER_TAGS += redisfab/$(PRODUCT):$(VERSION)-$(ARCH)-$(OSNICK)
-endif
-
+# LATEST tag
 ifeq ($(LATEST),1)
 DOCKER_TAGS += redislabs/$(PRODUCT):latest
 endif
 
+# PREVIEW tag
 ifeq ($(PREVIEW),1)
 DOCKER_TAGS += redislabs/$(PRODUCT):preview
+endif
+endif
+
+ifeq ($(DOCKER_ORG),redisfab)
+DOCKER_TAGS += redisfab/$(PRODUCT):$(VERSION)-$(ARCH)-$(OSNICK)
 endif
 
 # defaults for wrapper script

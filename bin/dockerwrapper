@@ -37,20 +37,12 @@ class DockerBuilder(object):
         res = self.nop_runner(build_cmd, nop=nop, verbose=verbose)
         return res
 
-    def tagpush(self, tag="dev/dev:latest", source_tag=None, nop=True, verbose=False, force=False, publish=False):
+    def tagpush(self, tag="dev/dev:latest", source_tag=None, nop=True, verbose=False, publish=False):
         """Pushes the docker images upstream, optionally retagging them first, if necessary."""
 
-        # disallow pushing upstream from non-integration branches - unless explicitly requested
         version = tag.lower().split(':')[-1]
-
-        reg = '^edge$|^preview$|^latest$|^[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}$'
         reg_edge_version = '^[0-9]{1,3}.[0-9]{1,3}$'
-
         regedgefind = re.findall(reg_edge_version, version)
-        regfind = re.findall(reg, version)
-
-        if regfind == [] and regedgefind == [] and force is False:
-            return
 
         # platform (arm only) specific tag suffix being added as an override
         redisarch = os.environ.get("REDIS_ARCH", "").lower()
@@ -189,7 +181,7 @@ if __name__ == "__main__":
             sys.exit(r)
 
     # tag
-    db.tagpush(tag=opts.DOCKER_BASE_TAG, nop=opts.NOP, verbose=opts.VERBOSE, force=opts.DOCKER_FORCE_PUSH, publish=opts.DOCKER_PUSH)
+    db.tagpush(tag=opts.DOCKER_BASE_TAG, nop=opts.NOP, verbose=opts.VERBOSE, publish=opts.DOCKER_PUSH)
     if opts.DOCKER_TAGS is not None:
         for tag in opts.DOCKER_TAGS:
-            db.tagpush(tag=tag, source_tag=opts.DOCKER_BASE_TAG, nop=opts.NOP, verbose=opts.VERBOSE, force=opts.DOCKER_FORCE_PUSH, publish=opts.DOCKER_PUSH)
+            db.tagpush(tag=tag, source_tag=opts.DOCKER_BASE_TAG, nop=opts.NOP, verbose=opts.VERBOSE, publish=opts.DOCKER_PUSH)
