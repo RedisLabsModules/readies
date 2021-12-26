@@ -106,9 +106,9 @@ if __name__ == "__main__":
                       help="Set, to generate the dockerfile, then exit.")
     parser.add_option('-D', '--dockeropts', dest='DOCKER_OPTS', type="str",
                       help="A quoted string, with options to pass to docker build - if building")
-    parser.add_option('-P', '--publish', dest='DOCKER_PUSH', action="store_true",
+    parser.add_option('-P', '--publish', dest='DOCKER_PUSH', action="store_true", default=False,
                       help="Set, if you want to push dockers to dockerhub, after the build")
-    parser.add_option('-p', '--publish-only', dest='DOCKER_PUSH_ONLY', action="store_true",
+    parser.add_option('-p', '--publish-only', dest='DOCKER_PUSH_ONLY', action="store_true", default=False,
                       help="If set, push the built tags. Nothing is built or generated")
     parser.add_option('-t', '--tag', dest='DOCKER_BASE_TAG', type="str", default="dev/dev:latest",
                       help="The named tag to build for the docker image")
@@ -171,13 +171,11 @@ if __name__ == "__main__":
         dock_opts = opts.DOCKER_OPTS.split()
 
     # if we're only pushing, things are already built
-    if opts.DOCKER_PUSH_ONLY is None:
+    if opts.DOCKER_PUSH_ONLY is False:
         r = db.build(opts.DEST, nop=opts.NOP, tag=opts.DOCKER_BASE_TAG,
             docker_options=dock_opts, verbose=opts.VERBOSE)
         if opts.NOP is False and r != 0:
             sys.stderr.write("docker build failed, exiting.\n")
-            sys.exit(r)
-        if opts.DOCKER_PUSH is False:
             sys.exit(r)
 
     # tag
