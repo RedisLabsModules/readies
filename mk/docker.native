@@ -109,7 +109,7 @@ endif
 #----------------------------------------------------------------------------------------------
 
 MACH:=$(shell uname -m)
-DOCKER_NPROC:=$(shell docker run --rm -it debian:bullseye-slim nproc 2> /dev/null)
+DOCKER_NPROC:=$(shell docker run --rm -it debian:bullseye-slim nproc 2> /dev/null | tr -d '\r')
 CPUSET:=0-$(shell /bin/bash -c "echo $$(($(DOCKER_NPROC)-1))")
 # CPUSET:=0-$(shell /bin/bash -c "echo $$((`docker run -t debian:bullseye-slim nproc 2> /dev/null`-1))")
 
