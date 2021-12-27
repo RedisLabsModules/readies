@@ -109,7 +109,9 @@ endif
 #----------------------------------------------------------------------------------------------
 
 MACH:=$(shell uname -m)
-CPUSET:=0-$(shell /bin/bash -c "echo $$((`nproc`-1))")
+DOCKER_NPROC:=$(shell docker run --rm -it debian:bullseye-slim nproc 2> /dev/null)
+CPUSET:=0-$(shell /bin/bash -c "echo $$(($(DOCKER_NPROC)-1))")
+# CPUSET:=0-$(shell /bin/bash -c "echo $$((`docker run -t debian:bullseye-slim nproc 2> /dev/null`-1))")
 
 #----------------------------------------------------------------------------------------------
 
@@ -227,7 +229,7 @@ include $(MK)/rules
 # docker build cpuset arg: --cpuset-cpus $(CPUSET)
 
 build:
-	$(SHOW)time docker build $(BUILD_OPT) -t $(D_NAME) -f $(DOCKERFILE_STEM) \
+	$(SHOW)time docker build $(BUILD_OPT) -t $(D_NAME) -f $(DOCKERFILE_STEM) --cpuset-cpus $(CPUSET) \
 		$(foreach A,$(DOCKER_BUILD_ARGS),--build-arg $(A)) \
 		$(ROOT)
 ifeq ($(ARTIFACTS),1)
