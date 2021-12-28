@@ -68,7 +68,7 @@ class CLangSetup(paella.Setup):
                 bash llvm.sh {CLANG_VER}
                 rm llvm.sh
                 """.format(CLANG_VER=clang_ver))
-            clang_ver = sh("ls /usr/bin/clang-* 2>/dev/null | grep -E 'clang-[[:digit:]].*' | cut -f2 -d- | sort -n | head -1").strip()
+            clang_ver = sh("ls /usr/bin/clang-* 2>/dev/null | grep -E 'clang-[[:digit:]].*' | cut -f2 -d- | sort -nr | head -1").strip()
             if clang_ver == "":
                 raise paella.Error("Error installing CLang via apt.llvm.org")
 
