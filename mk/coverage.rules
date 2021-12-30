@@ -6,6 +6,7 @@ show-cov:
 
 cov-upload:
 #ifneq ($(CODECOV_TOKEN),)
+	@echo Uploading coverage information to codecov.io ...
 	$(SHOW)bash <(curl -s https://raw.githubusercontent.com/codecov/codecov-bash/master/codecov) -f $(COV_INFO)
 #else
 #	@echo "To upload to codecov.io, please define CODECOV_TOKEN for this module."
