@@ -4,7 +4,7 @@ ifeq ($(COV),1)
 show-cov:
 	$(SHOW)lcov -l $(COV_INFO)
 
-cov-upload:
+upload-cov:
 #ifneq ($(CODECOV_TOKEN),)
 	@echo Uploading coverage information to codecov.io ...
 	$(SHOW)bash <(curl -s https://raw.githubusercontent.com/codecov/codecov-bash/master/codecov) -f $(COV_INFO)
