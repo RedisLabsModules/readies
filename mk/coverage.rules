@@ -1,11 +1,16 @@
 
 ifeq ($(COV),1)
 
+show-cov:
+	$(SHOW)lcov -l $(COV_INFO)
+
 cov-upload:
-ifneq ($(CODECOV_TOKEN),)
+#ifneq ($(CODECOV_TOKEN),)
 	$(SHOW)bash <(curl -s https://raw.githubusercontent.com/codecov/codecov-bash/master/codecov) -f $(COV_INFO)
-else
-	@echo "To upload to codecov.io, please define CODECOV_TOKEN for this module."
-endif
+#else
+#	@echo "To upload to codecov.io, please define CODECOV_TOKEN for this module."
+#endif
+
+.PHONY: show-cov upload-cov
 
 endif # COV
