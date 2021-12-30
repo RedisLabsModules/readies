@@ -15,11 +15,12 @@ COV_INFO=$(BINROOT)/cov.info
 export LLVM_PROFILE_FILE=$(COV_DIR)/cov-%p-%m.profraw
 
 COV_EXCLUDE += \
-    '/Applications/*' \
-    '/usr/*'
+	'/Applications/*' \
+	'/usr/*'
 
 COV_EXCLUDE.llvm += \
-    "$$HOME/.cargo/*"
+	"/rustc/*" \
+	"$$HOME/.cargo/*"
 
 define COVERAGE_RESET
 $(SHOW)set -e ;\
