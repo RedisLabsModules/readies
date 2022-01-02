@@ -20,7 +20,7 @@ os=$($HERE/platform --os)
 if [[ $os == linux ]]; then
 	n=`nproc`
 elif [[ $os == macos ]]; then
-	n=`sysctl -n hw.physicalcpu`
+	n=`sysctl -n hw.logicalcpu`
 elif [[ $os == freebsd ]]; then
 	n=`sysctl -n hw.ncpu`
 else
