@@ -1,0 +1,30 @@
+
+SHELL ["/bin/bash", "-l", "-c"]
+
+#----------------------------------------------------------------------------------------------
+FROM redisfab/redis:{{REDIS_VERSION}}-{{ARCH}}-{{OSNICK}} AS redis
+FROM {{OS}} AS builder
+
+ADD ./ /build
+WORKDIR /build
+
+COPY --from=redis /usr/local/ /usr/local/
+
+RUN ./deps/readies/bin/getpy3
+RUN ./deps/readies/bin/getupdates
+RUN ./system-setup.py
+
+RUN make fetch
+RUN make all
+
+#----------------------------------------------------------------------------------------------
+FROM redisfab/redis:{{VERSION}}-{{ARCH}}-{{OSNICK}}
+
+ENV LIBDIR {{MODULES_DIR}}
+WORKDIR /data
+RUN mkdir -p "{{MODULES_DIR}}"
+
+COPY --from=builder /build/redisbloom.so "{{MODULES_DIR}}"
+
+EXPOSE 6379
+CMD ["redis-server", "--loadmodule", "{{MODULES_DIR}}/redisbloom.so"]
