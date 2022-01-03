@@ -8,7 +8,7 @@ title() {
 }
 
 test_make() {
-	cmd="make $* DOCKERFILE=/tmp/Dockerfile.mk AT=/tmp NOP=1"
+	cmd="make $* DOCKERFILE=/tmp/Dockerfile.mk AT=/tmp ARTIFACTS=0 NOP=1"
 	echo "Testing: $cmd"
 	$cmd > /tmp/test.mk.1
 	diff /tmp/test.mk.1 /tmp/expect.1

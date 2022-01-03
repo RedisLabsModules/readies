@@ -1,5 +1,9 @@
 #!/bin/bash
 
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+READIES=$(cd $HERE/.. && pwd)
+. $READIES/shibumi/defs
+
 DOCKER=${DOCKER:-docker}
 
 [[ -z $IMAGE ]] && { >&2 echo "$0: IMAGE is not defined. Aborting."; exit 1; }
@@ -9,6 +13,8 @@ DOCKER=${DOCKER:-docker}
 set -e
 
 echo "Copying $IMAGE :: $INT_ART_DIR -> $ART_DIR ..."
+[[ $NOP == 1 ]] && exit 0
+
 cid=`$DOCKER create $IMAGE`
 mkdir -p $ART_DIR
 $DOCKER cp $cid:$ART_INT_DIR/. $ART_DIR/

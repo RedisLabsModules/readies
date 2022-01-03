@@ -196,7 +196,7 @@ endef
 
 build:
 	@$(DOCKERWRAPPER_CMD)
-ifeq ($(PACK),1)
+ifeq ($(ARTIFACTS),1)
 	IMAGE=$(DEFAULT_TAG) $(MK)/docker-collect-artifacts
 endif
 
