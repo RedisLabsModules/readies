@@ -7,13 +7,14 @@ make build          # Build Docker image
   BRANCH=branch       # Build for tip of given branch (default: current branch)
   VERSION=version     # Build for give version tag
   OFFICIAL=1          # Create Docker image tags for official repo
-  PACK=1              # Copy atrifacts from container into local artifacts directory
+  ARTIFACTS=1         # Copy atrifacts from container into local directory (default: 1)
   
 make publish        # Push Docker image to remote repository (requires authentication)
   OSNICK=nick         # Publish for given OSNICK (default: as host)
   BRANCH=branch       # Publish for tip of given branch (default: current branch)
   VERSION=version     # Publish for give version tag
   OFFICIAL=1          # Publish Docker image tags for official repo
+  TEST=1              # Run tests inside container
 
 Additional options:
   NOP=1             # Just print commands, don't execute
@@ -30,8 +31,9 @@ else
 #----------------------------------------------------------------------------------------------
 
 # defaults
-PACK ?=0
-TEST ?=0
+PACK ?= 1
+ARTIFACTS ?= 1
+TEST ?= 0
 
 DOCKER_ORG ?= redisfab
 DOCKER_ORG.official ?= redislabs
@@ -171,6 +173,7 @@ define _DOCKER_VARS
 	ARCH
 	OS
 	PACK
+	ARTIFACTS
 	TEST
 endef
 DOCKER_VARS=$(filter %,$(subst $(__NL), ,$(_DOCKER_VARS)))
