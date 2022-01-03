@@ -11,7 +11,6 @@ from .error import *
 import paella
 
 GIT_LFS_VER = '2.12.1'
-PIP_VER = '19.3.1'
 
 #----------------------------------------------------------------------------------------------
 
@@ -44,11 +43,13 @@ class OutputMode:
 class Runner:
     def __init__(self, nop=False, output="on_error"):
         self.nop = nop
-        # self.has_sudo = sh('command -v sudo') != ''
-        self.has_sudo = False
+        self.is_root = os.geteuid() == 0
+        self.has_sudo = sh('command -v sudo', fail=False) != ''
         self.output = OutputMode(output)
 
     def run(self, cmd, at=None, output=None, nop=None, _try=False, sudo=False):
+        if (self.is_root or not self.has_sudo) and sudo:
+            sudo = False
         if output is None:
             output = self.output
         else:
@@ -57,7 +58,7 @@ class Runner:
             cmds1 = str.lstrip(textwrap.dedent(cmd))
             cmds = filter(lambda s: str.lstrip(s) != '', cmds1.split("\n"))
             cmd = "; ".join(cmds)
-        if self.has_sudo and sudo:
+        if sudo:
             cmd = "sudo " + cmd
         print(cmd)
         sys.stdout.flush()
@@ -274,13 +275,14 @@ class Brew(PackageManager):
         rc = True
         for pack in packs.split():
             rc = self.run("brew list {PACK} &>/dev/null || brew install {PACK}".format(PACK=pack),
-                     output=output, _try=_try) and rc
+                     output=output, _try=_try, sudo=False) and rc
         return rc
 
     def uninstall(self, packs, group=False, output="on_error", _try=False):
         rc = True
         for pack in packs.split():
-            rc = self.run("brew remove {PACK}".format(PACK=pack), output=output, _try=_try) and rc
+            rc = self.run("brew remove {PACK}".format(PACK=pack), output=output, _try=_try,
+                          sudo=False) and rc
         return rc
 
     def add_repo(self, repourl, repo="", output="on_error", _try=False):
@@ -355,9 +357,10 @@ class Setup(OnPlatform):
             self.python = paella.sh("command -v python" + self.pyver)
 
         try:
-            print("# readies version: {}".format(sh("cd {} && git rev-parse --short HEAD".format(os.path.abspath(os.path.dirname(__file__))))))
-        except RuntimeError:
-            print("failed to rev parse, passing for now since this is debug only.")
+            gitver = sh("cd {} && git rev-parse --short HEAD".format(os.path.abspath(os.path.dirname(__file__))))
+        except:
+            gitver = "?"
+        print("# readies version: {}".format(gitver))
 
         self.invoke()
 
@@ -403,19 +406,19 @@ class Setup(OnPlatform):
 
     def pip(self, cmd, output="on_error", _try=False):
         return self.run(self.python + " -m pip --disable-pip-version-check " + cmd,
-                        output=output, _try=_try, sudo=True)
+                        output=output, _try=_try, sudo=False)
 
     def pip_install(self, cmd, output="on_error", _try=False):
         pip_user = ''
         if self.os == 'macos' and 'VIRTUAL_ENV' not in os.environ:
             pip_user = '--user '
         return self.run(self.python + " -m pip install --disable-pip-version-check " + pip_user + cmd,
-                        output=output, _try=_try, sudo=True)
+                        output=output, _try=_try, sudo=False)
 
     def pip_uninstall(self, cmd, output="on_error", _try=False):
         return self.run("{PYTHON} -m pip uninstall --disable-pip-version-check -y {CMD} || true".
                         format(PYTHON=self.python, CMD=cmd),
-                        output=output, _try=_try, sudo=True)
+                        output=output, _try=_try, sudo=False)
 
     # deprecated
     def setup_pip(self, output="on_error", _try=False):

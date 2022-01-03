@@ -29,15 +29,21 @@ def dockerhub_query(query, token, key):
         t0 = time.monotonic()
         if DEBUG:
             print(f"# {url}")
-        res = requests.get(url, headers={'Authorization': f'JWT {token}'})
+        if token is not None:
+            res = requests.get(url, headers={'Authorization': f'JWT {token}'})
+        else:
+            res = requests.get(url)
         if res.status_code > 204 or not res.ok:
             raise RuntimeError(res)
         jres = json.loads(res.content)
         if count == 0:
-            count = jres['count']
-            if count > 100:
-                if DEBUG:
-                    print(f"# {url} = {count}")
+            try:
+                count = jres['count']
+                if count > 100:
+                    if DEBUG:
+                        print(f"# {url} = {count}")
+            except:
+                pass
         x = reduce(lambda d, x: d.update({x[key]: x}) or d, jres['results'], {})
         results.update(x)
         t = time.monotonic()
@@ -49,10 +55,15 @@ def dockerhub_query(query, token, key):
 #----------------------------------------------------------------------------------------------
 
 def scan():
-    d = f'{{"username": "{USER}", "password": "{PASSWD}"}}'
-    res = requests.post("https://hub.docker.com/v2/users/login/", headers={'Content-Type': 'application/json'}, data=d)
-    jres = json.loads(res.content)
-    token = jres['token']
+    token = None
+    if USER != "":
+        try:
+            d = f'{{"username": "{USER}", "password": "{PASSWD}"}}'
+            res = requests.post("https://hub.docker.com/v2/users/login/", headers={'Content-Type': 'application/json'}, data=d)
+            jres = json.loads(res.content)
+            token = jres['token']
+        except:
+            pass
 
     now = datetime.now(timezone.utc)
     max_dt = timedelta(days=MAX_DAYS)
@@ -82,8 +93,10 @@ def scan():
 #----------------------------------------------------------------------------------------------
 
 parser = argparse.ArgumentParser(description='List Dockerhub images/tags')
-parser.add_argument('-u', '--user', type=str, default=os.getenv('USER', ''), help="Dockerhub username (also env var USER)")
-parser.add_argument('-p', '--password', type=str, default=os.getenv('PASSWD', ''), help="Dockerhub password (also env var PASSWD)")
+# parser.add_argument('-u', '--user', type=str, default=os.getenv('USER', ''), help="Dockerhub username (also env var USER)")
+# parser.add_argument('-p', '--password', type=str, default=os.getenv('PASSWD', ''), help="Dockerhub password (also env var PASSWD)")
+parser.add_argument('-u', '--user', type=str, default='', help="Dockerhub username (also env var USER)")
+parser.add_argument('-p', '--password', type=str, default='', help="Dockerhub password (also env var PASSWD)")
 parser.add_argument('--debug', action="store_true", default=False, help='Print debug info')
 parser.add_argument('-o', '--org', type=str, help="Dockerhub organization to scan")
 parser.add_argument('--pages', type=int, default=10, help='Maximum info pages to scan')

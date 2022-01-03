@@ -16,6 +16,6 @@ define __SEP
 import os; rows, cols = os.popen('stty size', 'r').read().split(); print('-' * (int(cols) - 1) + \"\n\")
 endef
 
-ifneq ($(filter cov-upload,$(MAKECMDGOALS)),)
+ifneq ($(filter coverage show-cov upload-cov,$(MAKECMDGOALS)),)
 COV=1
 endif

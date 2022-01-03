@@ -33,6 +33,13 @@ fi
 [[ $VERBOSE == 1 ]] && { set -x; PS4='$LINENO: '; }
 [[ -z $PIP ]] && PIP=1
 
+SUDO=
+if [[ $(id -u) != 0 ]]; then
+	if is_command sudo; then
+		SUDO=sudo
+	fi
+fi
+
 # 20.3.4 is the latest pip version that supports Python 2
 [[ $PIP == 1 ]] && PIP=20.3.4
 
@@ -44,14 +51,14 @@ fi
 #   optional: `python` command (don't fix)
 
 fix_variants() {
-	if [[ ! -z $VIRTUAL_ENV ]]; then
-		[[ ! -z $PYTHON && "$PYTHON_VER" == "2"  ]] && return
+	if [[ -n $VIRTUAL_ENV ]]; then
+		[[ -n $PYTHON && "$PYTHON_VER" == "2"  ]] && return
 	fi
 
 	if [[ -z $PYTHON2 ]]; then
-		if [[ ! -z $PYTHON27 ]]; then
+		if [[ -n $PYTHON27 ]]; then
 			ln -sf $PYTHON27 /usr/local/bin/python2
-		elif [[ ! -z $PYTHON && "$PYTHON_VER" == "2"  ]]; then
+		elif [[ -n $PYTHON && "$PYTHON_VER" == "2"  ]]; then
 			ln -sf $PYTHON /usr/local/bin/python2
 		fi
 	fi
@@ -71,15 +78,15 @@ check_variants() {
 	MYPY=""
 	PYTHON_VER=""
 
-	if [[ ! -z $PYTHON ]]; then
+	if [[ -n $PYTHON ]]; then
 		PYTHON_VER="$(python --version 2>&1 | awk '{print $2}' | cut -d. -f1)"
 		[[ $PYTHON_VER == 2 ]] && MYPY=$PYTHON
 	fi
 
-	[[ ! -z $PYTHON2 ]]  && MYPY=$PYTHON2
-	[[ ! -z $PYTHON27 ]] && MYPY=$PYTHON27
+	[[ -n $PYTHON2 ]]  && MYPY=$PYTHON2
+	[[ -n $PYTHON27 ]] && MYPY=$PYTHON27
 
-	if [[ ! -z $FIX ]]; then fix_variants; fi
+	if [[ -n $FIX ]]; then fix_variants; fi
 }
 
 install_python() {
@@ -96,22 +103,22 @@ install_python() {
 
 	if is_command apt-get; then
 		export DEBIAN_FRONTEND=noninteractive
-		runn apt-get -qq update
-		runn apt-get -qq install -y python
+		runn $SUDO apt-get -qq update
+		runn $SUDO apt-get -qq install -y python
 	elif is_command dnf; then
-		runn dnf install -y python2
+		runn $SUDO dnf install -y python2
 	elif is_command yum; then
-		runn yum install -y python2
+		runn $SUDO yum install -y python2
 	elif is_command zypper; then
-		runn zypper install -y python2
+		runn $SUDO zypper install -y python2
 	elif is_command apk; then
-		runn apk update
-		runn apk add python2 python2-dev
+		runn $SUDO apk update
+		runn $SUDO apk add python2 python2-dev
 	elif is_command brew; then
 		:
 		# runn brew install python2
 	elif is_command pkg; then
-		runn pkg install -y python2
+		runn $SUDO pkg install -y python2
 	fi
 }
 
@@ -135,28 +142,30 @@ install_pip() {
 
 	if is_command apt-get; then
 		export DEBIAN_FRONTEND=noninteractive
-		runn apt-get -qq update
-		runn apt-get install -y $packs # python-pip
+		runn $SUDO apt-get -qq update
+		runn $SUDO apt-get install -y $packs # python-pip
 	elif is_command dnf; then
-		runn dnf install -y $packs # python2-pip
+		runn $SUDO dnf install -y $packs # python2-pip
 	elif is_command yum; then
-		runn $READIES/bin/getepel
-		runn yum install -y $packs # python2-pip
+		runn $SUDO $READIES/bin/getepel
+		runn $SUDO yum install -y $packs # python2-pip
 	elif is_command zypper; then
 		packs+=" python-xml" # python2-pip
-		runn zypper install -y $packs
+		runn $SUDO zypper install -y $packs
 	elif is_command apk; then
-		runn apk update
-		runn apk add $packs # python2-pip
+		runn $SUDO apk update
+		runn $SUDO apk add $packs # python2-pip
 	elif is_command brew; then
 		runn brew install wget
 		# runn $MYPY -m ensurepip
 	elif is_command pkg; then
-		runn pkg install -y $packs # python2-pip
+		runn $SUDO pkg install -y $packs # python2-pip
+	elif is_command pacman; then
+		runn $SUDO pacman -Syy --noconfirm $packs
 	fi
 
 	## get-pip.py no longer supports Python 2
-	runn wget -q -O /tmp/get-pip.py https://bootstrap.pypa.io/pip/2.7/get-pip.py
+	runn wget -O /tmp/get-pip.py https://bootstrap.pypa.io/pip/2.7/get-pip.py
 	runn $MYPY /tmp/get-pip.py $pipspec
 	rm -f /tmp/get-pip.py
 
@@ -165,7 +174,7 @@ install_pip() {
 
 check_variants
 
-[[ ! -z $MYPY && $PIP == 0 && $FORCE != 1 ]] && exit 0
+# [[ -n $MYPY && $PIP == 0 && $FORCE != 1 ]] && exit 0
 if [[ $CHECK == 1 ]]; then
 	if $MYPY -m pip --version 2>&1 > /dev/null; then exit 0; fi
 	exit 1
@@ -193,7 +202,7 @@ fi
 [[ $PIP != 0 ]] && install_pip
 
 REQ=$READIES/paella/requirements.txt
-if [[ ! -z $VENV && $VENV != 0 ]]; then
+if [[ -n $VENV && $VENV != 0 ]]; then
 	runn $MYPY -m pip install ${PIP_USER} virtualenv
 	[[ $VENV == 1 ]] && VENV=$HOME/venv
 	runn $MYPY -m virtualenv $VENV --system-site-packages

@@ -37,6 +37,13 @@ fi
 [[ $VERBOSE == 1 ]] && { set -x; PS4='$LINENO: '; }
 [[ -z $PIP ]] && PIP=1
 
+SUDO=
+if [[ $(id -u) != 0 ]]; then
+	if is_command sudo; then
+		SUDO=sudo
+	fi
+fi
+
 # pip 20.x is broken is the sense that it will not respect virtualenv's system-site-packages
 # thus requiring packages to be built from source in order to be installed.
 # Until this is fixed we stick to pip 19.3.1.
@@ -49,12 +56,12 @@ fi
 #   optional: `python` command (don't fix)
 
 fix_variants() {
-	if [[ ! -z $VIRTUAL_ENV ]]; then
-		[[ ! -z $PYTHON && "$PYTHON_VER" == "3"  ]] && return
+	if [[ -n $VIRTUAL_ENV ]]; then
+		[[ -n $PYTHON && "$PYTHON_VER" == "3"  ]] && return
 	fi
 
 	if [[ -z $PYTHON3 ]]; then
-		if [[ ! -z $PYTHON && "$PYTHON_VER" == "3"  ]]; then
+		if [[ -n $PYTHON && "$PYTHON_VER" == "3"  ]]; then
 			ln -sf $PYTHON /usr/local/bin/python3
 		fi
 	fi
@@ -73,28 +80,28 @@ check_variants() {
 	MYPY=""
 	PYTHON_VER=""
 
-	if [[ ! -z $PYTHON ]]; then
+	if [[ -n $PYTHON ]]; then
 		PYTHON_VER="$(python --version 2>&1 | awk '{print $2}' | cut -d. -f1)"
 		[[ $PYTHON_VER == 3 ]] && MYPY=$PYTHON
 	fi
 
-	[[ ! -z $PYTHON3 ]] && MYPY=$PYTHON3
+	[[ -n $PYTHON3 ]] && MYPY=$PYTHON3
 
 	export MINOR="$($MYPY --version 2>&1 | awk '{print $2}' | cut -d. -f2)"
 	# Python3 <= 3.4 breaks contemporary pip
 	if (( MINOR <= 5 )); then export FORCE=1; fi
 
-	if [[ ! -z $FIX ]]; then fix_variants; fi
+	if [[ -n $FIX ]]; then fix_variants; fi
 }
 
 install_python_on_old_ubuntu() {
 	export DEBIAN_FRONTEND=noninteractive
-	runn apt-get install -y software-properties-common
-	runn add-apt-repository -y ppa:deadsnakes/ppa
-	runn apt-get -qq update
-	runn apt-get install -y python3.6
+	runn $SUDO apt-get install -y software-properties-common
+	runn $SUDO add-apt-repository -y ppa:deadsnakes/ppa
+	runn $SUDO apt-get -qq update
+	runn $SUDO apt-get install -y python3.6
 	runn ln -sf `command -v python3.6` /usr/local/bin/python3
-	runn apt-get install -y python3.6-venv
+	runn $SUDO apt-get install -y python3.6-venv
 }
 
 install_python() {
@@ -111,13 +118,13 @@ install_python() {
 
 	if is_command apt-get; then
 		export DEBIAN_FRONTEND=noninteractive
-		runn apt-get -qq update
+		runn $SUDO apt-get -qq update
 		if [[ $osver == ubuntu14.04 || $osver == ubuntu16.04 ]]; then
 			install_python_on_old_ubuntu
 		elif [[ $osver == debian9 ]]; then
-			$READIES/bin/getget
+			$SUDO $READIES/bin/getget
 
-			runn apt-get install -y \
+			runn $SUDO apt-get install -y \
 				software-properties-common apt-transport-https \
 				unzip lsb-release gnupg2 \
 				libbz2-dev libssl-dev libsqlite3-dev libreadline-dev libgdbm-dev tk-dev libncursesw5-dev liblzma-dev uuid-dev libexpat1-dev
@@ -125,28 +132,28 @@ install_python() {
             amhere=`pwd`
             cd /tmp/PKGS
             runn wget https://github.com/chriskuehl/python3.6-debian-stretch/releases/download/v3.6.3-1-deb9u1/{python3.6_3.6.3-1.deb9u1_amd64,python3.6-minimal_3.6.3-1.deb9u1_amd64,python3.6-dev_3.6.3-1.deb9u1_amd64,libpython3.6_3.6.3-1.deb9u1_amd64,libpython3.6-minimal_3.6.3-1.deb9u1_amd64,libpython3.6-stdlib_3.6.3-1.deb9u1_amd64,libpython3.6-dev_3.6.3-1.deb9u1_amd64}.deb
-            runn dpkg -i *.deb
+            runn $SUDO dpkg -i *.deb
 			[[ -f /usr/bin/python3.6 ]] && ln -sf /usr/bin/python3.6 /usr/local/bin/python3
             cd $amhere
 		else
-			runn apt-get install -y python3
+			runn $SUDO apt-get install -y python3
 		fi
 	elif is_command dnf; then
-		runn dnf install -y python3
+		runn $SUDO dnf install -y python3
 	elif is_command yum; then
-		runn yum install -y epel-release
-		runn yum install -y python36
+		runn $SUDO yum install -y epel-release
+		runn $SUDO yum install -y python36
 	elif is_command zypper; then
-		runn zypper install -y python3
+		runn $SUDO zypper install -y python3
 	elif is_command apk; then
-		runn apk update
-		runn apk add python3 python3-dev
+		runn $SUDO apk update
+		runn $SUDO apk add python3 python3-dev
 	elif is_command brew; then
 		runn brew install python3
 	elif is_command pkg; then
-		runn pkg install -y python3
+		runn $SUDO pkg install -y python3
 	elif is_command pacman; then
-		runn pacman -Syy --noconfirm python
+		runn $SUDO pacman -Syy --noconfirm python
 	fi
 }
 
@@ -162,30 +169,30 @@ install_pip() {
 
 	if is_command apt-get; then
 		export DEBIAN_FRONTEND=noninteractive
-		runn apt-get -qq update
-		runn apt-get install -y $packs
-		if [[ ! -z $(apt-cache search --names-only '^python3-distutils$')  ]]; then
-			runn apt-get install -y python3-distutils
+		runn $SUDO apt-get -qq update
+		runn $SUDO apt-get install -y $packs
+		if [[ -n $(apt-cache search --names-only '^python3-distutils$')  ]]; then
+			runn $SUDO apt-get install -y python3-distutils
 		fi
 	elif is_command dnf; then
-		runn dnf install -y $packs
+		runn $SUDO dnf install -y $packs
 	elif is_command yum; then
-		runn yum install -y $packs
+		runn $SUDO yum install -y $packs
 	elif is_command zypper; then
 		packs+=" python-xml"
-		runn zypper install -y $packs
+		runn $SUDO zypper install -y $packs
 	elif is_command apk; then
-		runn apk update
-		runn apk add $packs
+		runn $SUDO apk update
+		runn $SUDO apk add $packs
 	elif is_command brew; then
 		runn brew install wget
 	elif is_command pkg; then
-		runn pkg install -y $packs
+		runn $SUDO pkg install -y $packs
 	elif is_command pacman; then
-		runn pacman -Syy --noconfirm $packs
+		runn $SUDO pacman -Syy --noconfirm $packs
 	fi
 
-	runn wget -q -O /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py
+	runn wget -O /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py
 	runn $MYPY /tmp/get-pip.py $pipspec
 	rm -f /tmp/get-pip.py
 	if [[ $PIP == 19.3.1 ]]; then
@@ -195,7 +202,7 @@ install_pip() {
 
 check_variants
 
-[[ ! -z $MYPY && $PIP == 0 && $FORCE != 1 ]] && exit 0
+# [[ -n $MYPY && $PIP == 0 && $FORCE != 1 ]] && exit 0
 if [[ $CHECK == 1 ]]; then
 	if $MYPY -m pip --version 2>&1 > /dev/null; then exit 0; fi
 	exit 1
@@ -224,7 +231,7 @@ if [[ $(uname) == Darwin ]]; then
 fi
 
 REQ=$READIES/paella/requirements.txt
-if [[ ! -z $VENV && $VENV != 0 ]]; then
+if [[ -n $VENV && $VENV != 0 ]]; then
 	runn $MYPY -m pip install ${PIP_USER} virtualenv
 	[[ $VENV == 1 ]] && VENV=$HOME/venv
 	runn $MYPY -m virtualenv $VENV --system-site-packages

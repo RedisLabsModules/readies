@@ -1,8 +1,8 @@
 
-OS:=$(shell $(READIES)/bin/platform --os)
-OSNICK:=$(shell $(READIES)/bin/platform --osnick)
+export OS:=$(shell $(READIES)/bin/platform --os)
+export OSNICK:=$(shell $(READIES)/bin/platform --osnick)
 # ifeq ($(OS),linux)
 # OS:=$(shell $(READIES)/bin/platform --dist)
 # endif
 
-ARCH=$(shell $(READIES)/bin/platform --arch)
+export ARCH:=$(shell $(READIES)/bin/platform --arch)

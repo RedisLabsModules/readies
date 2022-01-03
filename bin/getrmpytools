@@ -27,17 +27,17 @@ class RMPyToolsSetup(paella.Setup):
         self.modern = args.modern
 
     def build_and_install_psutil(self, deps):
-        self.run("%s/bin/getgcc" % READIES)
+        self.run("%s/bin/getgcc" % READIES, sudo=True)
         self.install(deps)
-        self.pip_install("psutil")
+        self.pip_install("psutil==5.8.0")
 
     def common_first(self):
-        self.psutil_installed = self.pip_install("psutil", _try=True, output=False) == 0
+        self.psutil_installed = self.pip_install("psutil==5.8.0", _try=True, output=False) == 0
 
     def debian_compat(self):
         if not self.psutil_installed:
             self.run("apt-get remove -y python%s-psutil" % ("" if self.pyver == "2" else self.pyver),
-                     _try=True, output=False)
+                     _try=True, output=False, sudo=True)
             self.build_and_install_psutil("python%s-dev" % self.pyver)
 
     def redhat_compat(self):
@@ -50,7 +50,7 @@ class RMPyToolsSetup(paella.Setup):
 
     def fedora(self):
         if not self.psutil_installed:
-            self.run("dnf remove -y python%s-psutil" % self.pyver, _try=True, output=False) == 0
+            self.run("dnf remove -y python%s-psutil" % self.pyver, _try=True, output=False, sudo=True)
             self.build_and_install_psutil("python%s-devel" % self.pyver)
 
     def macos(self):
