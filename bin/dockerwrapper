@@ -58,7 +58,7 @@ class DockerBuilder(object):
 
         self.set_template_variables(opts, args)
 
-    def nop_runner(self, cmdline):
+    def runner(self, cmdline):
         """A run wrapper, so that we can optionally run commands, but do so identically."""
         if self.nop:
             sys.stdout.write(' '.join(cmdline) + "\n")
@@ -66,13 +66,15 @@ class DockerBuilder(object):
 
         if self.verbose:
             sys.stdout.write(' '.join(cmdline) + "\n")
-        proc = subprocess.Popen(cmdline, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        while True:
-            output = proc.stdout.readline()
-            if proc.poll() is not None:
-                break
-            if output:
-                sys.stdout.write(output.strip().decode('utf-8') + "\n")
+            proc = subprocess.call(cmdline)
+        else:
+            proc = subprocess.Popen(cmdline, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            while True:
+                output = proc.stdout.readline()
+                if proc.poll() is not None:
+                    break
+                if output:
+                    sys.stdout.write(output.strip().decode('utf-8') + "\n")
         rc = proc.poll()
         return rc
 
@@ -94,18 +96,19 @@ class DockerBuilder(object):
     def set_template_variables(self, opts, args):
         self.variables = {}
 
-        if not opts.VARS is None:
-            for d in opts.VARS:
-                self.add_var_exp(d)
+        if opts.USE_ALL_ENV_VARS:
+            self.variables.update(copy.copy(os.environ))
+
+        if opts.ENV_VAR_PREFIX:
+            self.variables.update({k: v for k, v in os.environ.items() if not k.find(opts.ENV_VAR_PREFIX)})
 
         if not opts.ENV_VARS is None:
             for n in opts.ENV_VARS:
                 self.add_env_var(n)
 
-        if opts.USE_ALL_ENV_VARS:
-            self.variables = copy.copy(os.environ)
-        if opts.ENV_VAR_PREFIX:
-            self.variables = {k: v for k, v in os.environ.items() if not k.find(opts.ENV_VAR_PREFIX)}
+        if not opts.VARS is None:
+            for d in opts.VARS:
+                self.add_var_exp(d)
 
         # now, you can pass X=Y on the command line, like a regular argument
         for a in args:
@@ -134,18 +137,18 @@ class DockerBuilder(object):
     def build(self):
         """Builds and tags the docker image"""
         build_cmd = ["docker", "build", "-t", self.docker_tag, "-f", self.dockerfile] + self.docker_options + [self.build_dir]
-        res = self.nop_runner(build_cmd)
+        res = self.runner(build_cmd)
         if self.temp_dockerfile and not self.keep:
             os.unlink(self.dockerfile)
         if res == 0 or self.nop:
             for tag in self.docker_extra_tags:
-                self.nop_runner(["docker", "tag", self.docker_tag, tag])
+                self.runner(["docker", "tag", self.docker_tag, tag])
         return res
 
     def push(self):
         """Pushes the docker images upstream."""
         for tag in [self.docker_tag] + self.docker_extra_tags:
-            self.nop_runner(["docker", "push", tag])
+            self.runner(["docker", "push", tag])
 
 
 #----------------------------------------------------------------------------------------------
