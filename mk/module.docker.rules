@@ -207,5 +207,5 @@ publish:
 
 endif # HELP
 
-include $(READIES)/mk/help.defs
-include $(READIES)/mk/help.rules
+include $(MK)/help.defs
+include $(MK)/help.rules
