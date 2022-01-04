@@ -37,9 +37,9 @@ def set_env_vars_as_opts(parser, opts):
 
 class DockerBuilder(object):
     def __init__(self, opts, args):
-        self.verbose = opts.VERBOSE
-        self.nop = opts.NOP
-        self.keep = opts.KEEP
+        self.VERBOSE = opts.VERBOSE
+        self.NOP = opts.NOP
+        self.KEEP = opts.KEEP
 
         self.template = opts.TEMPLATE
         self.include_dirs = [] if opts.INCDIRS is None else opts.INCDIRS
@@ -60,11 +60,11 @@ class DockerBuilder(object):
 
     def runner(self, cmdline):
         """A run wrapper, so that we can optionally run commands, but do so identically."""
-        if self.nop:
+        if self.NOP:
             sys.stdout.write(' '.join(cmdline) + "\n")
             return None
 
-        if self.verbose:
+        if self.VERBOSE:
             sys.stdout.write(' '.join(cmdline) + "\n")
             return subprocess.call(cmdline)
 
@@ -138,9 +138,9 @@ class DockerBuilder(object):
         """Builds and tags the docker image"""
         build_cmd = ["docker", "build", "-t", self.docker_tag, "-f", self.dockerfile] + self.docker_options + [self.build_dir]
         res = self.runner(build_cmd)
-        if self.temp_dockerfile and not self.keep:
+        if self.temp_dockerfile and not self.KEEP:
             os.unlink(self.dockerfile)
-        if res == 0 or self.nop:
+        if res == 0 or self.NOP:
             for tag in self.docker_extra_tags:
                 self.runner(["docker", "tag", self.docker_tag, tag])
         return res

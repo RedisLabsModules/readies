@@ -93,7 +93,7 @@ test_make "OSNICK=bionic BRANCH=1.2 OFFICIAL=1"
 
 title "preview branch"
 
-# 2.2 is preview branch (i.e. `PREVIEW_BRANCH=2.2`)
+# 2.4 is preview branch (i.e. `PREVIEW_BRANCH=2.2`)
 cat <<-END > /tmp/expect.1
 	docker build -t redisfab/redisfoo:2.4-x64-bionic -f /tmp/Dockerfile.mk /tmp
 	docker tag redisfab/redisfoo:2.4-x64-bionic redislabs/redisfoo:preview
