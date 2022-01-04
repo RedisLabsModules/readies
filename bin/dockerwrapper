@@ -153,8 +153,28 @@ class DockerBuilder(object):
 
 #----------------------------------------------------------------------------------------------
 
+HELPTEXT = r'''
+                                ##         .         
+                          ## ## ##        ==         
+                       ## ## ## ## ##    ===         
+                   /"""""""""""""""""\___/ ===       
+              ~~~ {~~ ~~~~ ~~~ ~~~~ ~~~ ~ /  ===- ~~~
+                   \______ o           __/           
+______           _   \    \         __/              
+|  _  \         | |   \____\_______/                 
+| | | |___   ___| | _____ _ __ __ _ _ __ ___   __ _  
+| | | / _ \ / __| |/ / _ \ '__/ _` | '_ ` _ \ / _` | 
+| |/ / (_) | (__|   <  __/ | | (_| | | | | | | (_| | 
+|___/ \___/ \___|_|\_\___|_|  \__,_|_| |_| |_|\__,_| 
+'''
+
+class OptionParser1(OptionParser):
+    def print_help(self):
+        print(HELPTEXT)
+        super().print_help()
+
 if __name__ == "__main__":
-    parser = OptionParser()
+    parser = OptionParser1()
     parser.add_option('-n', '--nop', dest='NOP', action='store_true', help="Just print commands, don't execute")
     parser.add_option('-v', '--verbose', dest='VERBOSE', action='store_true', help="Echo commands being run")
 
@@ -197,9 +217,12 @@ if __name__ == "__main__":
                       help="If set, push the built tags. Nothing is built or generated")
     # parser.add_option('--force-push', dest='DOCKER_FORCE_PUBLISH', action='store_true', default=False,
     #                   help='Push the branch upstream - even if it does not match the version strategy')
-    opts, args = parser.parse_args()
 
-    BB()
+    opts, args = parser.parse_args()
+    if len(sys.argv) == 1:
+        parser.print_help()
+        exit(0)
+
     set_env_vars_as_opts(parser, opts)
 
     if not os.path.isfile(opts.TEMPLATE):
