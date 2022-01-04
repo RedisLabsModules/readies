@@ -66,15 +66,15 @@ class DockerBuilder(object):
 
         if self.verbose:
             sys.stdout.write(' '.join(cmdline) + "\n")
-            proc = subprocess.call(cmdline)
-        else:
-            proc = subprocess.Popen(cmdline, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            while True:
-                output = proc.stdout.readline()
-                if proc.poll() is not None:
-                    break
-                if output:
-                    sys.stdout.write(output.strip().decode('utf-8') + "\n")
+            return subprocess.call(cmdline)
+
+        proc = subprocess.Popen(cmdline, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        while True:
+            output = proc.stdout.readline()
+            if proc.poll() is not None:
+                break
+            if output:
+                sys.stdout.write(output.strip().decode('utf-8') + "\n")
         rc = proc.poll()
         return rc
 
