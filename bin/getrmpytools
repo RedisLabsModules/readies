@@ -29,32 +29,35 @@ class RMPyToolsSetup(paella.Setup):
     def build_and_install_psutil(self, deps):
         self.run("%s/bin/getgcc" % READIES, sudo=True)
         self.install(deps)
-        self.pip_install("psutil==5.8.0")
+        self.pip_install("psutil")
 
     def common_first(self):
-        self.psutil_installed = self.pip_install("psutil==5.8.0", _try=True, output=False) == 0
+        self.psutil_installed = self.pip_install("psutil", _try=True, output=False) == 0
 
     def debian_compat(self):
         if not self.psutil_installed:
-            self.run("apt-get remove -y python%s-psutil" % ("" if self.pyver == "2" else self.pyver),
+            self.run("apt-get remove -y python%s-psutil" % ("" if self.pyver[0] == 2 else self.pyver[0]),
                      _try=True, output=False, sudo=True)
-            self.build_and_install_psutil("python%s-dev" % self.pyver)
+            if self.osnick == 'xenial' and self.pyver[0] == 3:
+                self.build_and_install_psutil("python3.6-dev")
+            else:
+                self.build_and_install_psutil("python%s-dev" % self.pyver[0])
 
     def redhat_compat(self):
         if not self.psutil_installed:
-            self.build_and_install_psutil("python%s-devel" % self.pyver)
+            self.build_and_install_psutil("python%s-devel" % self.pyver[0])
 
     def archlinux(self):
         if not self.psutil_installed:
-            self.build_and_install_psutil("python%s-dev" % self.pyver)
+            self.build_and_install_psutil("python%s-dev" % self.pyver[0])
 
     def fedora(self):
         if not self.psutil_installed:
-            self.run("dnf remove -y python%s-psutil" % self.pyver, _try=True, output=False, sudo=True)
-            self.build_and_install_psutil("python%s-devel" % self.pyver)
+            self.run("dnf remove -y python%s-psutil" % self.pyver[0], _try=True, output=False, sudo=True)
+            self.build_and_install_psutil("python%s-devel" % self.pyver[0])
 
     def macos(self):
-        pass
+        self.pip_install("psutil==5.8.0")
 
     def alpine(self):
         self.install("linux-headers")

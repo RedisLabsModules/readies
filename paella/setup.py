@@ -1,6 +1,7 @@
 
 import os
 import sys
+import packaging.version
 import re
 import shutil
 import subprocess
@@ -345,16 +346,14 @@ class Setup(OnPlatform):
         self.package_manager = PackageManager.detect(self.platform, self.runner)
 
         self.python = sys.executable
-        if re.match(r'Python 2', paella.sh(self.python + " --version 2>&1")):
-            self.pyver = "2"
-        else:
-            self.pyver = "3"
+        ver = paella.sh(self.python + " --version 2>&1").split(' ')[1]
+        self.pyver = packaging.version.Version(ver).release
         os.environ["PYTHONWARNINGS"] = 'ignore:DEPRECATION::pip._internal.cli.base_command'
 
     def setup(self):
         if self.repo_refresh:
             self.package_manager.update()
-            self.python = paella.sh("command -v python" + self.pyver)
+            self.python = paella.sh("command -v python{VER}".format(VER=self.pyver[0]))
 
         try:
             gitver = sh("cd {} && git rev-parse --short HEAD".format(os.path.abspath(os.path.dirname(__file__))))

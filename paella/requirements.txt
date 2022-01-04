@@ -1,6 +1,7 @@
 addict
 click
 jinja2
+packaging
 requests
 semantic_version
 six
