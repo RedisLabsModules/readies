@@ -145,7 +145,7 @@ class DockerBuilder(object):
                 self.runner(["docker", "tag", self.docker_tag, tag])
         return res
 
-    def push(self):
+    def publish(self):
         """Pushes the docker images upstream."""
         for tag in [self.docker_tag] + self.docker_extra_tags:
             self.runner(["docker", "push", tag])
@@ -191,12 +191,12 @@ if __name__ == "__main__":
                       help="An appendable list of docker tags to push")
 
     # docker push options
-    parser.add_option('-P', '--publish', dest='DOCKER_PUSH', action="store_true", default=False,
+    parser.add_option('-P', '--publish', dest='DOCKER_PUBLISH', action="store_true", default=False,
                       help="Set, if you want to push dockers to dockerhub, after the build")
-    parser.add_option('-p', '--publish-only', dest='DOCKER_PUSH_ONLY', action="store_true", default=False,
+    parser.add_option('-p', '--publish-only', dest='DOCKER_PUBLISH_ONLY', action="store_true", default=False,
                       help="If set, push the built tags. Nothing is built or generated")
-    parser.add_option('--force-push', dest='DOCKER_FORCE_PUSH', action='store_true', default=False,
-                      help='Push the branch upstream - even if it does not match the version strategy')
+    # parser.add_option('--force-push', dest='DOCKER_FORCE_PUBLISH', action='store_true', default=False,
+    #                   help='Push the branch upstream - even if it does not match the version strategy')
     opts, args = parser.parse_args()
 
     BB()
@@ -218,12 +218,12 @@ if __name__ == "__main__":
         sys.exit(0)
 
     # if we're only pushing, things are already built
-    if opts.DOCKER_PUSH_ONLY is False:
+    if opts.DOCKER_PUBLISH_ONLY is False:
         r = db.build()
         if opts.NOP is False and r != 0:
             sys.stderr.write("docker build failed, exiting.\n")
             sys.exit(r)
 
     # publish
-    if opts.DOCKER_PUSH:
+    if opts.DOCKER_PUBLISH or opts.DOCKER_PUBLISH_ONLY:
         db.publish()

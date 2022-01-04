@@ -201,7 +201,7 @@ ifeq ($(ARTIFACTS),1)
 endif
 
 publish:
-	@$(DOCKERWRAPPER_CMD) --publish
+	@$(DOCKERWRAPPER_CMD) --publish-only
 
 #----------------------------------------------------------------------------------------------
 
