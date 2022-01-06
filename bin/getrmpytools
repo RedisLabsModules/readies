@@ -20,7 +20,7 @@ os.environ["PYTHONWARNINGS"] = 'ignore:DEPRECATION::pip._internal.cli.base_comma
 class RMPyToolsSetup(paella.Setup):
     def __init__(self, args):
         paella.Setup.__init__(self, nop=args.nop)
-        self.pyver = sys.version_info.major
+        self.pyver = sys.version_info
         if args.no_reinstall:
             self.reinstall = False
         else:
