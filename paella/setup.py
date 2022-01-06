@@ -384,8 +384,8 @@ class Setup(OnPlatform):
         if as_file is None:
             as_file = os.path.basename(file)
         if not os.path.isdir(d):
-            paella.mkdir_p(d)
-        shutil.copyfile(file, os.path.join(d, as_file))
+            self.run('mkdir -p "{}"'.format(d), sudo=True)
+        self.run('cp "{FROM}" "{TO}"'.format(FROM=file, TO=os.path.join(d, as_file)), sudo=True)
 
     #------------------------------------------------------------------------------------------
 

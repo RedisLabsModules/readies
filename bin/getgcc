@@ -20,14 +20,14 @@ class SystemSetup(paella.Setup):
     def ubuntu(self):
         self.install("build-essential")
         if self.modern:
-            paella.fwrite('/etc/apt/apt.conf.d/80-retries', 'APT::Acquire::Retries "7";')
+            self.run("echo 'APT::Acquire::Retries \"7\";' > /etc/apt/apt.conf.d/80-retries", sudo=True)
             if self.os_version[0] < 20:
                 self.add_repo("ppa:ubuntu-toolchain-r/test")
             if self.install("gcc-10 g++-10", output=False, _try=True) == 0:
-                self.run("update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 60 --slave /usr/bin/g++ g++ /usr/bin/g++-10")
+                self.run("update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 60 --slave /usr/bin/g++ g++ /usr/bin/g++-10", sudo=True)
             else:
                 self.install("gcc-9 g++-9")
-                self.run("update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-9")
+                self.run("update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-9", sudo=True)
 
     def debian(self):
         if not self.modern or self.os_version[0] > 10:
@@ -40,11 +40,11 @@ class SystemSetup(paella.Setup):
 #                sys.exit(1)
 #            self.install("gcc") # workaround for testing repo installations
 #            paella.fwrite('/etc/apt/apt.conf.d/80-retries', 'APT::Acquire::Retries "3";')
-#            self.run("echo 'deb http://deb.debian.org/debian testing main' > /etc/apt/sources.list.d/testing.list")
-#            self.run("apt-get update -qq")
-#            self.run("apt-get install -y -t testing build-essential")
-#            self.run("update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 10")
-#            self.run("update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 10")
+#            self.run("echo 'deb http://deb.debian.org/debian testing main' > /etc/apt/sources.list.d/testing.list", sudo=True)
+#            self.run("apt-get update -qq, sudo=True")
+#            self.run("apt-get install -y -t testing build-essential", sudo=True)
+#            self.run("update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 10", sudo=True)
+#            self.run("update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 10", sudo=True)
 
     def redhat_compat(self):
         self.group_install("'Development Tools'")
@@ -52,13 +52,13 @@ class SystemSetup(paella.Setup):
             if self.dist == 'centos' and self.os_version[0] == 8:
                 self.install("gcc-toolset-10-gcc gcc-toolset-10-gcc-c++")
                 self.install("gcc-toolset-10-libatomic-devel")
-                self.run("rm -f {}/gcc-toolset-*.sh".format(self.profile_d))
+                self.run("rm -f {}/gcc-toolset-*.sh".format(self.profile_d), sudo=True)
                 self.cp_to_profile_d("/opt/rh/gcc-toolset-10/enable", "gcc-toolset-10.sh")
             else:
                 self.install("centos-release-scl")
                 self.install("devtoolset-10")
                 self.install("devtoolset-10-libatomic-devel")
-                self.run("rm -f {}/scl-devtoolset-*.sh".format(self.profile_d))
+                self.run("rm -f {}/scl-devtoolset-*.sh".format(self.profile_d), sudo=True)
                 self.cp_to_profile_d("/opt/rh/devtoolset-10/enable", "scl-devtoolset-10.sh")
 
     def fedora(self):
@@ -70,15 +70,15 @@ class SystemSetup(paella.Setup):
     def macos(self):
         if self.modern:
             self.install("gcc@10")
-            self.run("%s/bin/symlink -f --target /usr/local/bin/gcc-10 --link /usr/local/bin/gcc" % ROOT)
-            self.run("%s/bin/symlink -f --target /usr/local/bin/g++-10 --link /usr/local/bin/g++" % ROOT)
-            self.run("%s/bin/symlink -f --target /usr/local/bin/gcc-10 --link /usr/local/bin/cc" % ROOT)
-            self.run("%s/bin/symlink -f --target /usr/local/bin/g++-10 --link /usr/local/bin/c++" % ROOT)
+            self.run("%s/bin/symlink -f --target /usr/local/bin/gcc-10 --link /usr/local/bin/gcc" % ROOT, sudo=True)
+            self.run("%s/bin/symlink -f --target /usr/local/bin/g++-10 --link /usr/local/bin/g++" % ROOT, sudo=True)
+            self.run("%s/bin/symlink -f --target /usr/local/bin/gcc-10 --link /usr/local/bin/cc" % ROOT, sudo=True)
+            self.run("%s/bin/symlink -f --target /usr/local/bin/g++-10 --link /usr/local/bin/c++" % ROOT, sudo=True)
         else:
             if sh('xcode-select -p') == '':
                 fatal("Xcode tools are not installed. Please run xcode-select --install.")
                 # install brew (which will install Xcode command line tools):
-                # self.run("/bin/bash -c '$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)'")
+                # self.run("/bin/bash -c '$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)'", sudo=True)
 
 #----------------------------------------------------------------------------------------------
 
