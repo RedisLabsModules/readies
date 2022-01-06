@@ -57,7 +57,7 @@ export ART_INT_DIR
 
 ifeq ($(VERSION),)
 ifeq ($(BRANCH),)
-BRANCH:=$(shell git rev-parse --abbrev-ref HEAD 2> /dev/null)
+BRANCH:=$(shell git rev-parse --abbrev-ref HEAD | sed -e 's/\//_/g' 2> /dev/null)
 $(info # Running with BRANCH=$(BRANCH))
 endif
 ifeq ($(BRANCH),)
