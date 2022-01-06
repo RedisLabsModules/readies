@@ -37,7 +37,7 @@ class RMPyToolsSetup(paella.Setup):
 
     def debian_compat(self):
         if not self.psutil_installed:
-            self.run("apt-get remove -y python%s-psutil" % ("" if pyver == 2 else pyver),
+            self.run("apt-get remove -y python%s-psutil" % ("" if self.pyver[0] == 2 else self.pyver[0]),
                      _try=True, output=False, sudo=True)
             if self.osnick == 'xenial' and self.pyver[0:2] == (3, 6):
                 self.build_and_install_psutil("python3.6-dev")
