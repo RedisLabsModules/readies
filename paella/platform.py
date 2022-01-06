@@ -39,6 +39,8 @@ UBUNTU_VERSIONS = {
     'focal':   '20.04',
     'groovy':  '20.10',
     'hirsute': '21.04',
+    'impish':  '21.10',
+    'jammy':   '22.04',
 }
 
 MACOS_VERSIONS = {
