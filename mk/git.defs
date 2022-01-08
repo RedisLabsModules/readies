@@ -1,9 +1,28 @@
 
-ifeq ($(shell { [ -d .git ] || git rev-parse --git-dir >/dev/null 2>&1; echo -n $$?; }),0)
-GIT_SHA:=$(shell git rev-parse HEAD)
-GIT_SHA_SHORT:=$(shell git rev-parse --short HEAD)
-GIT_COMMIT:=$(shell git describe --always --abbrev=7 --dirty="+" 2>/dev/null || git rev-parse --short HEAD)
+ifeq ($(shell { [ -d .git ] || git rev-parse --git-dir &> /dev/null; echo -n $$?; }),0)
+
+# Always contains commit
+GIT_SHA:=$(shell git rev-parse HEAD 2>/dev/null)
+GIT_SHA_SHORT:=$(shell git rev-parse --short HEAD 2>/dev/null)
+GIT_COMMIT:=$(GIT_SHA_SHORT)
+# $(info GIT_COMMIT=$(GIT_COMMIT))
+
+# Contains tag name when HEAD is on a tag. Otherwise: {tag}-{distance}-g{commit}[+] or simply {commit}
+GIT_TAG:=$(shell git describe --always --tags --abbrev=7 --dirty="+" 2>/dev/null || git rev-parse --short HEAD)
+# $(info GIT_TAG=$(GIT_TAG))
+
+# Contains branch name when HEAD is on a branch. Otherwise: HEAD
 GIT_BRANCH:=$(shell git rev-parse --abbrev-ref HEAD)
-GIT_BRANCH_ID:=$(git rev-parse --abbrev-ref HEAD | sed -e 's/\//_/g')
+ifeq ($(GIT_BRANCH),HEAD)
+override GIT_BRANCH:=$(GIT_SHA_SHORT)
+endif
+# $(info GIT_BRANCH=$(GIT_BRANCH))
+
+# Contains proper identifier even for forked PR branches
+GIT_BRANCH_ID:=$(shell echo "$(GIT_BRANCH)" | sed -e 's/\//_/g')
+# $(info GIT_BRANCH_ID=$(GIT_BRANCH_ID))
+
 GIT_VERSPEC:=$(GIT_BRANCH)-$(GIT_SHA_SHORT)
+# $(info GIT_VERSPEC=$(GIT_VERSPEC))
+
 endif
