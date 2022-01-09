@@ -171,9 +171,9 @@ install_pip() {
 		export DEBIAN_FRONTEND=noninteractive
 		runn $SUDO apt-get -qq update
 		runn $SUDO apt-get install -y $packs
-		if [[ -n $(apt-cache search --names-only '^python3-distutils$')  ]]; then
-			runn $SUDO apt-get install -y python3-distutils
-		fi
+		# if [[ -n $(apt-cache search --names-only '^python3-distutils$')  ]]; then
+		# 	runn $SUDO apt-get install -y python3-distutils
+		# fi
 	elif is_command dnf; then
 		runn $SUDO dnf install -y $packs
 	elif is_command yum; then
@@ -193,11 +193,20 @@ install_pip() {
 	fi
 
 	runn wget -O /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py
-	runn $MYPY /tmp/get-pip.py $pipspec
+	# currently can fail on debian-compat platforms due to distutils:
+	# `python3 -m pip --version` will fail to find pip
+	runn "$MYPY /tmp/get-pip.py $pipspec || true"
 	rm -f /tmp/get-pip.py
 	if [[ $PIP == 19.3.1 ]]; then
 		runn $MYPY -m pip install setuptools==49.3.0
 	fi
+	# workaround for pip installation problem
+	if ! $MYPY -m pip --version &> /dev/null; then
+		if is_command apt-get; then
+			runn $SUDO apt-get install -y python3-pip
+			runn $MYPY -m pip install --upgrade pip
+		fi
+	fi	
 }
 
 check_variants
