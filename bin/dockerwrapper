@@ -51,8 +51,8 @@ class DockerBuilder(object):
             self.dockerfile = tempfile.mkstemp(prefix='Dockerfile.')[1]
         else:
             self.dockerfile = opts.DOCKERFILE
-        self.docker_tag = opts.DOCKER_TAG.lower()
-        self.docker_extra_tags = [s.lower() for s in opts.DOCKER_EXTRA_TAGS]
+        self.docker_tag = opts.DOCKER_TAG #.lower()
+        self.docker_extra_tags = opts.DOCKER_EXTRA_TAGS #[s.lower() for s in opts.DOCKER_EXTRA_TAGS]
         self.build_dir = opts.BUILD_DIR
         self.docker_options = [] if opts.DOCKER_OPTS is None else opts.DOCKER_OPTS.split()
 
