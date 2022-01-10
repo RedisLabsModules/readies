@@ -30,7 +30,7 @@ class RMPyToolsSetup(paella.Setup):
         self.ramp_branch = args.ramp_branch
 
     def build_and_install_psutil(self, deps):
-        self.run("%s/bin/getgcc" % READIES, sudo=True)
+        self.run("%s/bin/getgcc" % READIES)
         self.install(deps)
         self.pip_install("psutil")
 

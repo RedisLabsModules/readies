@@ -32,16 +32,16 @@ class CMakeSetupFromRepo(paella.Setup):
         self.install("cmake")
 
     def redhat_compat(self):
-        self.run("%s/bin/getepel" % READIES)
+        self.run("%s/bin/getepel" % READIES, sudo=True)
         if self.dist == 'centos' and self.os_version[0] == 8:
             # cmake: symbol lookup error: cmake: undefined symbol: archive_write_add_filter_zstd
-            self.run("dnf update -y libarchive")
+            self.run("dnf update -y libarchive", sudo=True)
             self.install("cmake")
         else:
             self.install("cmake3")
-            self.run("ln -sf `command -v cmake` /usr/local/bin/cmake")
-            self.run("ln -sf `command -v ctest` /usr/local/bin/ctest")
-            self.run("ln -sf `command -v cpack` /usr/local/bin/cpack")
+            self.run("ln -sf `command -v cmake` /usr/local/bin/cmake", sudo=True)
+            self.run("ln -sf `command -v ctest` /usr/local/bin/ctest", sudo=True)
+            self.run("ln -sf `command -v cpack` /usr/local/bin/cpack", sudo=True)
 
     def alpine(self):
         self.install("cmake")
@@ -54,9 +54,9 @@ class CMakeSetupFromRepo(paella.Setup):
         base_dir = paella.sh("brew --prefix")
         ver = paella.sh("brew ls --versions cmake | head -1 | awk '{print $2}'").strip()
         dir = "{base_dir}/Cellar/cmake/{ver}//bin".format(base_dir=base_dir, ver=ver)
-        self.run("ln -sf {dir}/cmake /usr/local/bin/cmake".format(dir=dir))
-        self.run("ln -sf {dir}/ctest /usr/local/bin/ctest".format(dir=dir))
-        self.run("ln -sf {dir}/cpack /usr/local/bin/cpack".format(dir=dir))
+        self.run("ln -sf {dir}/cmake /usr/local/bin/cmake".format(dir=dir), sudo=True)
+        self.run("ln -sf {dir}/ctest /usr/local/bin/ctest".format(dir=dir), sudo=True)
+        self.run("ln -sf {dir}/cpack /usr/local/bin/cpack".format(dir=dir), sudo=True)
 
     def common_last(self):
         verstr = paella.sh("cmake --version | head -1 | awk '{print $3}'").strip()
@@ -109,7 +109,7 @@ class CMakeSetup(paella.Setup):
                 rm -f /tmp/cmake.sh
                 """.format(url=url, prefix=self.prefix))
             if args.usr and os.path.exists("/usr/local/bin/cmake"):
-                self.run("cd /usr/local/bin; rm -f cmake cmake-gui ctest cpack ccmake")
+                self.run("cd /usr/local/bin; rm -f cmake cmake-gui ctest cpack ccmake", sudo=True)
 
     def common_last(self):
         if self.build:
@@ -123,6 +123,11 @@ class CMakeSetup(paella.Setup):
                 ./bootstrap --parallel=`nproc`
                 make -j`nproc`
                 make install
+                cd /tmp
+                rm -rf $cmake_dir
+                """.format(CMAKE_VER=CMAKE_VER))
+            self.run("make -C /tmp install", sudo=True)
+            self.run(r"""
                 cd /tmp
                 rm -rf $cmake_dir
                 """.format(CMAKE_VER=CMAKE_VER))

@@ -21,12 +21,12 @@ class DockerSetup(paella.Setup):
     def debian_compat(self):
         if self.no_install:
             return
-        self.run("bash <(curl -fsSL https://raw.githubusercontent.com/docker/docker-install/master/install.sh)")
+        self.run("bash <(curl -fsSL https://raw.githubusercontent.com/docker/docker-install/master/install.sh)", sudo=True)
 
         # self.install("apt-transport-https ca-certificates curl gnupg-agent software-properties-common lsb-release")
-        # self.run("curl -fsSL https://download.docker.com/linux/{}/gpg | apt-key add -".format(self.dist))
+        # self.run("curl -fsSL https://download.docker.com/linux/{}/gpg | apt-key add -".format(self.dist), sudo=True)
         # self.add_repo("'deb [arch=amd64] https://download.docker.com/linux/debian {} stable'".format(sh("lsb_release -cs")))
-        # self.run("apt-get -qq update")
+        # self.run("apt-get -qq update", sudo=True)
         # self.install("docker-ce docker-ce-cli containerd.io")
 
     def redhat_compat(self):
@@ -36,21 +36,21 @@ class DockerSetup(paella.Setup):
         self.install("http://mirror.centos.org/centos/7/extras/x86_64/Packages/container-selinux-2.107-3.el7.noarch.rpm")
         self.add_repo("https://download.docker.com/linux/centos/docker-ce.repo")
         self.install("docker-ce docker-ce-cli containerd.io")
-        self.run("systemctl start docker")
-        self.run("systemctl enable docker")
+        self.run("systemctl start docker", sudo=True)
+        self.run("systemctl enable docker", sudo=True)
 
     def fedora(self):
         if self.no_install:
             return
-        self.run("bash <(curl -fsSL https://raw.githubusercontent.com/docker/docker-install/master/install.sh)")
+        self.run("bash <(curl -fsSL https://raw.githubusercontent.com/docker/docker-install/master/install.sh)", sudo=True)
 
         # self.add_repo("https://download.docker.com/linux/fedora/docker-ce.repo")
         # self.install("docker-ce docker-ce-cli containerd.io")
 
     def common_last(self):
         # enable running docker as non-root user
-        self.run("groupadd docker || true")
-        self.run("usermod -aG docker $USER || true")
+        self.run("groupadd docker || true", sudo=True)
+        self.run("usermod -aG docker $USER || true", sudo=True)
 
         if self.no_exp:
             return
@@ -60,12 +60,12 @@ class DockerSetup(paella.Setup):
         self.run("if [ ! -f ~/.docker/config.json ]; then echo '{}' >  ~/.docker/config.json; fi")
         self.run("jq '.experimental = \"enabled\"' ~/.docker/config.json | sponge ~/.docker/config.json")
         # server
-        self.run("if [ ! -f /etc/docker/daemon.json ]; then mkdir -p /etc/docker; echo '{}' >  /etc/docker/daemon.json; fi")
-        self.run("jq '.experimental = true' /etc/docker/daemon.json | sponge /etc/docker/daemon.json")
+        self.run("if [ ! -f /etc/docker/daemon.json ]; then mkdir -p /etc/docker; echo '{}' >  /etc/docker/daemon.json; fi", sudo=True)
+        self.run("jq '.experimental = true' /etc/docker/daemon.json | sponge /etc/docker/daemon.json", sudo=True)
         if self.has_command("systemctl"):
-            self.run("systemctl restart docker")
+            self.run("systemctl restart docker", sudo=True)
         else:
-            self.run("service docker restart")
+            self.run("service docker restart", sudo=True)
 
 #----------------------------------------------------------------------------------------------
 

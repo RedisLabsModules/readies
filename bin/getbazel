@@ -62,8 +62,9 @@ rm -rf $basedir $bazverfile
 exec bazelisk "$@"
 
 """
-        paella.fwrite('/usr/local/bin/bazel', cmd[1:])
-        self.run("chmod +x /usr/local/bin/bazel")
+        paella.fwrite('/tmp/bazel', cmd[1:])
+		self.run("cp /tmp/bazel /usr/local/bin/bazel", sudo=True)
+        self.run("chmod +x /usr/local/bin/bazel", sudo=True)
 
     #------------------------------------------------------------------------------------------
 
@@ -73,7 +74,7 @@ exec bazelisk "$@"
             self.install("sudo")
         self.install("git unzip zip rsync")
 
-        self.run("%s/bin/getgolang" % READIES)
+        self.run("%s/bin/getgolang" % READIES, sudo=True)
 
     def debian_compat(self):
         self.install("software-properties-common pkg-config")
@@ -83,11 +84,11 @@ exec bazelisk "$@"
             self.install("openjdk-8-jdk openjdk-8-jre-headless")
 
         if self.osnick == 'trusty':
-            self.run("add-apt-repository -y ppa:ubuntu-toolchain-r/test")
-            self.run("apt-get -qq update")
+            self.run("add-apt-repository -y ppa:ubuntu-toolchain-r/test", sudo=True)
+            self.run("apt-get -qq update", sudo=True)
             self.install("gcc-7 g++-7")
-            self.run("update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 60 --slave /usr/bin/g++ g++ /usr/bin/g++-7")
-            self.run("update-alternatives --config gcc")
+            self.run("update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 60 --slave /usr/bin/g++ g++ /usr/bin/g++-7", sudo=True)
+            self.run("update-alternatives --config gcc", sudo=True)
 
     def redhat_compat(self):
         self.group_install("'Development Tools'")

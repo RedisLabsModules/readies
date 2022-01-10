@@ -27,12 +27,12 @@ class CLangFormatSetup(paella.Setup):
         self.install_downloaders()
 
         if self.arch == 'x64':
-            self.run("wget -q -O /usr/local/bin/clang-format-13 %s" % CLANG_FORMAT_URL)
-            self.run("chmod +x /usr/local/bin/clang-format-13")
-            self.run("ln -sf /usr/local/bin/clang-format-13 /usr/local/bin/clang-format")
+            self.run("wget -q -O /usr/local/bin/clang-format-13 %s" % CLANG_FORMAT_URL, sudo=True)
+            self.run("chmod +x /usr/local/bin/clang-format-13", sudo=True)
+            self.run("ln -sf /usr/local/bin/clang-format-13 /usr/local/bin/clang-format", sudo=True)
         elif self.platform.is_arm():
             self.install("clang-format-13")
-            self.run("ln -sf `command -v clang-format-13` /usr/local/bin/clang-format")
+            self.run("ln -sf `command -v clang-format-13` /usr/local/bin/clang-format", sudo=True)
         else:
             raise paella.Error("Error installing CLang Format on not-x64 platform")
 
@@ -67,7 +67,7 @@ class CLangSetup(paella.Setup):
                 wget -q https://apt.llvm.org/llvm.sh
                 bash llvm.sh {CLANG_VER}
                 rm llvm.sh
-                """.format(CLANG_VER=clang_ver))
+                """.format(CLANG_VER=clang_ver), sudo=True)
             clang_ver = sh("ls /usr/bin/clang-* 2>/dev/null | grep -E 'clang-[[:digit:]].*' | cut -f2 -d- | sort -nr | head -1").strip()
             if clang_ver == "":
                 raise paella.Error("Error installing CLang via apt.llvm.org")
@@ -76,9 +76,9 @@ class CLangSetup(paella.Setup):
         else:
             clang_ver = "8"
             self.run("%s/bin/getgcc --modern" % READIES)
-            self.run('add-apt-repository  "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-8 main"')
-            self.run("wget -q -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -")
-            self.run("apt-get update -qq")
+            self.run('add-apt-repository  "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-8 main"', sudo=True)
+            self.run("wget -q -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -", sudo=True)
+            self.run("apt-get update -qq", sudo=True)
             self.install("llvm-8 llvm-8-dev llvm-8-doc llvm-8-examples llvm-8-runtime "
                          "libllvm-8-ocaml-dev libllvm8 "
                          "clang-8 clang-tools-8 clang-8-doc "
@@ -90,12 +90,12 @@ class CLangSetup(paella.Setup):
         self.run(r"""
             cd /usr/bin
             for f in `ls llvm*-{CLANG_VER} clang*-{CLANG_VER} 2>/dev/null`; do ln -sf $f ${{f/%-{CLANG_VER}/}}; done
-            """.format(CLANG_VER=clang_ver))
+            """.format(CLANG_VER=clang_ver), sudo=True)
 
     def redhat_compat(self):
         if not self.modern:
             return
-        self.run("%s/bin/getepel" % READIES)
+        self.run("%s/bin/getepel" % READIES, sudo=True)
         if self.dist == 'centos' and self.os_version[0] == 8:
             self.install("llvm-toolset")
         else:
