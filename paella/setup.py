@@ -58,6 +58,15 @@ class Runner:
             cmds1 = str.lstrip(textwrap.dedent(cmd))
             cmds = filter(lambda s: str.lstrip(s) != '', cmds1.split("\n"))
             cmd = "; ".join(cmds)
+            cmd_for_log = cmd
+            cmd_in_file = sudo
+            if cmd_in_file:
+                cmd_file = paella.tempfilepath()
+                paella.fwrite(cmd_file, cmd)
+                cmd = "bash {}".format(cmd_file)
+        else:
+            cmd_for_log = cmd
+            cmd_in_file = False
         if sudo:
             cmd = "sudo " + cmd
         print(cmd)
@@ -79,7 +88,7 @@ class Runner:
             if output != True:
                 if output.on_error():
                     os.system("cat {}".format(temppath))
-                eprint("command failed: " + cmd)
+                eprint("command failed: " + cmd_for_log)
                 sys.stderr.flush()
         if output != True:
             os.remove(temppath)
