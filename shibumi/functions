@@ -102,11 +102,16 @@ fi
 #----------------------------------------------------------------------------------------------
 
 eprint() {
-	local pref="$(basename "${BASH_SOURCE[0]}")"
+	if [[ -n $PROGNAME ]]; then
+		local pref="$(basename "$PROGNAME")"
+	else
+		local pref="Error"
+	fi
+	
 	if [[ -t 2 ]]; then
 		>&2 echo "${RED}${pref}: $@${NOCOLOR}"
 	else
-		>&2 echo "${pref}: $@"
+		>&2 echo "error: $@"
 	fi
 }
 
