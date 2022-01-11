@@ -419,19 +419,17 @@ class Setup(OnPlatform):
 
     def pip_install(self, cmd, output="on_error", _try=False):
         pip_user = ''
-        if self.os == 'macos' and 'VIRTUAL_ENV' not in os.environ:
+        # if self.os == 'macos' and 'VIRTUAL_ENV' not in os.environ:
+        if 'VIRTUAL_ENV' not in os.environ:
             pip_user = '--user '
-        return self.run(self.python + " -m pip install --disable-pip-version-check " + pip_user + cmd,
+        return self.run("{PYTHON} -m pip install --disable-pip-version-check {PIP_USER} {CMD}".
+                        format(PYTHON=self.python, PIP_USER=pip_user, CMD=cmd),
                         output=output, _try=_try, sudo=False)
 
     def pip_uninstall(self, cmd, output="on_error", _try=False):
         return self.run("{PYTHON} -m pip uninstall --disable-pip-version-check -y {CMD} || true".
                         format(PYTHON=self.python, CMD=cmd),
                         output=output, _try=_try, sudo=False)
-
-    # deprecated
-    def setup_pip(self, output="on_error", _try=False):
-        return
 
     #------------------------------------------------------------------------------------------
 
