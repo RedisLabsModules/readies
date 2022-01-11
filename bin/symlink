@@ -43,7 +43,7 @@ if args.dir:
     link_name = os.path.basename(target)
     link = os.path.join(link_dir, link_name)
 
-if os.path.exists(link):
+if os.path.exists(link) or os.path.islink(link):
     if not os.path.islink(link):
         eprint("File exists: %s\nNot a link - not removing" % link)
         exit(1)
