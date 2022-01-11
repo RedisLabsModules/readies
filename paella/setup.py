@@ -54,13 +54,24 @@ class Runner:
             output = self.output
         else:
             output = OutputMode(output)
+        cmd_file = None
         if cmd.find('\n') > -1:
             cmds1 = str.lstrip(textwrap.dedent(cmd))
             cmds = filter(lambda s: str.lstrip(s) != '', cmds1.split("\n"))
             cmd = "; ".join(cmds)
+            cmd_for_log = cmd
+            if sudo:
+                cmd_file = paella.tempfilepath()
+                paella.fwrite(cmd_file, cmd)
+                cmd = "bash {}".format(cmd_file)
+                cmd_for_log = "sudo { %s }" % cmd_for_log
+        else:
+            cmd_for_log = cmd
         if sudo:
             cmd = "sudo " + cmd
         print(cmd)
+        if cmd_file is not None:
+            print("# {}".format(cmd_for_log))
         sys.stdout.flush()
         if nop is None:
             nop = self.nop
@@ -79,10 +90,12 @@ class Runner:
             if output != True:
                 if output.on_error():
                     os.system("cat {}".format(temppath))
-                eprint("command failed: " + cmd)
+                eprint("command failed: " + cmd_for_log)
                 sys.stderr.flush()
         if output != True:
             os.remove(temppath)
+        if cmd_file is not None:
+            os.remove(cmd_file)
         if rc > 0 and not _try:
             sys.exit(1)
         return rc
