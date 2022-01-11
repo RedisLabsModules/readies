@@ -5,11 +5,18 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 READIES=$(cd $HERE/.. && pwd)
 . $READIES/shibumi/defs
 
+SUDO=
+if [[ $(id -u) != 0 ]]; then
+	if is_command sudo; then
+		SUDO=sudo
+	fi
+fi
+
 if [[ -f $HOME/.cargo/env ]]; then
 	source $HOME/.cargo/env
 fi
 if ! is_command rustup; then
-	runn $READIES/bin/getget
+	runn $SUDO $READIES/bin/getget
 	runn "curl --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/rust-lang/rustup/master/rustup-init.sh -sSf | sh -s -- -y"
 	source $HOME/.cargo/env
 elif ! runn rustup update stable; then
@@ -26,9 +33,9 @@ rustup show
 
 profile_d=`get_profile_d`
 if [[ -f $HOME/.cargo/env ]]; then
-    cp $HOME/.cargo/env $profile_d/rust.sh
+    $SUDO cp $HOME/.cargo/env $profile_d/rust.sh
 elif [[ -f /usr/local/cargo/env ]]; then
-	cp /usr/local/cargo/env $profile_d/rust.sh
+	$SUDO cp /usr/local/cargo/env $profile_d/rust.sh
 else
 	eprint "rust: environment file not found"
 	exit 1
