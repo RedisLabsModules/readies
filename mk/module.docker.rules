@@ -176,8 +176,7 @@ define _DOCKER_VARS
 	ARTIFACTS
 	TEST
 endef
-DOCKER_VARS=$(filter %,$(subst $(__NL), ,$(_DOCKER_VARS)))
-
+DOCKER_VARS += $(filter %,$(subst $(__NL), ,$(_DOCKER_VARS)))
 
 define DOCKERWRAPPER_CMD
 NOP=$(NOP) \
