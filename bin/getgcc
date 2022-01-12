@@ -69,11 +69,11 @@ class SystemSetup(paella.Setup):
 
     def macos(self):
         if self.modern:
-            self.install("gcc@10")
-            self.run("%s/bin/symlink -f --target /usr/local/bin/gcc-10 --link /usr/local/bin/gcc" % ROOT, sudo=True)
-            self.run("%s/bin/symlink -f --target /usr/local/bin/g++-10 --link /usr/local/bin/g++" % ROOT, sudo=True)
-            self.run("%s/bin/symlink -f --target /usr/local/bin/gcc-10 --link /usr/local/bin/cc" % ROOT, sudo=True)
-            self.run("%s/bin/symlink -f --target /usr/local/bin/g++-10 --link /usr/local/bin/c++" % ROOT, sudo=True)
+            self.install("gcc@11")
+            self.run("%s/bin/symlink -f --target /usr/local/bin/gcc-11 --link /usr/local/bin/gcc" % ROOT, sudo=True)
+            self.run("%s/bin/symlink -f --target /usr/local/bin/g++-11 --link /usr/local/bin/g++" % ROOT, sudo=True)
+            self.run("%s/bin/symlink -f --target /usr/local/bin/gcc-11 --link /usr/local/bin/cc" % ROOT, sudo=True)
+            self.run("%s/bin/symlink -f --target /usr/local/bin/g++-11 --link /usr/local/bin/c++" % ROOT, sudo=True)
         else:
             if sh('xcode-select -p') == '':
                 fatal("Xcode tools are not installed. Please run xcode-select --install.")
