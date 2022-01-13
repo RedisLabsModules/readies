@@ -4,7 +4,6 @@
 # If so, verify that python3 command is present.
 # If Python 3 is not found on the system, try to install it and repeat the abose checks.
 
-# set -e
 PROGNAME="${BASH_SOURCE[0]}"
 HERE="$(cd "$(dirname "$PROGNAME")" &>/dev/null && pwd)"
 ROOT=$(cd $HERE/../.. && pwd)
@@ -222,8 +221,11 @@ fi
 
 if is_command brew; then
 	# the following is for avoiding python to be upgraded by brew silently,
-	# hence disrupting pip installaitons
-	runn brew upgrade python
+	# hence disrupting pip installaitons.
+	# this however gets trickier, as brew mighit not recognize a currently installed
+	# python version, and upgrade will fail. thus, we need to force installation, and
+	# still be graceful about failures.
+	runn "brew upgrade python || brew install python3 || true"
 fi
 
 MYPY=""
