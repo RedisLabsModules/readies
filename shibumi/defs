@@ -16,10 +16,10 @@ fi
 
 error_trap() {
 	# >&2 echo "$0: There are errors."
-	__PROGNAME=${__PROGNAME:-$0}
+	local __PROGNAME=${__PROGNAME:-$0}
 	>&2 echo
 	>&2 echo "In $__PROGNAME:"
-	>&2 awk 'NR>L-4 && NR<L+4 { printf "%-5d%4s%s\n",NR,(NR==L?">>> ":""),$__PROGNAME }' L=$1 $__PROGNAME 
+	>&2 awk 'NR>L-4 && NR<L+4 { printf "%-5d%4s%s\n",NR,(NR==L?">>> ":""),$0 }' L=$1 $__PROGNAME
 	>&2 echo
 	exit 1
 }
