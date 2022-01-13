@@ -4,6 +4,7 @@ import errno
 import os
 import os.path
 import shutil
+import sys
 import tempfile
 try:
     from urllib2 import urlopen
@@ -30,6 +31,11 @@ def flines(fname, mode = 'r'):
 #----------------------------------------------------------------------------------------------
 
 def tempfilepath(prefix=None, suffix=None):
+    if sys.version_info < (3, 0):
+        if prefix is None:
+            prefix = ''
+        if suffix is None:
+            suffix = ''
     fd, path = tempfile.mkstemp(prefix=prefix, suffix=suffix)
     os.close(fd)
     return path
