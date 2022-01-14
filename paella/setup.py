@@ -455,7 +455,7 @@ class Setup(OnPlatform):
             (cd $d; tar xf git-lfs.tar.gz)
             $d/install.sh
             rm -rf $d
-            """.format(LFS_VER=GIT_LFS_VER, ARCH=lfs_arch))
+            """.format(LFS_VER=GIT_LFS_VER, ARCH=lfs_arch), sudo=True)
 
     def install_gnu_utils(self, _try=False):
         packs = ""
@@ -494,7 +494,7 @@ class Setup(OnPlatform):
             dir=$(mktemp -d /tmp/tar.XXXXXX)
             (cd $dir; wget --no-verbose -O tar.tgz http://redismodules.s3.amazonaws.com/readies/gnu/gnu-tar-1.32-x64-centos7.tgz; tar -xzf tar.tgz -C /; )
             rm -rf $dir
-            """)
+            """, sudo=True)
 
     # deprecated
     def install_ubuntu_modern_gcc(self, _try=False):
