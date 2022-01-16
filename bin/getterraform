@@ -11,9 +11,9 @@ READIES=$(cd $HERE/.. && pwd)
 OS=`uname -s`
 if [[ $OS == Linux ]]; then
 	OS=linux
-elif [[ $ARCH == Darwin ]]; then
+elif [[ $OS == Darwin ]]; then
 	OS=darwin
-elif [[ $ARCH == FreBSD ]]; then
+elif [[ $OS == FreBSD ]]; then
 	OS=freebsd
 else
 	echo "$OS: unsupported"
