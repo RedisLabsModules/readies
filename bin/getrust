@@ -44,7 +44,7 @@ f1=$(mktemp /tmp/rust.sh.XXXXXX)
 cat <<-END > $f1
 	export RUST_GOOD_NIGHTLY="$GOOD_NIGHTLY"
 	END
-$SUDO bash -c "cat $f1 >> /etc/profile.d/rust.sh"
+$SUDO bash -c "cat $f1 >> $profile_d/rust.sh"
 rm $f1
 
 exit 0
