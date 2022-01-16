@@ -37,3 +37,10 @@ setup_profile_d
 
 # OP=""
 # [[ $NOP == 1 ]] && OP=echo
+
+SUDO=
+if [[ $(id -u) != 0 ]]; then
+	if is_command sudo; then
+		SUDO=sudo
+	fi
+fi
