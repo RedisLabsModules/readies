@@ -35,9 +35,16 @@ if [[ -f $HOME/.cargo/env ]]; then
     $SUDO cp $HOME/.cargo/env $profile_d/rust.sh
 elif [[ -f /usr/local/cargo/env ]]; then
 	$SUDO cp /usr/local/cargo/env $profile_d/rust.sh
-	$SUDO bash -c "export RUST_GOOD_NIGHTLY=$GOOD_NIGHTLY  /etc/profile.d/rust.sh"
 else
 	eprint "rust: environment file not found"
 	exit 1
 fi
+
+f1=$(mktemp /tmp/rust.sh.XXXXXX)
+cat <<-END > $f1
+	export RUST_GOOD_NIGHTLY="$GOOD_NIGHTLY"
+	END
+$SUDO bash -c "cat $f1 >> /etc/profile.d/rust.sh"
+rm $f1
+
 exit 0
