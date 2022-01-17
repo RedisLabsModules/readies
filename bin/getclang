@@ -65,7 +65,7 @@ class CLangSetup(paella.Setup):
             self.run(r"""
                 cd /tmp
                 wget -q https://apt.llvm.org/llvm.sh
-                bash llvm.sh {CLANG_VER}
+                bash llvm.sh {CLANG_VER} all
                 rm llvm.sh
                 """.format(CLANG_VER=clang_ver), sudo=True)
             clang_ver = sh("ls /usr/bin/clang-* 2>/dev/null | grep -E 'clang-[[:digit:]].*' | cut -f2 -d- | sort -nr | head -1").strip()

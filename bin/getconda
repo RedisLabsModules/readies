@@ -12,7 +12,7 @@ if [[ $1 == --help || $1 == help || $HELP == 1 ]]; then
 		[ARGVARS...] getconda [--help|help]
 
 		Argument variables:
-		CONDA_DIR=dir   Install into `dir`
+		CONDA_DIR=dir   Install into `dir` (default: /opt/miniforge)
 		POST=1          Perform only post-installation (idempotent)
 		NOP=1           Do not execute, just print commands
 		V|VERBOSE=1     Print commands
