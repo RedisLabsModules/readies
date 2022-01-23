@@ -19,7 +19,7 @@ class SystemSetup(paella.Setup):
 
     def ubuntu(self):
         if self.modern:
-            self.run("GCC=1 %s/bin/getconda" % READIES)
+            self.run("GCC=1 %s/bin/getconda" % ROOT)
         else:
             self.install("build-essential")
 
@@ -35,7 +35,7 @@ class SystemSetup(paella.Setup):
 
     def debian(self):
         if self.modern:
-            self.run("GCC=1 %s/bin/getconda" % READIES)
+            self.run("GCC=1 %s/bin/getconda" % ROOT)
         else:
             self.install("build-essential")
 
@@ -59,7 +59,7 @@ class SystemSetup(paella.Setup):
     def redhat_compat(self):
         self.group_install("'Development Tools'")
         if self.modern:
-            self.run("GCC=1 %s/bin/getconda" % READIES)
+            self.run("GCC=1 %s/bin/getconda" % ROOT)
 #        if self.modern:
 #            if self.dist == 'centos' and self.os_version[0] == 8:
 #                self.install("gcc-toolset-10-gcc gcc-toolset-10-gcc-c++")
