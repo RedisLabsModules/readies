@@ -54,6 +54,10 @@ class CLangSetup(paella.Setup):
         if not self.modern:
             return
 
+        if self.osnick == "xenial":
+            self.install_from_github()
+            return
+
         self.install("software-properties-common apt-transport-https")
         self.install("unzip lsb-release gnupg2")
 
@@ -69,9 +73,16 @@ class CLangSetup(paella.Setup):
             self.run(r"""
                 cd /tmp
                 wget -q https://apt.llvm.org/llvm.sh
+                """.format(ARGS=install_args), sudo=True)
+            if self.osnick == "xenial":
+                self.run(r'''
+                    sed -i -e 's/libunwind$LLVM_VERSION/libunwind/g' llvm.sh 
+                    ''')
+            self.run(r"""
                 bash llvm.sh {ARGS}
                 rm llvm.sh
                 """.format(ARGS=install_args), sudo=True)
+            # sed -e 's/\libunwind$LLVM_VERSION/libunwind/g' llvm.sh 
             clang_ver = sh("ls /usr/bin/clang-* 2>/dev/null | grep -E 'clang-[[:digit:]].*' | cut -f2 -d- | sort -nr | head -1").strip()
             if clang_ver == "" and not self.nop:
                 raise paella.Error("Error installing CLang via apt.llvm.org")
@@ -115,6 +126,33 @@ class CLangSetup(paella.Setup):
 
     def common_last(self):
         pass
+    
+    def install_from_github(self):
+        file = None
+        LLVM_VER="13.0.0"
+        if self.arch == "x64":
+            arch = "x86_64"
+            if self.osnick == "xenial":
+                file = "clang+llvm-{ver}-x86_64-linux-gnu-ubuntu-16.04.tar.xz".format(ver=LLVM_VER)
+            elif self.osnick == "focal":
+                file = "clang+llvm-{ver}-x86_64-linux-gnu-ubuntu-20.04.tar.xz".format(ver=LLVM_VER)
+            elif self.os == "macos":
+                file = "clang+llvm-{ver}-x86_64-apple-darwin.tar.xz".format(ver=LLVM_VER)
+        elif self.arch == "arm64v8":
+            arch = "aarch64"
+            file = "clang+llvm-{ver}-armv7a-linux-gnueabihf.tar.xz".format(ver=LLVM_VER)
+        elif self.arch == "arm64v7":
+            file = "clang+llvm-{ver}-armv7a-linux-gnueabihf.tar.xz".format(ver=LLVM_VER)
+        if file is not None:
+            tar = paella.wget("https://github.com/llvm/llvm-project/releases/download/llvmorg-{ver}/{file}".
+                              format(ver=LLVM_VER, file=file), tempdir=True)
+            self.run(r'''
+                tar -C /opt -xJf {tar}
+                ln -s /opt/`basename {tar} .tar.xz` /opt/llvm-13
+                '''.format(tar=tar))
+        self.cat_to_profile_d(r'''
+            export PATH=/opt/llvm-13/bin:${PATH}
+            ''', "llvm-13.sh")
 
 #----------------------------------------------------------------------------------------------
 

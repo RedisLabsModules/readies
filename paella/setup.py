@@ -397,6 +397,17 @@ class Setup(OnPlatform):
             self.run('mkdir -p "{}"'.format(d), sudo=True)
         self.run('cp "{FROM}" "{TO}"'.format(FROM=file, TO=os.path.join(d, as_file)), sudo=True)
 
+    def cat_to_profile_d(self, text, as_file=None):
+        file = paella.tempfilepath()
+        paella.fwrite(file, text)
+        d = self.profile_d
+        if as_file is None:
+            as_file = os.path.basename(file)
+        if not os.path.isdir(d):
+            self.run('mkdir -p "{}"'.format(d), sudo=True)
+        self.run('cp "{FROM}" "{TO}"'.format(FROM=file, TO=os.path.join(d, as_file)), sudo=True)
+        os.unlink(file)
+
     #------------------------------------------------------------------------------------------
 
     def install(self, packs, group=False, output="on_error", _try=False, **kwargs):
