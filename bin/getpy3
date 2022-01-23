@@ -95,16 +95,16 @@ check_variants() {
 }
 
 install_python_on_old_ubuntu() {
-	PYTHON=1 $READIES/bin/getconda
+	#PYTHON=1 $READIES/bin/getconda
 
-	## ppa:deadsnakes no longer provides for xenial, trusty
-	# export DEBIAN_FRONTEND=noninteractive
-	# runn $SUDO apt-get install -y software-properties-common
-	# runn $SUDO add-apt-repository -y ppa:deadsnakes/ppa
-	# runn $SUDO apt-get -qq update
-	# runn $SUDO apt-get install -y python3.6
-	# runn ln -sf `command -v python3.6` /usr/local/bin/python3
-	# runn $SUDO apt-get install -y python3.6-venv
+	# ppa:deadsnakes no longer provides for xenial, trusty
+	 export DEBIAN_FRONTEND=noninteractive
+	 runn $SUDO apt-get install -y software-properties-common
+	 runn $SUDO add-apt-repository -y ppa:fkrull/deadsnakes
+	 runn $SUDO apt-get -qq update
+	 runn $SUDO apt-get install -y python3.6
+	 runn ln -sf `command -v python3.6` /usr/local/bin/python3
+	 runn $SUDO apt-get install -y python3.6-venv
 }
 
 install_python() {
@@ -209,7 +209,7 @@ install_pip() {
 			runn $SUDO apt-get install -y python3-pip
 			runn $MYPY -m pip install --upgrade pip
 		fi
-	fi	
+	fi
 }
 
 check_variants
