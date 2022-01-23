@@ -18,23 +18,33 @@ class SystemSetup(paella.Setup):
         self.modern = modern
 
     def ubuntu(self):
-        self.install("build-essential")
         if self.modern:
-            self.run(r'''bash -c "echo 'APT::Acquire::Retries \"7\";' > /etc/apt/apt.conf.d/80-retries"''', sudo=True)
-            if self.os_version[0] < 20:
-                self.add_repo("ppa:ubuntu-toolchain-r/test")
-            if self.install("gcc-10 g++-10", output=False, _try=True) == 0:
-                self.run("update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 60 --slave /usr/bin/g++ g++ /usr/bin/g++-10", sudo=True)
-            else:
-                self.install("gcc-9 g++-9")
-                self.run("update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-9", sudo=True)
+            self.run("GCC=1 %s/bin/getconda" % READIES)
+        else:
+            self.install("build-essential")
+
+#        if self.modern:
+#            self.run(r'''bash -c "echo 'APT::Acquire::Retries \"7\";' > /etc/apt/apt.conf.d/80-retries"''', sudo=True)
+#            if self.os_version[0] < 20:
+#                self.add_repo("ppa:ubuntu-toolchain-r/test")
+#            if self.install("gcc-10 g++-10", output=False, _try=True) == 0:
+#                self.run("update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 60 --slave /usr/bin/g++ g++ /usr/bin/g++-10", sudo=True)
+#            else:
+#                self.install("gcc-9 g++-9")
+#                self.run("update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-9", sudo=True)
 
     def debian(self):
-        if not self.modern or self.os_version[0] > 10:
-            self.install("build-essential")
+        if self.modern:
+            self.run("GCC=1 %s/bin/getconda" % READIES)
         else:
-            eprint("cannot install modern gcc for {}".format(self.osnick))
-            sys.exit(1)
+            self.install("build-essential")
+
+#        if not self.modern or self.os_version[0] > 10:
+#            self.install("build-essential")
+#        else:
+#            eprint("cannot install modern gcc for {}".format(self.osnick))
+#            sys.exit(1)
+
 #            if self.os_version[0] < 10:
 #                eprint("cannot install modern gcc for {}".format(self.osnick))
 #                sys.exit(1)
@@ -49,17 +59,19 @@ class SystemSetup(paella.Setup):
     def redhat_compat(self):
         self.group_install("'Development Tools'")
         if self.modern:
-            if self.dist == 'centos' and self.os_version[0] == 8:
-                self.install("gcc-toolset-10-gcc gcc-toolset-10-gcc-c++")
-                self.install("gcc-toolset-10-libatomic-devel")
-                self.run("rm -f {}/gcc-toolset-*.sh".format(self.profile_d), sudo=True)
-                self.cp_to_profile_d("/opt/rh/gcc-toolset-10/enable", "gcc-toolset-10.sh")
-            else:
-                self.install("centos-release-scl")
-                self.install("devtoolset-10")
-                self.install("devtoolset-10-libatomic-devel")
-                self.run("rm -f {}/scl-devtoolset-*.sh".format(self.profile_d), sudo=True)
-                self.cp_to_profile_d("/opt/rh/devtoolset-10/enable", "scl-devtoolset-10.sh")
+            self.run("GCC=1 %s/bin/getconda" % READIES)
+#        if self.modern:
+#            if self.dist == 'centos' and self.os_version[0] == 8:
+#                self.install("gcc-toolset-10-gcc gcc-toolset-10-gcc-c++")
+#                self.install("gcc-toolset-10-libatomic-devel")
+#                self.run("rm -f {}/gcc-toolset-*.sh".format(self.profile_d), sudo=True)
+#                self.cp_to_profile_d("/opt/rh/gcc-toolset-10/enable", "gcc-toolset-10.sh")
+#            else:
+#                self.install("centos-release-scl")
+#                self.install("devtoolset-10")
+#                self.install("devtoolset-10-libatomic-devel")
+#                self.run("rm -f {}/scl-devtoolset-*.sh".format(self.profile_d), sudo=True)
+#                self.cp_to_profile_d("/opt/rh/devtoolset-10/enable", "scl-devtoolset-10.sh")
 
     def fedora(self):
         self.group_install("'Development Tools'")
