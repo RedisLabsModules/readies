@@ -47,8 +47,9 @@ class Runner:
         self.has_sudo = sh('command -v sudo', fail=False) != ''
         self.output = OutputMode(output)
 
+    # sudo: True/False/"file"
     def run(self, cmd, at=None, output=None, nop=None, _try=False, sudo=False):
-        if (self.is_root or not self.has_sudo) and sudo:
+        if (self.is_root or not self.has_sudo) and sudo is not False:
             sudo = False
         if output is None:
             output = self.output
@@ -60,15 +61,21 @@ class Runner:
             cmds = filter(lambda s: str.lstrip(s) != '', cmds1.split("\n"))
             cmd = "; ".join(cmds)
             cmd_for_log = cmd
-            if sudo:
+            if sudo is not False:
                 cmd_file = paella.tempfilepath()
                 paella.fwrite(cmd_file, cmd)
                 cmd = "bash {}".format(cmd_file)
                 cmd_for_log = "sudo { %s }" % cmd_for_log
         else:
             cmd_for_log = cmd
-        if sudo:
-            cmd = "sudo " + cmd
+        if sudo is not False:
+            if sudo == "file":
+                cmd_file = paella.tempfilepath()
+                paella.fwrite(cmd_file, cmd)
+                cmd = "bash {}".format(cmd_file)
+                cmd_for_log = "sudo { %s }" % cmd_for_log
+            else:
+                cmd = "sudo " + cmd
         print(cmd)
         if cmd_file is not None:
             print("# {}".format(cmd_for_log))
