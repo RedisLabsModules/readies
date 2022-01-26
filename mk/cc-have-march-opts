@@ -15,7 +15,8 @@ have_march() {
 	
 	if $CC -march="$arch" -E -c $CFILE &> /dev/null; then
 		local HAVE="HAVE_MARCH_${arch//-/_}"
-		HAVE=${HAVE^^}
+		# HAVE=${HAVE^^}
+		HAVE=$(echo "$HAVE" | tr '[:lower:]' '[:upper:]')
 		echo "$HAVE"
 	fi
 }
