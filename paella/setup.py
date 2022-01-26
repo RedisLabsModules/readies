@@ -72,7 +72,7 @@ class Runner:
             if sudo == "file":
                 cmd_file = paella.tempfilepath()
                 paella.fwrite(cmd_file, cmd)
-                cmd = "bash {}".format(cmd_file)
+                cmd = "sudo bash {}".format(cmd_file)
                 cmd_for_log = "sudo { %s }" % cmd_for_log
             else:
                 cmd = "sudo " + cmd

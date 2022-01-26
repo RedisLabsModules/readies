@@ -60,8 +60,8 @@ class DockerSetup(paella.Setup):
         self.run("if [ ! -f ~/.docker/config.json ]; then echo '{}' >  ~/.docker/config.json; fi")
         self.run("jq '.experimental = \"enabled\"' ~/.docker/config.json | sponge ~/.docker/config.json")
         # server
-        self.run("if [ ! -f /etc/docker/daemon.json ]; then mkdir -p /etc/docker; echo '{}' >  /etc/docker/daemon.json; fi", sudo=True)
-        self.run("jq '.experimental = true' /etc/docker/daemon.json | sponge /etc/docker/daemon.json", sudo=True)
+        self.run("if [ ! -f /etc/docker/daemon.json ]; then mkdir -p /etc/docker; echo '{}' >  /etc/docker/daemon.json; fi", sudo="file")
+        self.run("jq '.experimental = true' /etc/docker/daemon.json | sponge /etc/docker/daemon.json", sudo="file")
         if self.has_command("systemctl"):
             self.run("systemctl restart docker", sudo=True)
         else:
