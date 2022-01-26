@@ -52,7 +52,7 @@ OP=""
 
 # https://docs.conda.io/en/latest/miniconda.html
 
-[[ $NOP != 1 ]] && $SUDO echo
+[[ $NOP != 1 && -n $SUDO ]] && $SUDO echo
 
 if [[ $POST != 1 ]]; then
 	runn $SUDO $READIES/bin/getget
@@ -83,7 +83,7 @@ if [[ $PYTHON == 1 ]]; then
 	done
 fi
 
-if [[ $GCC == 1 ]]; then
+if [[ $GCC == 1 && $NOP != 1 ]]; then
 	cd $CONDA_DIR
 	[[ -d xbin ]] && runn $SUDO rm -rf xbin
 	runn $SUDO mkdir -p xbin
