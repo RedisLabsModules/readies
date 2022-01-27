@@ -20,6 +20,9 @@ class SystemSetup(paella.Setup):
     def ubuntu(self):
         self.install("build-essential")
         if self.modern:
+			if self.osnick == "xenial":
+				self.run("GCC=1 %s/bin/getconda" % ROOT, sudo=True)
+				return
             self.run(r'''bash -c "echo 'APT::Acquire::Retries \"7\";' > /etc/apt/apt.conf.d/80-retries"''', sudo=True)
             if self.os_version[0] < 20:
                 self.add_repo("ppa:ubuntu-toolchain-r/test")
@@ -33,6 +36,8 @@ class SystemSetup(paella.Setup):
         if not self.modern or self.os_version[0] > 10:
             self.install("build-essential")
         else:
+			self.run("GCC=1 %s/bin/getconda" % ROOT, sudo=True)
+			return
             eprint("cannot install modern gcc for {}".format(self.osnick))
             sys.exit(1)
 #            if self.os_version[0] < 10:
@@ -49,6 +54,8 @@ class SystemSetup(paella.Setup):
     def redhat_compat(self):
         self.group_install("'Development Tools'")
         if self.modern:
+			self.run("GCC=1 %s/bin/getconda" % ROOT, sudo=True)
+			return
             if self.dist == 'centos' and self.os_version[0] == 8:
                 self.install("gcc-toolset-10-gcc gcc-toolset-10-gcc-c++")
                 self.install("gcc-toolset-10-libatomic-devel")
