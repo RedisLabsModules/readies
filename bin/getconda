@@ -72,7 +72,7 @@ if [[ $POST != 1 ]]; then
 		if [[ $GCC == 1 ]]; then
 			runn $SUDO $CONDA_DIR/bin/conda install -y -c conda-forge gcc gxx
 		fi
-		runn $SUDO $CONDA_DIR/bin/conda install -y -c conda-forge tar
+		runn $SUDO $CONDA_DIR/bin/conda install -y -c conda-forge tar make
 	fi
 fi
 # . $CONDA_DIR/bin/activate
@@ -98,17 +98,26 @@ fi
 if (( $(tar --version | head -1 | grep -i gnu | cut -d" " -f4 | cut -d. -f2) < 32 )); then
 	runn $SUDO ln -sf $CONDA_DIR/bin/tar /usr/local/bin/tar
 fi
+if (( $(make --version | head -1 | grep -i gnu | cut -d" " -f3 | cut -d. -f1) < 4 )); then
+	runn $SUDO ln -sf $CONDA_DIR/bin/make /usr/local/bin/make
+fi
 
 tmp_profiled=$(mktemp -d)
-if [[ $GCC == 1 ]]; then
-	cat <<-END > $tmp_profiled/miniforge.sh
+if [[ $FULL == 1 ]]; then
+	cat <<-END > $tmp_profiled/anaconda.sh
 		. $CONDA_DIR/etc/profile.d/conda.sh
-		export PATH=$CONDA_DIR/xbin:$PATH
 		END
 else
-	cat <<-END > $tmp_profiled/miniforge.sh
-		. $CONDA_DIR/etc/profile.d/conda.sh
-		END
+	if [[ $GCC == 1 ]]; then
+		cat <<-END > $tmp_profiled/miniforge.sh
+			. $CONDA_DIR/etc/profile.d/conda.sh
+			export PATH=$CONDA_DIR/xbin:$PATH
+			END
+	else
+		cat <<-END > $tmp_profiled/miniforge.sh
+			. $CONDA_DIR/etc/profile.d/conda.sh
+			END
+	fi
 fi
 add_to_profile_d $tmp_profiled/miniforge.sh
 rm -rf $tmp_profiled
