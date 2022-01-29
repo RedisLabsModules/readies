@@ -58,13 +58,13 @@ class SystemSetup(paella.Setup):
                 self.install("gcc-toolset-11-gcc gcc-toolset-11-gcc-c++")
                 self.install("gcc-toolset-11-libatomic-devel")
                 self.run("rm -f {}/gcc-toolset-*.sh".format(self.profile_d), sudo=True)
-                self.cp_to_profile_d("/opt/rh/gcc-toolset-10/enable", "gcc-toolset-11.sh")
+                self.cp_to_profile_d("/opt/rh/gcc-toolset-11/enable", "gcc-toolset-11.sh")
             else:
                 self.install("centos-release-scl")
                 self.install("devtoolset-11")
                 self.install("devtoolset-11-libatomic-devel")
                 self.run("rm -f {}/scl-devtoolset-*.sh".format(self.profile_d), sudo=True)
-                self.cp_to_profile_d("/opt/rh/devtoolset-10/enable", "scl-devtoolset-11.sh")
+                self.cp_to_profile_d("/opt/rh/devtoolset-11/enable", "scl-devtoolset-11.sh")
 
     def fedora(self):
         self.group_install("'Development Tools'")
