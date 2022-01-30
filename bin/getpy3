@@ -195,6 +195,13 @@ install_pip() {
 		runn $SUDO pacman -Syy --noconfirm $packs
 	fi
 
+	python3 -c 'import sys;  print(f"{sys.version_info.major}.{sys.version_info.minor}")'|grep '3.6'
+	if [ $? -eq 0 ]; then
+		pypi_url = ' https://bootstrap.pypa.io/pip/3.6/get-pip.py'
+	else
+		pypi_url = 'https://bootstrap.pypa.io/get-pip.py'
+	fi
+
 	runn wget -O /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py
 	# currently can fail on debian-compat platforms due to distutils:
 	# `python3 -m pip --version` will fail to find pip
