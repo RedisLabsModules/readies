@@ -20,10 +20,25 @@ have_march() {
 	fi
 }
 
+have_m() {
+	local opt=$1
+	
+	if $CC -m"$opt" -E -c $CFILE &> /dev/null; then
+		local HAVE="HAVE_M_${opt//-/_}"
+		# HAVE=${HAVE^^}
+		HAVE=$(echo "$HAVE" | tr '[:lower:]' '[:upper:]')
+		echo "$HAVE"
+	fi
+}
+
 HAVE_FLAGS=""
 HAVE_FLAGS+=" $(have_march x86-64-v2)"
 HAVE_FLAGS+=" $(have_march x86-64-v3)"
 HAVE_FLAGS+=" $(have_march x86-64-v4)"
+
+HAVE_FLAGS+=" $(have_m avx512f)"
+HAVE_FLAGS+=" $(have_m avx)"
+HAVE_FLAGS+=" $(have_m sse)"
 
 rm -f $CFILE
 
