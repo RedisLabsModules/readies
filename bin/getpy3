@@ -200,16 +200,8 @@ install_pip() {
 	# `python3 -m pip --version` will fail to find pip
 	runn "$MYPY /tmp/get-pip.py $pipspec || true"
 	rm -f /tmp/get-pip.py
-	if [[ $PIP == 19.3.1 ]]; then
-		runn $MYPY -m pip install setuptools==49.3.0
-	fi
 	# workaround for pip installation problem
-	if ! $MYPY -m pip --version &> /dev/null; then
-		if is_command apt-get; then
-			runn $SUDO apt-get install -y python3-pip
-			runn $MYPY -m pip install --upgrade pip
-		fi
-	fi
+	runn $MYPY -m pip install --upgrade pip
 }
 
 check_variants
