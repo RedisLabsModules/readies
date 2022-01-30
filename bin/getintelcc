@@ -14,7 +14,8 @@ if [[ $1 == --help || $1 == help || $HELP == 1 ]]; then
 		Argument variables:
 		ICX_DIR=dir     Install into `dir` (default: /opt/intelcc)
 
-		POST=1          Perform only post-installation (idempotent)
+        POST=0          Do not perform post-installation
+		JUST_POST=1     Perform only post-installation (idempotent)
 
 		NOP=1           Do not execute, just print commands
 		V|VERBOSE=1     Print commands
@@ -28,7 +29,7 @@ fi
 
 ICX_DIR=${ICX_DIR:-/opt/intel}
 
-if [[ -e $ICX_DIR && $POST != 1 ]]; then
+if [[ -e $ICX_DIR && $JUST_POST != 1 ]]; then
 	# eprint "$ICX_DIR exists. Aboring."
 	echo "$ICX_DIR exists."
 	exit 0
@@ -43,7 +44,7 @@ OP=""
 
 [[ $NOP != 1 && -n $SUDO ]] && $SUDO echo
 
-if [[ $POST != 1 ]]; then
+if [[ -n $POST && $POST != 0 ]]; then
 	runn $SUDO $READIES/bin/getget
 	shfile=$(mktemp /tmp/icx.XXXXXX)
 	runn wget -O $shfile https://registrationcenter-download.intel.com/akdlm/irc_nas/18445/l_BaseKit_p_2022.1.1.119.sh
