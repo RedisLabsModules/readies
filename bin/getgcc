@@ -33,8 +33,6 @@ class SystemSetup(paella.Setup):
         if not self.modern or self.os_version[0] > 10:
             self.install("build-essential")
         else:
-            self.run("GCC=1 %s/bin/getconda" % ROOT, sudo=True)
-            return
             eprint("cannot install modern gcc for {}".format(self.osnick))
             sys.exit(1)
 #            if self.os_version[0] < 10:
