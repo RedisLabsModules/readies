@@ -20,9 +20,6 @@ class SystemSetup(paella.Setup):
     def ubuntu(self):
         self.install("build-essential")
         if self.modern:
-            if self.osnick == "xenial":
-                self.run("GCC=1 %s/bin/getconda" % ROOT, sudo=True)
-                return
             self.run(r'''bash -c "echo 'APT::Acquire::Retries \"7\";' > /etc/apt/apt.conf.d/80-retries"''', sudo=True)
             if self.os_version[0] < 20:
                 self.add_repo("ppa:ubuntu-toolchain-r/test")
