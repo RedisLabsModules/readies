@@ -17,7 +17,7 @@ os.environ["PYTHONWARNINGS"] = 'ignore:DEPRECATION::pip._internal.cli.base_comma
 
 #----------------------------------------------------------------------------------------------
 
-CMAKE_VER='3.21.1'
+CMAKE_VER='3.22.2'
 
 #----------------------------------------------------------------------------------------------
 
@@ -103,34 +103,30 @@ class CMakeSetup(paella.Setup):
         else:
             url="https://github.com/Kitware/CMake/releases/download/v{CMAKE_VER}/cmake-{CMAKE_VER}-`uname`-`uname -m`.sh".format(CMAKE_VER=CMAKE_VER)
         if not self.build:
+            dir = tempfile.mkdtemp(prefix='cmake.')
             self.run(r"""
-                wget -q -O /tmp/cmake.sh {url}
-                sh /tmp/cmake.sh --skip-license --prefix={prefix}
-                rm -f /tmp/cmake.sh
-                """.format(url=url, prefix=self.prefix))
+                wget -q -O {DIR}/cmake.sh {URL}
+                sh {DIR}/cmake.sh --skip-license --prefix={PREFIX}
+                rm -rf {DIR}
+                """.format(DIR=dir, URL=url, PREFIX=self.prefix), sudo=True)
             if args.usr and os.path.exists("/usr/local/bin/cmake"):
-                self.run("cd /usr/local/bin; rm -f cmake cmake-gui ctest cpack ccmake", sudo=True)
+                self.run("cd /usr/local/bin; rm -f cmake cmake-gui ctest cpack ccmake", sudo="file")
 
     def common_last(self):
         if self.build:
+            dir = tempfile.mkdtemp(prefix='cmake.')
             self.run(r"""
-                cd /tmp
-                cmake_dir=$(mktemp -d)
-                cd $cmake_dir
+                cd {DIR}
                 wget -q -O cmake.zip https://github.com/Kitware/CMake/archive/v{CMAKE_VER}.zip
                 unzip -q cmake.zip
                 cd CMake-{CMAKE_VER}/
                 ./bootstrap --parallel=`nproc`
                 make -j`nproc`
-                make install
-                cd /tmp
-                rm -rf $cmake_dir
-                """.format(CMAKE_VER=CMAKE_VER))
-            self.run("make -C /tmp install", sudo=True)
+                """.format(DIR=dir, CMAKE_VER=CMAKE_VER))
             self.run(r"""
-                cd /tmp
-                rm -rf $cmake_dir
-                """.format(CMAKE_VER=CMAKE_VER))
+                make -C {DIR} install
+                rm -rf {DIR}
+                """.format(DIR=dir), sudo=True)
 
 #----------------------------------------------------------------------------------------------
 
