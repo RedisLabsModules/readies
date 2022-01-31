@@ -192,7 +192,7 @@ install_pip() {
 		runn $SUDO pacman -Syy --noconfirm $packs
 	fi
 
-    $MYPY -c 'import sys;  print(f"{sys.version_info.major}.{sys.version_info.minor}")'|grep '3.6' &>/dev/null
+	$MYPY -c 'import sys;  print(f"{sys.version_info.major}.{sys.version_info.minor}")'|grep '3.6' &>/dev/null
 	if [ $? -eq 0 ]; then
 		pypi_url=' https://bootstrap.pypa.io/pip/3.6/get-pip.py'
 	else
@@ -203,7 +203,7 @@ install_pip() {
 	# `python3 -m pip --version` will fail to find pip
 	runn "$MYPY /tmp/get-pip.py $pipspec || true"
 	rm -f /tmp/get-pip.py
-    $MYPY -m pip install --upgrade pip
+	$MYPY -m pip install --upgrade pip
 }
 
 check_variants
