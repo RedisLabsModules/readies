@@ -173,7 +173,7 @@ install_pip() {
 		export DEBIAN_FRONTEND=noninteractive
 		runn $SUDO apt-get -qq update
 		runn $SUDO apt-get install -y $packs
-        runn $SUDO apt-get install -y python3-distutils || runn $SUDO apt-get install -y  python3-distutils-extra
+		runn $SUDO apt-get install -y python3-distutils || runn $SUDO apt-get install -y  python3-distutils-extra
 	elif is_command dnf; then
 		runn $SUDO dnf install -y $packs
 	elif is_command yum; then
