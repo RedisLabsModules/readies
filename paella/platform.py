@@ -328,7 +328,7 @@ class Platform:
         return self.dist in ['debian', 'ubuntu', 'linuxmint', 'rasbpian']
 
     def is_redhat_compat(self):
-        return self.dist == 'redhat' or self.dist == 'centos' or self.dist == 'amzn' or self.dist == 'ol'
+        return self.dist in ['redhat', 'centos', 'amzn', 'ol']
 
     def is_arch_compat(self):
         return self.dist == 'arch'
