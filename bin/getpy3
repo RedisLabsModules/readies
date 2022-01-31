@@ -161,7 +161,9 @@ install_python() {
 }
 
 install_pip() {
-    set -x
+	if [[ $FORCE != 1 ]]; then
+		[[ $($MYPY -m pip --version > /dev/null 2>&1; echo $?) == 0 ]] && return
+	fi
 	pipspec=""
 	[[ $PIP != 1 ]] && pipspec="pip==$PIP"
 
