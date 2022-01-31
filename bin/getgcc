@@ -49,7 +49,7 @@ class SystemSetup(paella.Setup):
     def redhat_compat(self):
         self.group_install("'Development Tools'")
         if self.modern:
-            if self.dist == 'centos' and self.os_version[0] == 8:
+            if self.dist in ['centos', 'ol'] and self.os_version[0] == 8:
                 self.install("gcc-toolset-11-gcc gcc-toolset-11-gcc-c++")
                 self.install("gcc-toolset-11-libatomic-devel")
                 self.run("rm -f {}/gcc-toolset-*.sh".format(self.profile_d), sudo=True)
