@@ -263,6 +263,8 @@ class Platform:
                 versions = DEBIAN_VERSIONS if distname == 'debian' else UBUNTU_VERSIONS
                 versions_nicks = {v: k for k, v in versions.items()}
                 osnick = versions_nicks.get(os_release.version_id(), "")
+        if distname == 'ol':
+            osnick = distname + str(os_release.version_id().split('.')[0])
         if osnick == "":
             osnick = distname + str(os_release.version_id())
         return osnick
