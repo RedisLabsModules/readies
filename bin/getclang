@@ -110,7 +110,7 @@ class CLangSetup(paella.Setup):
         if not self.modern:
             return
         self.run("%s/bin/getepel" % READIES, sudo=True)
-        if self.dist == 'centos' and self.os_version[0] == 8:
+        if self.dist in ['centos', 'ol'] and self.os_version[0] == 8:
             self.install("llvm-toolset")
         else:
             self.install("llvm-toolset-7.0")

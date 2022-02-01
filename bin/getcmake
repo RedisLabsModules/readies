@@ -33,7 +33,7 @@ class CMakeSetupFromRepo(paella.Setup):
 
     def redhat_compat(self):
         self.run("%s/bin/getepel" % READIES, sudo=True)
-        if self.dist == 'centos' and self.os_version[0] == 8:
+        if self.dist in ['centos', 'ol'] and self.os_version[0] == 8:
             # cmake: symbol lookup error: cmake: undefined symbol: archive_write_add_filter_zstd
             self.run("dnf update -y libarchive", sudo=True)
             self.install("cmake")

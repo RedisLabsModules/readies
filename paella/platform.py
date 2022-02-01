@@ -328,7 +328,7 @@ class Platform:
         return self.dist in ['debian', 'ubuntu', 'linuxmint', 'rasbpian']
 
     def is_redhat_compat(self):
-        return self.dist == 'redhat' or self.dist == 'centos' or self.dist == 'amzn'
+        return self.dist in ['redhat', 'centos', 'amzn', 'ol']
 
     def is_arch_compat(self):
         return self.dist == 'arch'
@@ -397,6 +397,8 @@ class OnPlatform:
                     self.centos()
                 elif dist == 'redhat':
                     self.redhat()
+                elif dist == 'ol':
+                    self.oracle()
                 elif dist == 'suse':
                     self.suse()
                 elif dist == 'arch':
@@ -448,6 +450,9 @@ class OnPlatform:
         pass
 
     def centos(self):
+        pass
+
+    def oracle(self):
         pass
 
     def fedora(self):
