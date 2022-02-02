@@ -21,7 +21,7 @@ fi
 if is_command apt-get; then
 	export DEBIAN_FRONTEND=noninteractive
 	runn apt-get update -qq
-	runn apt-get install -y $packs xz-utils
+	runn apt-get install --fix-missing -y $packs xz-utils
 elif is_command dnf; then
 	runn dnf install -y $packs xz
 elif is_command yum; then

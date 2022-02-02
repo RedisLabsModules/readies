@@ -99,12 +99,12 @@ install_python_on_old_ubuntu() {
 
 	# ppa:deadsnakes no longer provides for xenial, trusty
 	 export DEBIAN_FRONTEND=noninteractive
-	 runn $SUDO apt-get install -y software-properties-common
+	 runn $SUDO apt-get install --fix-missing -y software-properties-common
 	 runn $SUDO add-apt-repository -y ppa:fkrull/deadsnakes
 	 runn $SUDO apt-get -qq update
-	 runn $SUDO apt-get install -y python3.6
+	 runn $SUDO apt-get install --fix-missing -y python3.6
 	 runn ln -sf `command -v python3.6` /usr/local/bin/python3
-	 runn $SUDO apt-get install -y python3.6-venv
+	 runn $SUDO apt-get install --fix-missing -y python3.6-venv
 }
 
 install_python() {
@@ -121,13 +121,13 @@ install_python() {
 
 	if is_command apt-get; then
 		export DEBIAN_FRONTEND=noninteractive
-		runn $SUDO apt-get -qq update
+		runn $SUDO apt-get -qq update --fix-missing
 		if [[ $osver == ubuntu14.04 || $osver == ubuntu16.04 ]]; then
 			install_python_on_old_ubuntu
 		elif [[ $osver == debian9 ]]; then
 			$SUDO $READIES/bin/getget
 
-			runn $SUDO apt-get install -y \
+			runn $SUDO apt-get install --fix-missing -y \
 				software-properties-common apt-transport-https \
 				unzip lsb-release gnupg2 \
 				libbz2-dev libssl-dev libsqlite3-dev libreadline-dev libgdbm-dev tk-dev libncursesw5-dev liblzma-dev uuid-dev libexpat1-dev
@@ -139,7 +139,7 @@ install_python() {
 			[[ -f /usr/bin/python3.6 ]] && ln -sf /usr/bin/python3.6 /usr/local/bin/python3
             cd $amhere
 		else
-			runn $SUDO apt-get install -y python3
+			runn $SUDO apt-get install --fix-missing -y python3
 		fi
 	elif is_command dnf; then
 		runn $SUDO dnf install -y python3
@@ -171,9 +171,9 @@ install_pip() {
 
 	if is_command apt-get; then
 		export DEBIAN_FRONTEND=noninteractive
-		runn $SUDO apt-get -qq update
-		runn $SUDO apt-get install -y $packs
-		runn $SUDO apt-get install -y python3-distutils || runn $SUDO apt-get install -y  python3-distutils-extra
+		runn $SUDO apt-get -qq update --fix-missing
+		runn $SUDO apt-get install --fix-missing -y $packs
+		runn $SUDO apt-get install --fix-missing -y python3-distutils || runn $SUDO apt-get install --fix-missing -y  python3-distutils-extra
 	elif is_command dnf; then
 		runn $SUDO dnf install -y $packs
 	elif is_command yum; then

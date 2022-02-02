@@ -23,7 +23,7 @@ if command -v apt-get &> /dev/null; then
 	if ! locale -a 2>/dev/null | grep 'en_US.utf8' &> /dev/null; then
 		if ! dpkg -l locales locale-gen &> /dev/null; then
 			runn apt-get -qq update
-			runn apt-get install -q -y locales
+			runn apt-get install --fix-missing -q -y locales
 		fi
 		runn locale-gen --purge en_US.${__UTF8}
 		runn dpkg-reconfigure -f noninteractive locales

@@ -218,7 +218,7 @@ class Apt(PackageManager):
         os.environ["DEBIAN_FRONTEND"] = 'noninteractive'
 
     def install(self, packs, group=False, output="on_error", _try=False):
-        return self.run("apt-get -qq install -y " + packs, output=output, _try=_try, sudo=True)
+        return self.run("apt-get -qq install --fix-missing -y " + packs, output=output, _try=_try, sudo=True)
 
     def uninstall(self, packs, group=False, output="on_error", _try=False):
         return self.run("apt-get -qq remove -y " + packs, output=output, _try=_try, sudo=True)
