@@ -15,24 +15,29 @@ import paella  # noqa: F401
 
 os.environ["PYTHONWARNINGS"] = 'ignore:DEPRECATION::pip._internal.cli.base_command'
 
+CLANG_COMMON_VER="13"
+CLANG_FORMAT_VER="13"
+
 #----------------------------------------------------------------------------------------------
 
-CLANG_FORMAT_URL = "https://github.com/muttleyxd/clang-tools-static-binaries/releases/download/master-f3a37dd2/clang-format-13_linux-amd64"
+CLANG_FORMAT_URL_BASE="https://github.com/muttleyxd/clang-tools-static-binaries/releases/download"
+CLANG_FORMAT_URL = "{BASE}/master-f3a37dd2/clang-format-{VER}_linux-amd64".format(BASE=CLANG_FORMAT_URL_BASE, VER=CLANG_FORMAT_VER)
 
 class CLangFormatSetup(paella.Setup):
     def __init__(self, args):
         paella.Setup.__init__(self, nop=args.nop)
+        self.version = args.version if args.version is not None else CLANG_FORMAT_VER
 
     def linux(self):
         self.install_downloaders()
 
         if self.arch == 'x64':
-            self.run("wget -q -O /usr/local/bin/clang-format-13 %s" % CLANG_FORMAT_URL, sudo=True)
-            self.run("chmod +x /usr/local/bin/clang-format-13", sudo=True)
-            self.run("ln -sf /usr/local/bin/clang-format-13 /usr/local/bin/clang-format", sudo=True)
+            self.run("wget -q -O /usr/local/bin/clang-format-{VER} {URL}".format(VER=self.version, URL=CLANG_FORMAT_URL), sudo=True)
+            self.run("chmod +x /usr/local/bin/clang-format-{vER}".format(VER=self.version), sudo=True)
+            self.run("ln -sf /usr/local/bin/clang-format-{VER} /usr/local/bin/clang-format".format(VER=self.version), sudo=True)
         elif self.platform.is_arm():
-            self.install("clang-format-13")
-            self.run("ln -sf `command -v clang-format-13` /usr/local/bin/clang-format", sudo=True)
+            self.install("clang-format-{VER}".format(VER=self.version))
+            self.run("ln -sf `command -v clang-format-{VER}` /usr/local/bin/clang-format".format(VER=self.version), sudo=True)
         else:
             raise paella.Error("Error installing CLang Format on not-x64 platform")
 
@@ -45,13 +50,15 @@ class CLangSetup(paella.Setup):
     def __init__(self, args):
         paella.Setup.__init__(self, nop=args.nop)
         self.modern = args.modern
+        self.version = args.version
+        self.native = not (self.modern is True or self.version is not None)
 
     def common_first(self):
-        if not self.modern:
+        if self.native:
             self.install("clang")
 
     def debian_compat(self):
-        if not self.modern:
+        if self.native:
             return
 
         if self.osnick == "xenial":
@@ -65,8 +72,8 @@ class CLangSetup(paella.Setup):
             if self.osnick in ["xenial", "stretch", "buster"]:
                 clang_ver = "12"
             else:
-                clang_ver = "" # auto-detect
-            if clang_ver == "":
+                clang_ver = args.version if args.version is not None else CLANG_COMMON_VER
+            if clang_ver == "": # "" is for auto-detect
                 install_args = ""
             else:
                 install_args = "{CLANG_VER} all".format(CLANG_VER=clang_ver)
@@ -86,7 +93,7 @@ class CLangSetup(paella.Setup):
             if clang_ver == "" and not self.nop:
                 raise paella.Error("Error installing CLang via apt.llvm.org")
 
-            self.install("clang-tools-%s" % clang_ver)
+            self.install("clang-tools-{VER}".format(VER=clang_ver))
         else:
             clang_ver = "8"
             self.run("%s/bin/getgcc --modern" % READIES)
@@ -159,7 +166,12 @@ parser = argparse.ArgumentParser(description='Install CLang tools')
 parser.add_argument('-n', '--nop', action="store_true", help='no operation')
 parser.add_argument('--format', action="store_true", default=False, help='Install clang-format')
 parser.add_argument('--modern', action="store_true", help="Install modern CLang/LLVM version")
+parser.add_argument('-v', '--version', type=str, default=None, help='CLang version')
 args = parser.parse_args()
+
+if args.modern and args.version:
+    eprint("arguments --modern and --version are conflicting.")
+    exit(1)
 
 try:
     if args.format:
@@ -168,6 +180,7 @@ try:
         CLangSetup(args).setup()
 except Exception as x:
     traceback.print_exc()
-    fatal(str(x))
+    eprint(str(x))
+    exit(1)
 
 exit(0)
