@@ -111,32 +111,46 @@ class RedisSourceSetup(paella.Setup):
         # select the latest version of the major.minor branch
         return list(filter(lambda v: v.startswith(br + '.'), self.redis_versions))
 
-    def patch_redis(self):
-            patch = r"""
-diff --git a/src/Makefile b/src/Makefile
-index f6e5f3e3f..def02b80d 100644
---- a/src/Makefile
-+++ b/src/Makefile
-@@ -249,2 +249,2 @@ endif
--REDIS_SERVER_NAME=redis-server
--REDIS_SENTINEL_NAME=redis-sentinel
-+REDIS_SERVER_NAME=redis-server$(PROG_SUFFIX)
-+REDIS_SENTINEL_NAME=redis-sentinel$(PROG_SUFFIX)
-@@ -252 +252 @@ REDIS_SERVER_OBJ=adlist.o quicklist.o ae.o anet.o dict.o server.o sds.o zmalloc.
--REDIS_CLI_NAME=redis-cli
-+REDIS_CLI_NAME=redis-cli$(PROG_SUFFIX)
-@@ -254 +254 @@ REDIS_CLI_OBJ=anet.o adlist.o dict.o redis-cli.o zmalloc.o release.o ae.o crcspe
--REDIS_BENCHMARK_NAME=redis-benchmark
-+REDIS_BENCHMARK_NAME=redis-benchmark$(PROG_SUFFIX)
-@@ -256,2 +256,2 @@ REDIS_BENCHMARK_OBJ=ae.o anet.o redis-benchmark.o adlist.o dict.o zmalloc.o siph
--REDIS_CHECK_RDB_NAME=redis-check-rdb
--REDIS_CHECK_AOF_NAME=redis-check-aof
-+REDIS_CHECK_RDB_NAME=redis-check-rdb$(PROG_SUFFIX)
-+REDIS_CHECK_AOF_NAME=redis-check-aof$(PROG_SUFFIX)
-"""
-            patch_file = os.path.join(self.base_dir, 'redis-prog-sufffix.patch')
-            paella.fwrite(patch_file, patch[1:])
-            self.run("patch -p1 -i %s" % patch_file, at=self.build_dir)
+    def prog_suffix_patch(self):
+        patch = r'''
+            diff --git a/src/Makefile b/src/Makefile
+            index f6e5f3e3f..def02b80d 100644
+            --- a/src/Makefile
+            +++ b/src/Makefile
+            @@ -249,2 +249,2 @@ endif
+            -REDIS_SERVER_NAME=redis-server
+            -REDIS_SENTINEL_NAME=redis-sentinel
+            +REDIS_SERVER_NAME=redis-server$(PROG_SUFFIX)
+            +REDIS_SENTINEL_NAME=redis-sentinel$(PROG_SUFFIX)
+            @@ -252 +252 @@ REDIS_SERVER_OBJ=adlist.o quicklist.o ae.o anet.o dict.o server.o sds.o zmalloc.
+            -REDIS_CLI_NAME=redis-cli
+            +REDIS_CLI_NAME=redis-cli$(PROG_SUFFIX)
+            @@ -254 +254 @@ REDIS_CLI_OBJ=anet.o adlist.o dict.o redis-cli.o zmalloc.o release.o ae.o crcspe
+            -REDIS_BENCHMARK_NAME=redis-benchmark
+            +REDIS_BENCHMARK_NAME=redis-benchmark$(PROG_SUFFIX)
+            @@ -256,2 +256,2 @@ REDIS_BENCHMARK_OBJ=ae.o anet.o redis-benchmark.o adlist.o dict.o zmalloc.o siph
+            -REDIS_CHECK_RDB_NAME=redis-check-rdb
+            -REDIS_CHECK_AOF_NAME=redis-check-aof
+            +REDIS_CHECK_RDB_NAME=redis-check-rdb$(PROG_SUFFIX)
+            +REDIS_CHECK_AOF_NAME=redis-check-aof$(PROG_SUFFIX)
+            '''
+        patch_file = os.path.join(self.base_dir, 'prog_sufffix.patch')
+        paella.fwrite(patch_file, str.lstrip(textwrap.dedent(patch[1:])))
+        self.run("patch -p1 -i %s" % patch_file, at=self.build_dir)
+
+    def enable_debug_commands_patch(self):
+        patch = r'''
+            diff --git a/redis.conf b/redis.conf
+            index ad37bbe33..4c6fc6b55 100644
+            --- a/redis.conf
+            +++ b/redis.conf
+            @@ -133 +133 @@ protected-mode yes
+            -# enable-debug-command no
+            +enable-debug-command yes
+            '''
+        patch_file = os.path.join(self.base_dir, 'enable_debug_commands.patch')
+        paella.fwrite(patch_file, str.lstrip(textwrap.dedent(patch[1:])))
+        self.run("patch -p1 -i %s" % patch_file, at=self.build_dir)
 
     def install_openssl(self, version, build_args, prefix="ssl"):
         file = os.path.join(self.base_dir, 'openssl.tgz')
@@ -218,8 +232,18 @@ index f6e5f3e3f..def02b80d 100644
                 branch = self.branch
             self.run('cd {DIR}; git clone https://github.com/redis/redis.git --branch {BRA}'.format(DIR=self.base_dir, BRA=branch))
         self.build_dir = os.path.join(self.base_dir, 'redis')
-        # if self.suffix:
-        #   self.patch_redis()
+
+    def patch_redis(self):
+        if self.suffix:
+            try:
+                paella.sh('grep -rl PROG_SUFFIX {DIR}/* &> /dev/null'.format(DIR=self.base_dir))
+            except:
+                self.prog_suffix_patch()
+        try:
+            paella.sh('grep -rl enable-debug-command {DIR}/* &> /dev/null'.format(DIR=self.base_dir))
+            self.enable_debug_commands_patch()
+        except:
+            pass
 
     def build_redis(self):
         build_args = []
@@ -380,6 +404,7 @@ index f6e5f3e3f..def02b80d 100644
     def common_last(self):
         if not self.just_prepare:
             self.download_redis()
+            self.patch_redis()
             self.build_redis()
             if not self.no_run:
                 self.run("%s --version" % self.redis_server)
