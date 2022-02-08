@@ -196,7 +196,11 @@ endef
 build:
 	@$(DOCKERWRAPPER_CMD)
 ifeq ($(ARTIFACTS),1)
-	IMAGE=$(DEFAULT_TAG) $(MK)/docker-collect-artifacts
+	@IMAGE=$(DEFAULT_TAG) $(MK)/docker-collect-artifacts
+	@set -e ;\
+	for f in $ART_DIR/tests/*.tgz; do \
+		tar xf $f ;\
+	done
 endif
 
 publish:
