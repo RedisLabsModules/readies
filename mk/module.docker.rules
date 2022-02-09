@@ -199,7 +199,7 @@ build:
 ifeq ($(ARTIFACTS),1)
 	@IMAGE=$(DEFAULT_TAG) $(MK)/docker-collect-artifacts
 	@set -e ;\
-	for f in $(ART_DIR)/tests/*.tgz; do \
+	for f in `ls $(ART_DIR)/tests/*.tgz 2> /dev/null`; do \
 		tar -xzf $f ;\
 	done
 endif
