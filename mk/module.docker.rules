@@ -200,7 +200,7 @@ ifeq ($(ARTIFACTS),1)
 	@IMAGE=$(DEFAULT_TAG) $(MK)/docker-collect-artifacts
 	@set -e ;\
 	for f in $(ART_DIR)/tests/*.tgz; do \
-		tar xf $f ;\
+		tar -xzf $f ;\
 	done
 endif
 	@E=`cat $(ART_DIR)/tests/status || echo 1` ;\
