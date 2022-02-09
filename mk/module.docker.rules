@@ -194,21 +194,24 @@ $(READIES)/bin/dockerwrapper \
 endef
 
 build:
+	@rm -f $(ART_DIR)/tests/status
 	@$(DOCKERWRAPPER_CMD)
 ifeq ($(ARTIFACTS),1)
 	@IMAGE=$(DEFAULT_TAG) $(MK)/docker-collect-artifacts
 	@set -e ;\
-	for f in $ART_DIR/tests/*.tgz; do \
+	for f in $(ART_DIR)/tests/*.tgz; do \
 		tar xf $f ;\
 	done
 endif
+	@E=`cat $(ART_DIR)/tests/status || echo 1` ;\
+	if [[ $$E != 0 ]]; then false; fi
 
 publish:
 	@$(DOCKERWRAPPER_CMD) --publish-only
 
 #----------------------------------------------------------------------------------------------
 
-endif # HELP
+endif # ! HELP
 
 include $(MK)/help.defs
 include $(MK)/help.rules
