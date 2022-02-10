@@ -138,17 +138,21 @@ class RedisSourceSetup(paella.Setup):
         paella.fwrite(patch_file, str.lstrip(textwrap.dedent(patch[1:])))
         self.run("patch -p1 -i %s" % patch_file, at=self.build_dir)
 
-    def enable_debug_commands_patch(self):
+    def enable_unsafe_commands_patch(self):
         patch = r'''
             diff --git a/redis.conf b/redis.conf
-            index ad37bbe33..4c6fc6b55 100644
+            index ad37bbe33..1c2ec8dbd 100644
             --- a/redis.conf
             +++ b/redis.conf
-            @@ -133 +133 @@ protected-mode yes
+            @@ -132,3 +132,3 @@ protected-mode yes
+            -# enable-protected-configs no
             -# enable-debug-command no
+            -# enable-module-command no
+            +enable-protected-configs yes
             +enable-debug-command yes
+            +enable-module-command yes
             '''
-        patch_file = os.path.join(self.base_dir, 'enable_debug_commands.patch')
+        patch_file = os.path.join(self.base_dir, 'enable_unsafe_commands.patch')
         paella.fwrite(patch_file, str.lstrip(textwrap.dedent(patch[1:])))
         self.run("patch -p1 -i %s" % patch_file, at=self.build_dir)
 
@@ -239,11 +243,12 @@ class RedisSourceSetup(paella.Setup):
                 paella.sh('grep -rl PROG_SUFFIX {DIR}/* &> /dev/null'.format(DIR=self.base_dir))
             except:
                 self.prog_suffix_patch()
-        try:
-            paella.sh('grep -rl enable-debug-command {DIR}/* &> /dev/null'.format(DIR=self.base_dir))
-            self.enable_debug_commands_patch()
-        except:
-            pass
+        if not args.safe:
+            try:
+                paella.sh(['grep', '-rl', 'enable-debug-command', self.base_dir])
+                self.enable_unsafe_commands_patch()
+            except:
+                pass
 
     def build_redis(self):
         build_args = []
@@ -365,11 +370,6 @@ class RedisSourceSetup(paella.Setup):
         self.install_downloaders()
         self.install("git")
 
-        # self.setup_pip()
-        # self.pip_install("wheel")
-        # self.pip_install("setuptools --upgrade")
-        # self.pip_install("semantic_version")
-
     def linux(self):
         self.install("patch")
 
@@ -462,6 +462,7 @@ parser.add_argument('--no-tls', action="store_true", help="Do not support TLS")
 parser.add_argument('--own-openssl', action="store_true", help="Link statically to OpenSSL")
 parser.add_argument('--own-openssl-version', type=str, default=DEFAULT_OPENSSL_VER, help="OpenSSL version (implies --own-openssl)")
 parser.add_argument('--repo', action="store_true", help='Install from package repo')
+parser.add_argument('--safe', action="store_true", help='Do not patch redis configuration to enable sensitive commands')
 parser.add_argument('--force', action="store_true", help="Install even if redis-server is present")
 parser.add_argument('--prepare', action="store_true", help="Only install prerequisites, do not build")
 parser.add_argument('--no-prepare', action="store_true", help="Do not install prerequisites, just build")
@@ -491,7 +492,7 @@ if args.version and args.repo:
 if args.version and args.branch:
     fatal('conflicting options: --version, --branch. Aborting.')
 if not args.version and not args.branch:
-	args.version = DEFAULT_REDIS_VERSION
+    args.version = DEFAULT_REDIS_VERSION
 
 if args.just_print_version:
     setup = RedisSourceSetup(args)
