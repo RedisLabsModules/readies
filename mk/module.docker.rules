@@ -44,7 +44,7 @@ ARCH:=$(shell $(READIES)/bin/platform --arch)
 
 ifeq ($(OSNICK),)
 OSNICK:=$(shell $(READIES)/bin/platform --osnick)
-$(info # Running with OSNICK=$(OSNICK))
+___:=$(info # Running with OSNICK=$(OSNICK))
 endif
 
 # for artifact gathering
@@ -56,19 +56,19 @@ export ART_INT_DIR
 #----------------------------------------------------------------------------------------------
 
 ifeq ($(VERSION),)
-ifeq ($(BRANCH),)
-BRANCH:=$(shell git rev-parse --abbrev-ref HEAD | sed -e 's/\//_/g' 2> /dev/null)
-$(info # Running with BRANCH=$(BRANCH))
-endif
-ifeq ($(BRANCH),)
-$(error Either VERSION or BRANCH must be set)
-endif
+	ifeq ($(BRANCH),)
+		BRANCH:=$(shell git rev-parse --abbrev-ref HEAD | sed -e 's/\//_/g' 2> /dev/null)
+		___:=$(info # Running with BRANCH=$(BRANCH))
+	endif
+	ifeq ($(BRANCH),)
+		___:=$(error Either VERSION or BRANCH must be set)
+	endif
 endif
 
 ifneq ($(VERSION),)
-ifneq ($(BRANCH),)
-$(error Only one of VERSION or BRANCH can be set)
-endif
+	ifneq ($(BRANCH),)
+		___:=$(error Only one of VERSION or BRANCH can be set)
+	endif
 endif
 
 # e.g redisfab/RedisTimeSeries:edge
@@ -77,68 +77,60 @@ DEFAULT_TAG ?= $(DOCKER_ORG)/$(REPO):$(VERSPEC)$(VERSPEC_SUFFIX)-$(ARCH)-$(OSNIC
 #----------------------------------------------------------------------------------------------
 
 ifneq ($(VERSION),)
-VERSPEC=$(VERSION)
-override VERSION:=$(shell echo "$(VERSION)" | sed -e 's/^v\(.*\)/\1/g')
+	VERSPEC=$(VERSION)
+	override VERSION:=$(shell echo "$(VERSION)" | sed -e 's/^v\(.*\)/\1/g')
 endif
 
 ifneq ($(BRANCH),)
-VERSPEC=$(BRANCH)
+	VERSPEC=$(BRANCH)
 endif
 
 #----------------------------------------------------------------------------------------------
 
 ifeq ($(OFFICIAL),1)
+	# if OSNICK and OSNICK.official match, then we're building the docker
+	# that we should push upstream to dockerhub as edge/1.2/etc.
 
-# if OSNICK and OSNICK.official match, then we're building the docker
-# that we should push upstream to dockerhub as edge/1.2/etc.
+	#------------------------------------------------------------------------------------------
+	ifneq ($(OSNICK.official),$(OSNICK))
+		___:=$(info # OFFICIAL=1 requested, but OSNICK=$(OSNICK) is not OSNICK.official=$(OSNICK.official))
 
-ifneq ($(OSNICK.official),$(OSNICK))
+	#------------------------------------------------------------------------------------------
+	else # OSNICK.official
 
-$(info # OFFICIAL=1 requested, but OSNICK=$(OSNICK) is not OSNICK.official=$(OSNICK.official))
+		#--------------------------------------------------------------------------------------
+		ifneq ($(VERSION),)
+			# since we cannot reliably deduce git branch from a version spec, 
+			# we assume it's 'x.y' for version 'x.y*'
+			VERSION_BRANCH:=$(shell echo "$(VERSION)" | cut -d '.' -f 1-2)
 
-else # OSNICK.official
+			DOCKER_TAGS += $(DOCKER_ORG.official)/$(REPO):$(VERSION)
 
-#----------------------------------------------------------------------------------------------
+			# LATEST tag - if LATEST_BRANCH in the makefile matches our ~version
+			ifeq ($(LATEST_BRANCH),$(VERSION_BRANCH))
+				# VERSPEC_SUFFIX allows for a custom latest (i.e redisai:latest-cpu)
+				DOCKER_TAGS += $(DOCKER_ORG.official)/$(REPO):latest${VERSPEC_SUFFIX}
+			endif
 
-ifneq ($(VERSION),)
+			# PREVIEW tag - if PREVIEW_BRANCH in the makefile matches our ~version
+			ifeq ($(PREVIEW_BRANCH),$(VERSION_BRANCH))
+				# VERSPEC_SUFFIX allows for a custom preview (i.e redisai:latest-cpu)
+				DOCKER_TAGS += $(DOCKER_ORG.official)/$(REPO):preview$(VERSPEC_SUFFIX)
+			endif
+		endif # VERSION
 
-# since we cannot reliably deduce git branch from a version spec, 
-# we assume it's 'x.y' for version 'x.y*'
-VERSION_BRANCH:=$(shell echo "$(VERSION)" | cut -d '.' -f 1-2)
+		#--------------------------------------------------------------------------------------
+		ifneq ($(BRANCH),)
+			ifeq ($(BRANCH),master)
+				DOCKER_TAGS += $(DOCKER_ORG.official)/$(REPO):edge$(VERSPEC_SUFFIX)
+			endif
 
-DOCKER_TAGS += $(DOCKER_ORG.official)/$(REPO):$(VERSION)
+			ifeq ($(PREVIEW_BRANCH),$(BRANCH))
+				DOCKER_TAGS += $(DOCKER_ORG.official)/$(REPO):preview$(VERSPEC_SUFFIX)
+			endif
+		endif # BRANCH
 
-# LATEST tag - if LATEST_BRANCH in the makefile matches our ~version
-ifeq ($(LATEST_BRANCH),$(VERSION_BRANCH))
-# VERSPEC_SUFFIX allows for a custom latest (i.e redisai:latest-cpu)
-DOCKER_TAGS += $(DOCKER_ORG.official)/$(REPO):latest${VERSPEC_SUFFIX}
-endif
-
-# PREVIEW tag - if PREVIEW_BRANCH in the makefile matches our ~version
-ifeq ($(PREVIEW_BRANCH),$(VERSION_BRANCH))
-# VERSPEC_SUFFIX allows for a custom preview (i.e redisai:latest-cpu)
-DOCKER_TAGS += $(DOCKER_ORG.official)/$(REPO):preview$(VERSPEC_SUFFIX)
-endif
-
-endif # VERSION
-
-#----------------------------------------------------------------------------------------------
-
-ifneq ($(BRANCH),)
-
-ifeq ($(BRANCH),master)
-DOCKER_TAGS += $(DOCKER_ORG.official)/$(REPO):edge$(VERSPEC_SUFFIX)
-endif
-
-ifeq ($(PREVIEW_BRANCH),$(BRANCH))
-DOCKER_TAGS += $(DOCKER_ORG.official)/$(REPO):preview$(VERSPEC_SUFFIX)
-endif
-
-endif # BRANCH
-
-#----------------------------------------------------------------------------------------------
-
-endif # OSNICK.official
+	endif # OSNICK.official
 endif # OFFICIAL
 
 #----------------------------------------------------------------------------------------------
