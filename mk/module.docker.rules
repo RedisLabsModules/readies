@@ -186,7 +186,7 @@ $(READIES)/bin/dockerwrapper \
 endef
 
 build:
-	@rm -f $(ART_DIR)/tests/status
+	@echo 0 > $(ART_DIR)/tests/status
 	@$(DOCKERWRAPPER_CMD)
 ifeq ($(ARTIFACTS),1)
 	@IMAGE=$(DEFAULT_TAG) $(MK)/docker-collect-artifacts
@@ -195,7 +195,7 @@ ifeq ($(ARTIFACTS),1)
 		tar -C $(ROOT) -xzf $$f ;\
 	done
 endif
-	@E=`cat $(ART_DIR)/tests/status || echo 1` ;\
+	@E=`cat $(ART_DIR)/tests/status` ;\
 	if [[ $$E != 0 ]]; then false; fi
 
 publish:
