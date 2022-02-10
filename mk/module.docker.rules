@@ -44,7 +44,7 @@ ARCH:=$(shell $(READIES)/bin/platform --arch)
 
 ifeq ($(OSNICK),)
 OSNICK:=$(shell $(READIES)/bin/platform --osnick)
-___:=$(info # Running with OSNICK=$(OSNICK))
+___:=$(info \# Running with OSNICK=$(OSNICK))
 endif
 
 # for artifact gathering
@@ -58,7 +58,7 @@ export ART_INT_DIR
 ifeq ($(VERSION),)
 	ifeq ($(BRANCH),)
 		BRANCH:=$(shell git rev-parse --abbrev-ref HEAD | sed -e 's/\//_/g' 2> /dev/null)
-		___:=$(info # Running with BRANCH=$(BRANCH))
+		___:=$(info \# Running with BRANCH=$(BRANCH))
 	endif
 	ifeq ($(BRANCH),)
 		___:=$(error Either VERSION or BRANCH must be set)
@@ -93,7 +93,7 @@ ifeq ($(OFFICIAL),1)
 
 	#------------------------------------------------------------------------------------------
 	ifneq ($(OSNICK.official),$(OSNICK))
-		___:=$(info # OFFICIAL=1 requested, but OSNICK=$(OSNICK) is not OSNICK.official=$(OSNICK.official))
+		___:=$(info \# OFFICIAL=1 requested, but OSNICK=$(OSNICK) is not OSNICK.official=$(OSNICK.official))
 
 	#------------------------------------------------------------------------------------------
 	else # OSNICK.official
@@ -186,7 +186,7 @@ $(READIES)/bin/dockerwrapper \
 endef
 
 build:
-	@echo 0 > $(ART_DIR)/tests/status
+	@mkdir -p $(ART_DIR)/tests && echo 0 > $(ART_DIR)/tests/status
 	@$(DOCKERWRAPPER_CMD)
 ifeq ($(ARTIFACTS),1)
 	@IMAGE=$(DEFAULT_TAG) $(MK)/docker-collect-artifacts
