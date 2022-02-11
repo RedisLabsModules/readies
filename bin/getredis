@@ -140,17 +140,17 @@ class RedisSourceSetup(paella.Setup):
 
     def enable_unsafe_commands_patch(self):
         patch = r'''
-            diff --git a/redis.conf b/redis.conf
-            index ad37bbe33..1c2ec8dbd 100644
-            --- a/redis.conf
-            +++ b/redis.conf
-            @@ -132,3 +132,3 @@ protected-mode yes
-            -# enable-protected-configs no
-            -# enable-debug-command no
-            -# enable-module-command no
-            +enable-protected-configs yes
-            +enable-debug-command yes
-            +enable-module-command yes
+            diff --git a/src/config.c b/src/config.c
+            index a52e00f66..37d561a53 100644
+            --- a/src/config.c
+            +++ b/src/config.c
+            @@ -2816,3 +2816,3 @@ standardConfig configs[] = {
+            -    createEnumConfig("enable-protected-configs", NULL, IMMUTABLE_CONFIG, protected_action_enum, server.enable_protected_configs, PROTECTED_ACTION_ALLOWED_NO, NULL, NULL),
+            -    createEnumConfig("enable-debug-command", NULL, IMMUTABLE_CONFIG, protected_action_enum, server.enable_debug_cmd, PROTECTED_ACTION_ALLOWED_NO, NULL, NULL),
+            -    createEnumConfig("enable-module-command", NULL, IMMUTABLE_CONFIG, protected_action_enum, server.enable_module_cmd, PROTECTED_ACTION_ALLOWED_NO, NULL, NULL),
+            +    createEnumConfig("enable-protected-configs", NULL, IMMUTABLE_CONFIG, protected_action_enum, server.enable_protected_configs, PROTECTED_ACTION_ALLOWED_YES, NULL, NULL),
+            +    createEnumConfig("enable-debug-command", NULL, IMMUTABLE_CONFIG, protected_action_enum, server.enable_debug_cmd, PROTECTED_ACTION_ALLOWED_YES, NULL, NULL),
+            +    createEnumConfig("enable-module-command", NULL, IMMUTABLE_CONFIG, protected_action_enum, server.enable_module_cmd, PROTECTED_ACTION_ALLOWED_YES, NULL, NULL),
             '''
         patch_file = os.path.join(self.base_dir, 'enable_unsafe_commands.patch')
         paella.fwrite(patch_file, str.lstrip(textwrap.dedent(patch[1:])))
