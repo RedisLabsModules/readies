@@ -70,17 +70,27 @@ class RMPyToolsSetup(paella.Setup):
         if self.reinstall:
             self.pip_uninstall("redis redis-py-cluster ramp-packer RLTest")
         if self.modern:
-            self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/redis/redis-py.git@master")
+            # self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/redis/redis-py.git@master")
+            pass
         else:
             self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/redisfab/redis-py.git@3.5")
 
-        # redis-py-cluster should be installed from git due to redis-py dependency
-        # self.pip_install("--no-cache-dir git+https://github.com/Grokzen/redis-py-cluster.git@master")
-        # self.pip_install("--no-cache-dir --ignore-installed redis-py-cluster")
-        self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/redisfab/redis-py-cluster@2.1")
+            # redis-py-cluster should be installed from git due to redis-py dependency
+            # self.pip_install("--no-cache-dir git+https://github.com/Grokzen/redis-py-cluster.git@master")
+            # self.pip_install("--no-cache-dir --ignore-installed redis-py-cluster")
+            self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/redisfab/redis-py-cluster@2.1")
 
-        self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/RedisLabsModules/RLTest.git@{BRANCH}".format(BRANCH=self.rltest_branch))
-        self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/RedisLabs/RAMP@{BRANCH}".format(BRANCH=self.ramp_branch))
+        if self.rltest_branch is None:
+            if self.modern:
+                # self.rltest_branch = 'master'
+                pass
+            else:
+                self.rltest_branch = '0.4.2'
+
+        if self.rltest_branch is not None:
+            self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/RedisLabsModules/RLTest.git@{BRANCH}".format(BRANCH=self.rltest_branch))
+        if self.ramp_branch is not None:
+            self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/RedisLabs/RAMP@{BRANCH}".format(BRANCH=self.ramp_branch))
 
 #----------------------------------------------------------------------------------------------
 
@@ -96,8 +106,8 @@ parser.add_argument('-n', '--nop', action="store_true", help='no operation')
 parser.add_argument('--no-reinstall', action="store_true", default=False, help='Not not reinstall everything')
 parser.add_argument('--reinstall', action="store_true", default=False, help='Reinstall everything')
 parser.add_argument('--remove', action="store_true", default=False, help='Uninstall everything')
-parser.add_argument('--modern', action="store_true", default=False, help='Install redis-py 4.0')
-parser.add_argument('--rltest-branch', type=str, default='master', help="RLTest github branch")
+parser.add_argument('--modern', action="store_true", default=False, help='Install redis-py 4.x')
+parser.add_argument('--rltest-branch', type=str, default=None, help="RLTest github branch")
 parser.add_argument('--ramp-branch', type=str, default='master', help="RAMP github branch")
 args = parser.parse_args()
 
