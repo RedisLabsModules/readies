@@ -26,8 +26,8 @@ class RMPyToolsSetup(paella.Setup):
         else:
             self.reinstall = args.reinstall
         self.modern = args.modern
-        self.rltest_branch = args.rltest_branch
-        self.ramp_branch = args.ramp_branch
+        self.rltest_version = args.rltest_version
+        self.ramp_version = args.ramp_version
 
     def build_and_install_psutil(self, deps):
         self.run("%s/bin/getgcc" % READIES)
@@ -80,17 +80,19 @@ class RMPyToolsSetup(paella.Setup):
             # self.pip_install("--no-cache-dir --ignore-installed redis-py-cluster")
             self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/redisfab/redis-py-cluster@2.1")
 
-        if self.rltest_branch is None:
+        if self.rltest_version is None:
             if self.modern:
-                # self.rltest_branch = 'master'
-                pass
+                self.rltest_version = 'master'
+                self.ramp_version = "2.2"
             else:
-                self.rltest_branch = '0.4.2'
+                self.rltest_version = '0.4'
+                self.ramp_version = '2.2'
 
-        if self.rltest_branch is not None:
-            self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/RedisLabsModules/RLTest.git@{BRANCH}".format(BRANCH=self.rltest_branch))
-        if self.ramp_branch is not None:
-            self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/RedisLabs/RAMP@{BRANCH}".format(BRANCH=self.ramp_branch))
+        if self.rltest_version is not None:
+            self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/RedisLabsModules/RLTest.git@{VER}".format(VER=self.rltest_version))
+
+        if self.ramp_version is not None:
+            self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/RedisLabs/RAMP@{VER}".format(VER=self.ramp_version))
 
 #----------------------------------------------------------------------------------------------
 
@@ -103,12 +105,13 @@ class RMPyToolsUninstall(paella.Setup):
 
 parser = argparse.ArgumentParser(description='Install RedisLabs Modules Python tools')
 parser.add_argument('-n', '--nop', action="store_true", help='no operation')
+parser.add_argument('-v', '--verbose', action="store_true", help='Display installed versions')
 parser.add_argument('--no-reinstall', action="store_true", default=False, help='Not not reinstall everything')
 parser.add_argument('--reinstall', action="store_true", default=False, help='Reinstall everything')
 parser.add_argument('--remove', action="store_true", default=False, help='Uninstall everything')
-parser.add_argument('--modern', action="store_true", default=False, help='Install redis-py 4.x')
-parser.add_argument('--rltest-branch', type=str, default=None, help="RLTest github branch")
-parser.add_argument('--ramp-branch', type=str, default='master', help="RAMP github branch")
+parser.add_argument('--modern', action="store_true", default=False, help='Install modern versions of redis-py (4.x), RLTest, and RAMP')
+parser.add_argument('--rltest-version', type=str, default=None, help="RLTest github version/branch")
+parser.add_argument('--ramp-version', type=str, default=None, help="RAMP github version/branch")
 args = parser.parse_args()
 
 try:
@@ -118,6 +121,8 @@ try:
         RMPyToolsUninstall(args).setup()
     else:
         RMPyToolsSetup(args).setup()
+    if args.verbose:
+        os.system("{PYTHON} -m pip list | grep -e 'redis\|redis-py\|rltest\|ramp'".format(PYTHON=sys.executable))
 except Exception as x:
     traceback.print_exc()
     fatal(str(x))
