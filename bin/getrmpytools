@@ -83,7 +83,7 @@ class RMPyToolsSetup(paella.Setup):
         if self.rltest_version is None:
             if self.modern:
                 self.rltest_version = 'master'
-                self.ramp_version = "2.2"
+                self.ramp_version = "master"
             else:
                 self.rltest_version = '0.4'
                 self.ramp_version = '2.2'
