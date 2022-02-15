@@ -192,18 +192,18 @@ install_pip() {
 		runn $SUDO pacman -Syy --noconfirm $packs
 	fi
 
-	$MYPY -c 'import sys;  print(f"{sys.version_info.major}.{sys.version_info.minor}")'|grep '3.6' &>/dev/null
-	if [ $? -eq 0 ]; then
-		pypi_url=' https://bootstrap.pypa.io/pip/3.6/get-pip.py'
+	$MYPY -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")' | grep '3.6' &>/dev/null
+	if [[ $? == 0 ]]; then
+		pypi_url='https://bootstrap.pypa.io/pip/3.6/get-pip.py'
 	else
 		pypi_url='https://bootstrap.pypa.io/get-pip.py'
 	fi
-	runn wget -O /tmp/get-pip.py ${pypi_url}
+	runn wget -O /tmp/get-pip.py $pypi_url
 	# currently can fail on debian-compat platforms due to distutils:
 	# `python3 -m pip --version` will fail to find pip
 	runn "$MYPY /tmp/get-pip.py $pipspec || true"
-	rm -f /tmp/get-pip.py
-	$MYPY -m pip install --upgrade pip
+	runn rm -f /tmp/get-pip.py
+	runn $MYPY -m pip install --upgrade pip
 }
 
 check_variants
