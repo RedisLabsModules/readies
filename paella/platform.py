@@ -60,19 +60,42 @@ MACOS_VERSIONS = {
     "highsierra":   "10.13",
     "mojave":       "10.14",
     "catalina":     "10.15",
-    "bigsur":       "11.0",
-    "monterey":     "12.0",
+    "bigsur":       "11",
+    "monterey":     "12",
+}
+
+DARWIN_VERSIONS = {
+    "cheetah":      "1.3",
+    "puma":         "1.4",
+    "jaguar":       "6",
+    "panther":      "7",
+    "tiger":        "8",
+    "leopard":      "9",
+    "snowleopard":  "10",
+    "lion":         "11",
+    "mountainlion": "12",
+    "mavericks":    "13",
+    "yosemite":     "14",
+    "elcapitan":    "15",
+    "sierra":       "16",
+    "highsierra":   "17",
+    "mojave":       "18",
+    "catalina":     "19",
+    "bigsur":       "20",
+    "monterey":     "21",
 }
 
 MACOS_VERSIONS_NICKS = {v: k for k, v in MACOS_VERSIONS.items()}
+DARWIN_VERSIONS_NICKS = {v: k for k, v in DARWIN_VERSIONS.items()}
 
 #----------------------------------------------------------------------------------------------
 
 class Platform:
 
     class OSRelease():
-        CUSTOM_BRANDS = [ 'elementary', 'pop' ]
+        CUSTOM_BRANDS = [ 'elementary', 'pop', 'rocky', 'almalinux' ]
         UBUNTU_BRANDS = [ 'elementary', 'pop' ]
+        RHEL_BRANDS = [ 'rocky', 'almalinux' ]
         ROLLING_RELEASES = ['arch', 'gentoo', 'manjaro']
 
         def __init__(self, brand=False):
@@ -277,7 +300,8 @@ class Platform:
         mac_ver = platform.mac_ver()
         self.os_full_ver = mac_ver[0] # e.g. 10.14, but also 10.5.8
         self.os_ver = '.'.join(self.os_full_ver.split('.')[:2]) # major.minor
-        self.osnick = MACOS_VERSIONS_NICKS.get(self.os_ver, self.os + str(self.os_full_ver.split('.')[1]))
+        self.darwin_ver = sh("uname -r")
+        self.osnick = DARWIN_VERSIONS_NICKS.get(self.darwin_ver.split('.')[0], self.os + str(self.os_ver))
         # self.arch = mac_ver[2] # e.g. x64_64
 
     def _identify_windows(self):
