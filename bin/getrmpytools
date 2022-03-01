@@ -69,9 +69,11 @@ class RMPyToolsSetup(paella.Setup):
         self.install("git")
         if self.reinstall:
             self.pip_uninstall("redis redis-py-cluster ramp-packer RLTest")
+            
+        # redis-py and redis-py-cluster
         if self.modern:
             # self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/redis/redis-py.git@master")
-            pass
+            pass # will be installed by other packages
         else:
             self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/redisfab/redis-py.git@3.5")
 
