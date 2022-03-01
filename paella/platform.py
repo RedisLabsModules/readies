@@ -121,15 +121,15 @@ class Platform:
         def id(self):
             # e.g. "centos"
             if self.is_custom_brand() and not self.brand_mode:
-                return self.id_like()
+                like = self.id_like()
+                if 'rhel' in like or 'centos' in like:
+                    return 'centos'
+                return like[0]
             return self.defs.get("ID", "")
 
+        # possibly list of values, e.g. "rhel centos fedora"
         def id_like(self):
-            # possibly list of values, e.g. "rhel fedora"
-            like = self.defs.get("ID_LIKE", "").split()
-            if like == []:
-                return ""
-            return like[0]
+            return self.defs.get("ID_LIKE", "").split()
 
         def version_id(self):
             brand = self.brand_id()
@@ -142,6 +142,10 @@ class Platform:
                     raise Error("Cannot determine os version")
                 return ver_id
 
+            if brand in self.RHEL_BRANDS:
+                ver = self.defs.get("VERSION_ID", "").split('.')
+                return ver[0]
+            
             ver = self.defs.get("VERSION_ID", "")
             if ver == "" and self.id() == 'debian':
                 ver, _ = self.debian_sid_version()
@@ -237,7 +241,7 @@ class Platform:
             self.os_ver = self.os_full_ver = 'unknown'
 
     def _identify_linux_full_ver(self, os_release, distname):
-        if distname == 'centos' or distname == 'redhat':
+        if distname == 'centos' or distname == 'redhat' or distname == 'rocky' or distname == 'almalinux':
             redhat_release = fread('/etc/redhat-release')
             m = match(r'.* release ([^\s]+)', redhat_release)
             if m:
@@ -259,7 +263,7 @@ class Platform:
         elif distname == 'ubuntu':
             if self.osnick == 'ubuntu14.04':
                 self.osnick = 'trusty'
-        elif distname.startswith('centos'):
+        elif distname.startswith('centos') or distname.startswith('rocky') or distname.startswith('almalinux'):
             distname = 'centos'
         elif distname.startswith('redhat') or distname == 'rhel':
             distname = 'redhat'
@@ -269,7 +273,7 @@ class Platform:
             distname = 'amzn'
             self.osnick = 'amzn' + str(os_release.version_id())
         else:
-            if os_release.id_like() == 'arch':
+            if 'arch' in os_release.id_like():
                 distname = 'arch'
             if self.strict:
                 raise Error("Cannot determine distribution")
