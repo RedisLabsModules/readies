@@ -25,6 +25,8 @@ OS.tumbleweed=opensuse/tumbleweed
 OS.archlinux=archlinux:latest
 OS.alpine3=alpine:latest
 OS.ol8=oraclelinux:8
+OS.alma8=almalinux:8
+OS.rocky8=rockylinux:8
 
 endif # OS
 

@@ -88,6 +88,8 @@ OS.leap15.3=opensuse/leap:15.3
 OS.tumbleweed=opensuse/tumbleweed
 OS.archlinux=archlinux:latest
 OS.ol8=oraclelinux:8
+OS.alma8=almalinux:8
+OS.rocky8=rockylinux:8
 
 endif # OS
 
