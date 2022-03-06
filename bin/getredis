@@ -211,6 +211,9 @@ class RedisSourceSetup(paella.Setup):
             self.base_dir = tempfile.mkdtemp(prefix='redis.')
         print('# work dir: ' + self.base_dir)
 
+        if self.version == 'unstable':
+            self.version = None
+            self.branch = 'unstable'
         if self.version is None and self.branch is None:
             self.branch = 'unstable'
         if self.version is not None:
@@ -450,8 +453,8 @@ class RedisRepoSetup(paella.Setup):
 parser = argparse.ArgumentParser(description='Set up system for build.')
 parser.add_argument('-n', '--nop', action="store_true", help='no operation')
 parser.add_argument('-s', '--source', action="store_true", help="Build from source")
-parser.add_argument('-v', '--version', type=str, help='Redis version (e.g. 6, 6.0, 6.0.1')
-parser.add_argument('-b', '--branch', type=str, help='Redis branch (e.g. 6, 6.0)')
+parser.add_argument('-v', '--version', type=str, help='Redis version (e.g. 6, 6.0, 6.0.1, or "unstable")')
+parser.add_argument('-b', '--branch', type=str, help='Redis branch (e.g. 6, 6.0, unstable)')
 parser.add_argument('--valgrind', action="store_true", help="Build a Valgdind-compatible Redis (i.e. with libc & -O0)")
 parser.add_argument('--clang-asan', action="store_true", help="Build with Clang address sanitizer")
 parser.add_argument('--clang-msan', action="store_true", help="Build with Clang memory sanitizer")
