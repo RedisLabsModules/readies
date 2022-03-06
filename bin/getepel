@@ -33,7 +33,8 @@ if [[ -z $EPEL ]]; then
 fi
 [[ $EPEL == 7* ]] && EPEL=7
 [[ $EPEL == 8* ]] && EPEL=8
-if [[ $EPEL != 7 && $EPEL != 8 ]]; then
+[[ $EPEL == 9* ]] && EPEL=9
+if [[ $EPEL != 7 && $EPEL != 8 && $EPEL != 9 ]]; then
 	eprint "Cannot determine EPEL version."
 	exit 1
 fi
@@ -58,7 +59,7 @@ if is_command dnf; then
 		# runn dnf install -q -y --allowerasing https://dl.fedoraproject.org/pub/epel/epel-release-latest-${EPEL}.noarch.rpm
 		runn dnf install -q -y http://rpms.remirepo.net/enterprise/remi-release-${EPEL}.rpm
 	fi
-	runn dnf config-manager -qy --set-enabled remi powertools
+	runn dnf config-manager -y --set-enabled remi powertools
 
 	# enable raven repo (i.e. pkgs.org)
 	if [[ $EPEL == 8 && `uname -m` == x86_64 && NO_RAVEN != 1 ]]; then
