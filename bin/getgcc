@@ -21,6 +21,7 @@ class SystemSetup(paella.Setup):
         self.install("build-essential")
         if self.modern:
             if self.platform.is_arm64():
+                self.add_repo("ppa:ubuntu-toolchain-r/test")
                 self.install("gcc-11 g++-11", output=False, _try=True)
                 self.run("update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 60 --slave /usr/bin/g++ g++ /usr/bin/g++-11", sudo=True)
             else:
