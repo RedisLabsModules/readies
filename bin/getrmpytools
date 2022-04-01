@@ -83,18 +83,12 @@ class RMPyToolsSetup(paella.Setup):
             self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/redisfab/redis-py-cluster@2.1")
 
         if self.rltest_version is None:
-            if self.modern:
-                self.rltest_version = 'master'
-                self.ramp_version = "master"
-            else:
-                self.rltest_version = '0.4'
-                self.ramp_version = '2.2'
+            self.rltest_version = 'master' if self.modern else '0.4'
+        self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/RedisLabsModules/RLTest.git@{VER}".format(VER=self.rltest_version))
 
-        if self.rltest_version is not None:
-            self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/RedisLabsModules/RLTest.git@{VER}".format(VER=self.rltest_version))
-
-        if self.ramp_version is not None:
-            self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/RedisLabs/RAMP@{VER}".format(VER=self.ramp_version))
+        if self.ramp_version is None:
+            self.ramp_version = "master" if self.modern else '2.2'
+        self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/RedisLabs/RAMP@{VER}".format(VER=self.ramp_version))
 
 #----------------------------------------------------------------------------------------------
 
