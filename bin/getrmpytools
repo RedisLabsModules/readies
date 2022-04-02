@@ -25,7 +25,18 @@ class RMPyToolsSetup(paella.Setup):
             self.reinstall = False
         else:
             self.reinstall = args.reinstall
+        self.master = args.master
         self.modern = args.modern
+        if args.redispy_version:
+            verspec = args.redispy_version.split('/')
+            if len(verspec) > 1:
+                self.redispy_org, self.redispy_version = verspec[:2]
+            else:
+                self.redispy_org = "redis"
+                self.redispy_version = verspec[0]
+        else:
+            self.redispy_org = "redis"
+            self.redispy_version = None
         self.rltest_version = args.rltest_version
         self.ramp_version = args.ramp_version
 
@@ -70,25 +81,44 @@ class RMPyToolsSetup(paella.Setup):
         if self.reinstall:
             self.pip_uninstall("redis redis-py-cluster ramp-packer RLTest")
             
-        # redis-py and redis-py-cluster
-        if self.modern:
-            # self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/redis/redis-py.git@master")
-            pass # will be installed by other packages
-        else:
-            self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/redisfab/redis-py.git@3.5")
+        if self.master:
+            self.redispy_org = 'redis'
+            self.redispy_version = 'master'
+            self.rltest_version = 'master'
+            self.ramp_version = 'master'
 
+        if self.redispy_version is None:
+            if self.modern:
+                self.pip_install("--no-cache-dir --ignore-installed redis~=4.2")
+            else:
+                self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/redisfab/redis-py.git@3.5")
+
+                self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/redisfab/redis-py-cluster@2.1")
+        else:
+            self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/{ORG}/redis-py.git@{VER}".\
+                             format(ORG=self.redispy_org, VER=self.redispy_version))
+
+        if not self.master and not self.modern:
             # redis-py-cluster should be installed from git due to redis-py dependency
             # self.pip_install("--no-cache-dir git+https://github.com/Grokzen/redis-py-cluster.git@master")
             # self.pip_install("--no-cache-dir --ignore-installed redis-py-cluster")
             self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/redisfab/redis-py-cluster@2.1")
 
         if self.rltest_version is None:
-            self.rltest_version = 'master' if self.modern else '0.4'
-        self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/RedisLabsModules/RLTest.git@{VER}".format(VER=self.rltest_version))
+            if self.modern:
+                self.pip_install("--no-cache-dir --ignore-installed RLTest~=0.5")
+            else:
+                self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/RedisLabsModules/RLTest.git@0.4")
+        else:
+            self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/RedisLabsModules/RLTest.git@{VER}".format(VER=self.rltest_version))
 
         if self.ramp_version is None:
-            self.ramp_version = "master" if self.modern else '2.2'
-        self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/RedisLabs/RAMP@{VER}".format(VER=self.ramp_version))
+            if self.modern:
+                self.pip_install("--no-cache-dir --ignore-installed ramp-packer~=2.3")
+            else:
+                self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/RedisLabs/RAMP@2.2")
+        else:
+            self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/RedisLabs/RAMP@{VER}".format(VER=self.ramp_version))
 
 #----------------------------------------------------------------------------------------------
 
@@ -106,8 +136,10 @@ parser.add_argument('--no-reinstall', action="store_true", default=False, help='
 parser.add_argument('--reinstall', action="store_true", default=False, help='Reinstall everything')
 parser.add_argument('--remove', action="store_true", default=False, help='Uninstall everything')
 parser.add_argument('--modern', action="store_true", default=False, help='Install modern versions of redis-py (4.x), RLTest, and RAMP')
-parser.add_argument('--rltest-version', type=str, default=None, help="RLTest github version/branch")
-parser.add_argument('--ramp-version', type=str, default=None, help="RAMP github version/branch")
+parser.add_argument('--master', action="store_true", default=False, help='Install redis-py, RLTest, RAMP from master')
+parser.add_argument('--redispy-version', metavar='VER', type=str, default=None, help="redis-py github version: version or branch or org/branch")
+parser.add_argument('--rltest-version', metavar='VER', type=str, default=None, help="RLTest github version or branch")
+parser.add_argument('--ramp-version', metavar='VER', type=str, default=None, help="RAMP github version or branch")
 args = parser.parse_args()
 
 try:
