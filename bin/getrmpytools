@@ -46,7 +46,7 @@ class RMPyToolsSetup(paella.Setup):
         self.pip_install("psutil")
 
     def common_first(self):
-        self.psutil_installed = self.pip_install("psutil", _try=True, output=False) == 0
+        self.psutil_installed = self.pip_install("psutil~=5.8.0", _try=True, output=False) == 0
 
     def debian_compat(self):
         if not self.psutil_installed:
