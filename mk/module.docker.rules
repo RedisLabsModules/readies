@@ -196,7 +196,10 @@ ifeq ($(ARTIFACTS),1)
 	done
 endif
 	@E=`cat $(ART_DIR)/tests/status` ;\
-	if [[ $$E != 0 ]]; then false; fi
+	if [[ $$E != 0 ]]; then \
+		>&2 echo "Tests failed - aborting." ;\
+		false ;\
+	fi
 
 publish:
 	@$(DOCKERWRAPPER_CMD) --publish-only
