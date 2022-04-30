@@ -14,19 +14,19 @@ except:
 #----------------------------------------------------------------------------------------------
 
 def fread(fname, mode='r'):
-	with open(fname, mode) as file:
-		return file.read()
+    with open(fname, mode) as file:
+        return file.read()
 
 #----------------------------------------------------------------------------------------------
 
-def fwrite(fname, text, mode='w'):
-	with open(fname, mode) as file:
-		return file.write(text)
+def fwrite(fname, text, mode='w', encode=True):
+    with open(fname, mode) as file:
+        return file.write(text)
 
 #----------------------------------------------------------------------------------------------
 
 def flines(fname, mode = 'r'):
-	return [line.rstrip() for line in open(fname)]
+    return [line.rstrip() for line in open(fname)]
 
 #----------------------------------------------------------------------------------------------
 
