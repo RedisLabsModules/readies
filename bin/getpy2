@@ -138,7 +138,6 @@ install_pip() {
 	[[ $PIP != 1 ]] && pipspec="pip==$PIP"
 
 	local packs="ca-certificates wget"
-	# local packs=""
 
 	if is_command apt-get; then
 		export DEBIAN_FRONTEND=noninteractive
@@ -169,6 +168,7 @@ install_pip() {
 	runn $MYPY /tmp/get-pip.py $pipspec
 	rm -f /tmp/get-pip.py
 
+	# [[ -z $pipspec ]] && pipspec=pip
 	# runn $MYPY -m pip install $PIP_USER --upgrade $pipspec
 }
 

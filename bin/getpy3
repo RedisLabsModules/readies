@@ -44,6 +44,7 @@ if [[ $(id -u) != 0 ]]; then
 	fi
 fi
 
+# (This is suspended and remains here for the next time pip is broken.)
 # pip 20.x is broken is the sense that it will not respect virtualenv's system-site-packages
 # thus requiring packages to be built from source in order to be installed.
 # Until this is fixed we stick to pip 19.3.1.
@@ -70,8 +71,7 @@ fix_variants() {
 check_variants() {
 	if [[ -n $MYPY ]]; then
 		PYTHON=$MYPY
-		PYTHON2=$MYPY
-		PYTHON27=$MYPY
+		PYTHON3=$MYPY
 		return
 	fi
 	PYTHON=$(command -v python)
@@ -95,16 +95,17 @@ check_variants() {
 }
 
 install_python_on_old_ubuntu() {
-	#PYTHON=1 $READIES/bin/getconda
+	# Possible workaround - currently disabled
+	# PYTHON=1 $READIES/bin/getconda
 
 	# ppa:deadsnakes no longer provides for xenial, trusty
-	 export DEBIAN_FRONTEND=noninteractive
-	 runn $SUDO apt-get install --fix-missing -y software-properties-common
-	 runn $SUDO add-apt-repository -y ppa:fkrull/deadsnakes
-	 runn $SUDO apt-get -qq update
-	 runn $SUDO apt-get install --fix-missing -y python3.6
-	 runn ln -sf `command -v python3.6` /usr/local/bin/python3
-	 runn $SUDO apt-get install --fix-missing -y python3.6-venv
+	export DEBIAN_FRONTEND=noninteractive
+	runn $SUDO apt-get install --fix-missing -y software-properties-common
+	runn $SUDO add-apt-repository -y ppa:fkrull/deadsnakes
+	runn $SUDO apt-get -qq update
+	runn $SUDO apt-get install --fix-missing -y python3.6
+	runn ln -sf `command -v python3.6` /usr/local/bin/python3
+	runn $SUDO apt-get install --fix-missing -y python3.6-venv
 }
 
 install_python() {
@@ -217,10 +218,10 @@ fi
 [[ -z $MYPY || $FORCE == 1 ]] && install_python
 
 if is_command brew; then
-	# the following is for avoiding python to be upgraded by brew silently,
+	# The following is for avoiding python to be upgraded by brew silently,
 	# hence disrupting pip installaitons.
-	# this however gets trickier, as brew mighit not recognize a currently installed
-	# python version, and upgrade will fail. thus, we need to force installation, and
+	# This however gets trickier, as brew mighit not recognize a currently installed
+	# python version, and upgrade will fail. Thus, we need to force installation, and
 	# still be graceful about failures.
 	runn "brew upgrade python || brew install python3 || true"
 fi
