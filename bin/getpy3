@@ -226,19 +226,18 @@ if is_command brew; then
 	runn "brew upgrade python || brew install python3 || true"
 fi
 
-MYPY=""
 check_variants
 if ! is_command $MYPY; then
 	eprint "Cannot install Python3. Aborting."
 	exit 1
 fi
 
-[[ $PIP != 0 ]] && install_pip
-
 PIP_USER=""
 if [[ $(uname) == Darwin ]]; then
 	PIP_USER="--user"
 fi
+
+[[ $PIP != 0 ]] && install_pip
 
 REQ=$READIES/paella/requirements.txt
 if [[ -n $VENV && $VENV != 0 ]]; then

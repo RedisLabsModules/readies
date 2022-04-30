@@ -182,6 +182,9 @@ fi
 
 [[ -z $MYPY || $FORCE == 1 ]] && install_python
 
+# The following no longer a problem in macOS, we keep it here for the case the
+# problem re-emerges.
+
 # if is_command brew; then
 # 	# the following is for avoiding python to be upgraded by brew silently,
 # 	# hence disrupting pip installaitons
