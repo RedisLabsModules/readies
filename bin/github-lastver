@@ -5,7 +5,6 @@ import sys
 import os
 import argparse
 import json
-from semantic_version import Version
 import traceback
 
 try:
@@ -17,6 +16,16 @@ HERE = os.path.dirname(__file__)
 READIES = os.path.abspath(os.path.join(HERE, ".."))
 sys.path.insert(0, READIES)
 import paella  # noqa: F401
+
+#----------------------------------------------------------------------------------------------
+
+def no_v(v):
+    return v[1:] if v.startswith('v') else v
+
+#class PartialVersion(Version):
+#    def __init__(self, *args, **kwargs):
+#        kwargs['partial'] = True
+#        super(PartialVersion, self).__init__(*args, **kwargs)
 
 #----------------------------------------------------------------------------------------------
 
@@ -36,20 +45,27 @@ def read_github_versions(org, repo):
         j += j1
         if r.headers["link"] == "":
             break
+
+        if r.headers["link"] is None:
+            break
         links0 = r.headers["link"].split(",")
         links1 = list(map(lambda a: list(map(lambda b: str.strip(b), a.split(';'))), links0))
         next_link = list(filter(lambda x: x[1] == 'rel="next"', links1))
         if next_link == []:
             break
         url = next_link[0][0][1:-1]
-    return list(map(lambda v: v['name'], j))
+    return list(filter(lambda v: v[:1].isdigit(), map(lambda v: no_v(v['name']), j)))
 
 def get_github_versions(org, repo, version):
+    BB()
     redis_versions = read_github_versions(org, repo)
+    redis_versions.sort(key=paella.Version)
+    if version is None or version == "":
+        return redis_versions
     if version in redis_versions:
         return [version]
 
-    sv = Version(version, partial=True)
+    sv = Version(no_v(version), partial=True)
     if sv.patch is not None:
         # this would fail, as the fully qualified version is not in redis_versions
         version = str(sv)

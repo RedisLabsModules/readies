@@ -9,7 +9,6 @@ import shutil
 import tempfile
 import traceback
 import textwrap
-from semantic_version import Version
 
 try:
     from urllib2 import urlopen
@@ -98,7 +97,7 @@ class RedisSourceSetup(paella.Setup):
         if self.version in self.redis_versions:
             return [self.version]
 
-        sv = Version(self.version, partial=True)
+        sv = paella.Version(self.version)
         if sv.patch is not None:
             # this would fail, as the fully qualified self.version is not in self.redis_versions
             version = str(sv)
@@ -203,7 +202,6 @@ class RedisSourceSetup(paella.Setup):
         """.format(DIR=ssl_dir), sudo=True)
 
     def download_redis(self):
-        from semantic_version import Version
         if self.workdir is not None:
             paella.mkdir_p(self.workdir)
             self.base_dir = self.workdir
@@ -229,7 +227,7 @@ class RedisSourceSetup(paella.Setup):
                 shutil.move('redis-{}'.format(version), 'redis')
         if self.branch is not None:
             try:
-                sv = Version(self.branch, partial=True)
+                sv = paella.Version(self.branch, partial=True)
                 if sv.patch is not None:
                     raise RuntimeError('branch can only include major/minor numbers')
                 if sv.minor is None:
@@ -261,6 +259,7 @@ class RedisSourceSetup(paella.Setup):
         if self.suffix:
             build_args += ['PROG_SUFFIX="-%s"' % self.suffix]
 
+        build_args += ['LDFLAGS="-static-libgcc"']
         openssl_build_args = []
         
         if args.clang_san_blacklist is not None:

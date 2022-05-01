@@ -9,6 +9,7 @@ from .text import *
 from .log import *
 from .platform import *
 from .setup import *
+from .contrib.version import Version
 
 #----------------------------------------------------------------------------------------------
 
