@@ -58,13 +58,13 @@ def read_github_versions(org, repo):
 
 def get_github_versions(org, repo, version):
     redis_versions = read_github_versions(org, repo)
-    redis_versions.sort(key=paella.Version)
+    redis_versions.sort(key=paella.Version, reverse=True)
     if version is None or version == "":
         return redis_versions
     if version in redis_versions:
         return [version]
 
-    sv = paella.Version(no_v(version), partial=True)
+    sv = paella.Version(no_v(version))
     if sv.patch is not None:
         # this would fail, as the fully qualified version is not in redis_versions
         version = str(sv)
