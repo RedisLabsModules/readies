@@ -1,0 +1,24 @@
+name: Manual1
+
+on: workflow_dispatch
+
+jobs:
+#  platforms:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v1
+#      - run: git clone https://github.com/RedisLabsModules/readies.git
+#      - run: |
+#          for platform in ubuntu:trusty ubuntu:xenial ubuntu:bionic ubuntu:focal ubuntu:jammy debian:bullseye centos:7 rockylinux:8; do
+#            docker build -t -e OS=$platform ${platform}-readies .
+#          done
+#      - run: docker build -t docker1 . 
+
+  platforms:
+    strategy:
+      matfix:
+        os: [ubuntu:trusty, ubuntu:xenial, ubuntu:bionic, ubuntu:focal, ubuntu:jammy, debian:bullseye, centos:7, rockylinux:8]
+    steps:
+      - uses: actions/checkout@v1
+      - run: git clone https://github.com/RedisLabsModules/readies.git
+      - run: docker build -t --build-arg OS=$os ${os}-readies -f tests/platform/Dockerfile .
