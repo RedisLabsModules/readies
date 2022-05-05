@@ -121,7 +121,10 @@ install_python36_on_debian9_x64() {
 	cd $tempd
 	runn wget https://github.com/chriskuehl/python3.6-debian-stretch/releases/download/v3.6.3-1-deb9u1/{python3.6_3.6.3-1.deb9u1_amd64,python3.6-minimal_3.6.3-1.deb9u1_amd64,python3.6-dev_3.6.3-1.deb9u1_amd64,libpython3.6_3.6.3-1.deb9u1_amd64,libpython3.6-minimal_3.6.3-1.deb9u1_amd64,libpython3.6-stdlib_3.6.3-1.deb9u1_amd64,libpython3.6-dev_3.6.3-1.deb9u1_amd64}.deb
 	runn $SUDO dpkg -i *.deb
-	[[ -f /usr/bin/python3.6 ]] && ln -sf /usr/bin/python3.6 /usr/local/bin/python3
+	if [[ -f /usr/bin/python3.6 ]]; then
+		ln -sf /usr/bin/python3.6 /usr/local/bin/python3
+		export MYPY=/usr/local/bin/python3
+	fi
 	cd $HERE
 	rm -rf $tempd
 }
@@ -180,7 +183,9 @@ install_pip() {
 		export DEBIAN_FRONTEND=noninteractive
 		runn $SUDO apt-get -qq update --fix-missing
 		runn $SUDO apt-get install --fix-missing -y $packs
-		runn $SUDO apt-get install --fix-missing -y python3-distutils || runn $SUDO apt-get install --fix-missing -y  python3-distutils-extra
+		runn @<<-EOF
+			$SUDO apt-get install --fix-missing -y python3-distutils || $SUDO apt-get install --fix-missing -y python3-distutils-extra
+			EOF
 	elif is_command dnf; then
 		runn $SUDO dnf install -y $packs
 	elif is_command yum; then
