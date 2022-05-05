@@ -3,7 +3,10 @@ ARG OS
 
 FROM ${OS}
 
-WORKDIR /build
-ADD . /build
+WORKDIR /readies
+ADD . /readies/
 
-RUN V=2 ./bin/getpy3
+RUN set -e ;\
+	echo "::group::getpy3" ;\
+	V=2 ./bin/getpy3 ;\
+	echo "::endgroup::"
