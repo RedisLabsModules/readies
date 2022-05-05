@@ -10,10 +10,6 @@ ROOT=$(cd $HERE/../.. && pwd)
 READIES=$ROOT/readies
 . $READIES/shibumi/defs
 
-if [[ -f /etc/os-release ]]; then
-    osver=$(source /etc/os-release; echo "${ID}${VERSION_ID}")
-fi
-
 if [[ $1 == --help || $1 == help || $HELP == 1 ]]; then
 	cat <<-END
 		[ARGVARS...] getpy3 [--help|help]
@@ -33,6 +29,11 @@ if [[ $1 == --help || $1 == help || $HELP == 1 ]]; then
 	END
 	exit 0
 fi
+
+if [[ -f /etc/os-release ]]; then
+	osver=$(source /etc/os-release; echo "${ID}${VERSION_ID}")
+fi
+arch=$(uname -m)
 
 [[ $VERBOSE == 1 ]] && { set -x; PS4='$LINENO: '; }
 [[ -z $PIP ]] && PIP=1
@@ -108,6 +109,23 @@ install_python_on_old_ubuntu() {
 	runn $SUDO apt-get install --fix-missing -y python3.6-venv
 }
 
+install_python36_on_debian9_x64() {
+	$SUDO $READIES/bin/getget
+
+	runn $SUDO apt-get install --fix-missing -y \
+		software-properties-common apt-transport-https \
+		unzip lsb-release gnupg2 \
+		libbz2-dev libssl-dev libsqlite3-dev libreadline-dev libgdbm-dev \
+		tk-dev libncursesw5-dev liblzma-dev uuid-dev libexpat1-dev
+	tempd=$(mktemp -d /tmp/py3.XXXXXX)
+	cd $tempd
+	runn wget https://github.com/chriskuehl/python3.6-debian-stretch/releases/download/v3.6.3-1-deb9u1/{python3.6_3.6.3-1.deb9u1_amd64,python3.6-minimal_3.6.3-1.deb9u1_amd64,python3.6-dev_3.6.3-1.deb9u1_amd64,libpython3.6_3.6.3-1.deb9u1_amd64,libpython3.6-minimal_3.6.3-1.deb9u1_amd64,libpython3.6-stdlib_3.6.3-1.deb9u1_amd64,libpython3.6-dev_3.6.3-1.deb9u1_amd64}.deb
+	runn $SUDO dpkg -i *.deb
+	[[ -f /usr/bin/python3.6 ]] && ln -sf /usr/bin/python3.6 /usr/local/bin/python3
+	cd $HERE
+	rm -rf $tempd
+}
+
 install_python() {
 	if [[ $(uname) == Darwin ]]; then
 		if ! is_command brew; then
@@ -125,20 +143,8 @@ install_python() {
 		runn $SUDO apt-get -qq update --fix-missing
 		if [[ $osver == ubuntu14.04 || $osver == ubuntu16.04 ]]; then
 			install_python_on_old_ubuntu
-		elif [[ $osver == debian9 ]]; then
-			$SUDO $READIES/bin/getget
-
-			runn $SUDO apt-get install --fix-missing -y \
-				software-properties-common apt-transport-https \
-				unzip lsb-release gnupg2 \
-				libbz2-dev libssl-dev libsqlite3-dev libreadline-dev libgdbm-dev tk-dev libncursesw5-dev liblzma-dev uuid-dev libexpat1-dev
-            mkdir -p /tmp/PKGS
-            amhere=`pwd`
-            cd /tmp/PKGS
-            runn wget https://github.com/chriskuehl/python3.6-debian-stretch/releases/download/v3.6.3-1-deb9u1/{python3.6_3.6.3-1.deb9u1_amd64,python3.6-minimal_3.6.3-1.deb9u1_amd64,python3.6-dev_3.6.3-1.deb9u1_amd64,libpython3.6_3.6.3-1.deb9u1_amd64,libpython3.6-minimal_3.6.3-1.deb9u1_amd64,libpython3.6-stdlib_3.6.3-1.deb9u1_amd64,libpython3.6-dev_3.6.3-1.deb9u1_amd64}.deb
-            runn $SUDO dpkg -i *.deb
-			[[ -f /usr/bin/python3.6 ]] && ln -sf /usr/bin/python3.6 /usr/local/bin/python3
-            cd $amhere
+		elif [[ $osver == debian9 && $arch == x86_64 ]]; then
+			install_python36_on_debian9_x64
 		else
 			runn $SUDO apt-get install --fix-missing -y python3
 		fi
