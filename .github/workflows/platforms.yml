@@ -4,13 +4,14 @@ on:
   workflow_dispatch:
 
 jobs:
-  platforms:
+  platform-tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: docker build -t --build-arg OS=ubuntu:trusty ubuntu:trusty-readies -f tests/platform/Dockerfile .
+      - name: Test on ubuntu:trusty
+        run: docker build -t ubuntu:trusty-readies --build-arg OS=ubuntu:trusty -f tests/platform/Dockerfile .
 
-#  platforms:
+#  platform-tests:
 #    runs-on: ubuntu-latest
 #    steps:
 #      - uses: actions/checkout@v3
@@ -20,11 +21,11 @@ jobs:
 #          done
 #      - run: docker build -t docker1 . 
 
-#  platforms:
+#  platform-tests:
 #    runs-on: ubuntu-latest
 #    strategy:
 #      matfix:
 #        os: [ubuntu:trusty, ubuntu:xenial, ubuntu:bionic, ubuntu:focal, ubuntu:jammy, debian:bullseye, centos:7, rockylinux:8]
 #    steps:
 #      - uses: actions/checkout@v3
-#      - run: docker build -t --build-arg OS=${{os}} ${{os}}-readies -f tests/platform/Dockerfile .
+#      - run: docker build -t ${{os}}-readies --build-arg OS=${{os}} -f tests/platform/Dockerfile .
