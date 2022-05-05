@@ -2,30 +2,29 @@ name: Platform tests
 
 on:
   workflow_dispatch:
-    inputs:
-      logLevel:
-        description: 'Log level'     
-        required: true
-        default: 'warning'
 
 jobs:
+  platforms:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: docker build -t --build-arg OS=ubuntu:trusty ubuntu:trusty-readies -f tests/platform/Dockerfile .
+
 #  platforms:
 #    runs-on: ubuntu-latest
 #    steps:
-#      - uses: actions/checkout@v1
-#      - run: git clone https://github.com/RedisLabsModules/readies.git
+#      - uses: actions/checkout@v3
 #      - run: |
 #          for platform in ubuntu:trusty ubuntu:xenial ubuntu:bionic ubuntu:focal ubuntu:jammy debian:bullseye centos:7 rockylinux:8; do
 #            docker build -t -e OS=$platform ${platform}-readies .
 #          done
 #      - run: docker build -t docker1 . 
 
-  platforms:
-    runs-on: ubuntu-latest
-    strategy:
-      matfix:
-        os: [ubuntu:trusty, ubuntu:xenial, ubuntu:bionic, ubuntu:focal, ubuntu:jammy, debian:bullseye, centos:7, rockylinux:8]
-    steps:
-      - uses: actions/checkout@v1
-      - run: git clone https://github.com/RedisLabsModules/readies.git
-      - run: docker build -t --build-arg OS=$os ${os}-readies -f tests/platform/Dockerfile .
+#  platforms:
+#    runs-on: ubuntu-latest
+#    strategy:
+#      matfix:
+#        os: [ubuntu:trusty, ubuntu:xenial, ubuntu:bionic, ubuntu:focal, ubuntu:jammy, debian:bullseye, centos:7, rockylinux:8]
+#    steps:
+#      - uses: actions/checkout@v3
+#      - run: docker build -t --build-arg OS=${{os}} ${{os}}-readies -f tests/platform/Dockerfile .
