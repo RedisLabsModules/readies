@@ -21,6 +21,7 @@ jobs:
 #      - run: docker build -t docker1 . 
 
   platforms:
+    runs-on: ubuntu-latest
     strategy:
       matfix:
         os: [ubuntu:trusty, ubuntu:xenial, ubuntu:bionic, ubuntu:focal, ubuntu:jammy, debian:bullseye, centos:7, rockylinux:8]
