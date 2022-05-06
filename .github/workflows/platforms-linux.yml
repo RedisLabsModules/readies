@@ -1,4 +1,4 @@
-name: Platform tests
+name: Linux platform tests
 
 on:
   workflow_dispatch:
