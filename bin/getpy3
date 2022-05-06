@@ -10,6 +10,8 @@ ROOT=$(cd $HERE/../.. && pwd)
 READIES=$ROOT/readies
 . $READIES/shibumi/defs
 
+#----------------------------------------------------------------------------------------------
+
 if [[ $1 == --help || $1 == help || $HELP == 1 ]]; then
 	cat <<-END
 		[ARGVARS...] getpy3 [--help|help]
@@ -29,6 +31,10 @@ if [[ $1 == --help || $1 == help || $HELP == 1 ]]; then
 	END
 	exit 0
 fi
+
+#----------------------------------------------------------------------------------------------
+
+USER_MYPY="$MYPY"
 
 if [[ -f /etc/os-release ]]; then
 	osver=$(source /etc/os-release; echo "${ID}${VERSION_ID}")
@@ -51,6 +57,8 @@ fi
 # Until this is fixed we stick to pip 19.3.1.
 # [[ $PIP == 1 ]] && PIP=19.3.1
 
+#----------------------------------------------------------------------------------------------
+
 # the end state should be:
 # in a python2 venv: `python` command (don't fix)
 # in a non-python2 venv or outside venv:
@@ -70,9 +78,9 @@ fix_variants() {
 }
 
 check_variants() {
-	if [[ -n $MYPY ]]; then
-		PYTHON=$MYPY
-		PYTHON3=$MYPY
+	if [[ -n $USER_MYPY ]]; then
+		PYTHON="$USER_MYPY"
+		PYTHON3="$USER_MYPY"
 		return
 	fi
 	PYTHON=$(command -v python)
@@ -88,19 +96,20 @@ check_variants() {
 
 	[[ -n $PYTHON3 ]] && MYPY=$PYTHON3
 
-	export MINOR="$($MYPY --version 2>&1 | awk '{print $2}' | cut -d. -f2)"
+	MINOR="$($MYPY --version 2>&1 | awk '{print $2}' | cut -d. -f2)"
 	# Python3 <= 3.4 breaks contemporary pip
-	if (( MINOR <= 5 )); then export FORCE=1; fi
+	if (( MINOR <= 5 )); then FORCE=1; fi
 
 	if [[ -n $FIX ]]; then fix_variants; fi
 }
+
+#----------------------------------------------------------------------------------------------
 
 install_python_on_old_ubuntu() {
 	# Possible workaround - currently disabled
 	# PYTHON=1 $READIES/bin/getconda
 
 	# ppa:deadsnakes no longer provides for xenial, trusty
-	export DEBIAN_FRONTEND=noninteractive
 	runn $SUDO apt-get install --fix-missing -y software-properties-common
 	runn $SUDO add-apt-repository -y ppa:fkrull/deadsnakes
 	runn $SUDO apt-get -qq update
@@ -123,7 +132,7 @@ install_python36_on_debian9_x64() {
 	runn $SUDO dpkg -i *.deb
 	if [[ -f /usr/bin/python3.6 ]]; then
 		ln -sf /usr/bin/python3.6 /usr/local/bin/python3
-		export MYPY=/usr/local/bin/python3
+		MYPY=/usr/local/bin/python3
 	fi
 	cd $HERE
 	rm -rf $tempd
@@ -138,7 +147,7 @@ install_python() {
 		fi
 
 		# try to fix /usr/local/bin/python on macOS unless stated otherwize
-		[[ $FIX != 0 ]] && export FIX=1
+		[[ $FIX != 0 ]] && FIX=1
 	fi
 
 	if is_command apt-get; then
@@ -169,6 +178,8 @@ install_python() {
 		runn $SUDO pacman -Syy --noconfirm python
 	fi
 }
+
+#----------------------------------------------------------------------------------------------
 
 install_pip() {
 	if [[ $FORCE != 1 ]]; then
@@ -218,11 +229,15 @@ install_pip() {
 	runn $MYPY -m pip install --upgrade pip
 }
 
+#----------------------------------------------------------------------------------------------
+
 check_variants
 
 # [[ -n $MYPY && $PIP == 0 && $FORCE != 1 ]] && exit 0
+
 if [[ $CHECK == 1 ]]; then
-	if $MYPY -m pip --version 2>&1 > /dev/null; then exit 0; fi
+	# Make sure pip is installed
+	if $MYPY -m pip --version &> /dev/null; then exit 0; fi
 	exit 1
 fi
 
