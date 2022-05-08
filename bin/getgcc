@@ -59,6 +59,12 @@ class SystemSetup(paella.Setup):
                 self.install("gcc-toolset-11-libatomic-devel")
                 self.run("rm -f {}/gcc-toolset-*.sh".format(self.profile_d), sudo=True)
                 self.cp_to_profile_d("/opt/rh/gcc-toolset-11/enable", "gcc-toolset-11.sh")
+            elif self.arch == 'arm64v8':
+                self.install("centos-release-scl")
+                self.install("devtoolset-10")
+                self.install("devtoolset-10-libatomic-devel")
+                self.run("rm -f {}/scl-devtoolset-*.sh".format(self.profile_d), sudo=True)
+                self.cp_to_profile_d("/opt/rh/devtoolset-10/enable", "scl-devtoolset-10.sh")
             else:
                 self.install("centos-release-scl")
                 self.install("devtoolset-11")
