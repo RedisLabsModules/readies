@@ -253,10 +253,10 @@ class RedisSourceSetup(paella.Setup):
 
     def build_redis(self):
         try:
-            sh.paella("gcc --version 2>&1 | grep clang")
-            self.cc = "gcc"
-        except:
+            out = paella.sh("gcc --version 2>&1 | grep clang")
             self.cc = "clang"
+        except:
+            self.cc = "gcc"
 
         build_args = []
         build_args += ['valgrind'] if self.valgrind else ''
