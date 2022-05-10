@@ -252,6 +252,12 @@ class RedisSourceSetup(paella.Setup):
                 pass
 
     def build_redis(self):
+        try:
+            sh.paella("gcc --version 2>&1 | grep clang")
+            self.cc = "gcc"
+        except:
+            self.cc = "clang"
+
         build_args = []
         build_args += ['valgrind'] if self.valgrind else ''
         build_args += ['MALLOC=libc'] if self.libc_malloc else ''
@@ -259,7 +265,10 @@ class RedisSourceSetup(paella.Setup):
         if self.suffix:
             build_args += ['PROG_SUFFIX="-%s"' % self.suffix]
 
-        build_args += ['LDFLAGS="-static-libgcc"']
+        if self.cc == "gcc":
+            build_args += ['LDFLAGS="-static-libgcc"']
+        elif self.cc == "clang":
+            build_args += ['LDFLAGS="-static"']
         openssl_build_args = []
         
         if args.clang_san_blacklist is not None:
