@@ -267,8 +267,6 @@ class RedisSourceSetup(paella.Setup):
 
         if self.cc == "gcc":
             build_args += ['LDFLAGS="-static-libgcc"']
-        elif self.cc == "clang":
-            build_args += ['LDFLAGS="-static"']
         openssl_build_args = []
         
         if args.clang_san_blacklist is not None:
