@@ -39,4 +39,4 @@ Global.ctor = ctor
 Global.noctor = noctor
 Global.foldl = foldl
 Global.foldr = foldr
-Global.ENV = os.environ
+Global.ENV = Env()
