@@ -14,7 +14,7 @@ create_utf8_profile_script() {
 		export LANG="${x}.${__UTF8}"
 		export LANGUAGE="${x}.${__UTF8}"
 		# export LC_ALL="${x}.${__UTF8}"
-EOF
+		EOF
 }
 
 export __UTF8=utf8
@@ -37,7 +37,7 @@ elif command -v yum &> /dev/null; then
 	elif [[ -f /etc/yum.conf && -n $(grep '^override_install_langs=' /etc/yum.conf) ]]; then
 		runn @ <<-EOF
 			sed -i 's/^\(override_install_langs=\)/# \1/' /etc/yum.conf
-EOF
+			EOF
 		runn "yum reinstall -y glibc-common || yum install -y glibc-common"
 	fi
 	create_utf8_profile_script

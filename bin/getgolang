@@ -55,7 +55,7 @@ if [[ $NOP != 1 ]]; then
 	cat <<-EOF > $profile_d/golang.sh
 		export PATH=\${PATH}:${local_dir}/go/bin
 		export PATH=\${PATH}:`${local_dir}/go/bin/go env GOPATH`/bin
-EOF
+		EOF
 fi
 
 echo "to enable golang, invoke: source $profile_d/golang.sh"

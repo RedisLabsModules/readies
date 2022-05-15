@@ -19,7 +19,7 @@ if [[ $1 == --help || $1 == help || $HELP == 1 ]]; then
 		VERBOSE=1    Print commands
 		NOP=1        Print commands but do not execute
 
-	END
+		END
 	exit 0
 fi
 
