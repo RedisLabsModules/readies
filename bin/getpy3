@@ -25,7 +25,7 @@ if [[ $1 == --help || $1 == help || $HELP == 1 ]]; then
 		VENV=dir     Install virtualenv, create one in `dir`
 		FORCE=1      Install even if present
 		FIX=1        Create /usr/local/bin/python3 symlink (default on macOS)
-		VERBOSE=1    Print commands
+		VERBOSE=n    Verbosity level (1: print commands, 2: print results)
 		HELP=1       Print help
 
 	END
@@ -41,7 +41,8 @@ if [[ -f /etc/os-release ]]; then
 fi
 arch=$(uname -m)
 
-[[ $VERBOSE == 1 ]] && { set -x; PS4='$LINENO: '; }
+# [[ $VERBOSE == 1 ]] && { set -x; PS4='$LINENO: '; }
+V="$VERBOSE"
 [[ -z $PIP ]] && PIP=1
 
 SUDO=
@@ -226,7 +227,7 @@ install_pip() {
 	# `python3 -m pip --version` will fail to find pip
 	runn "$MYPY /tmp/get-pip.py $pipspec || true"
 	runn rm -f /tmp/get-pip.py
-	runn $MYPY -m pip install --upgrade pip
+	runn $MYPY -m pip install $PIP_USER --upgrade pip
 }
 
 #----------------------------------------------------------------------------------------------
@@ -258,10 +259,10 @@ if ! is_command $MYPY; then
 	exit 1
 fi
 
-PIP_USER=""
-if [[ $(uname) == Darwin ]]; then
-	PIP_USER="--user"
-fi
+PIP_USER="--user"
+# if [[ $(uname) == Darwin ]]; then
+#	PIP_USER="--user"
+# fi
 
 [[ $PIP != 0 ]] && install_pip
 

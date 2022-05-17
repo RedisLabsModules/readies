@@ -10,6 +10,8 @@ ROOT=$(cd $HERE/../.. && pwd)
 READIES=$ROOT/readies
 . $READIES/shibumi/defs
 
+#----------------------------------------------------------------------------------------------
+
 if [[ $1 == --help || $1 == help || $HELP == 1 ]]; then
 	cat <<-END
 		[ARGVARS...] getpy2 [--help|help]
@@ -23,14 +25,19 @@ if [[ $1 == --help || $1 == help || $HELP == 1 ]]; then
 		VENV=dir     Install virtualenv, create one in `dir`
 		FORCE=1      Install even if present
 		FIX=1        Create /usr/local/bin/python2 symlink (default on macOS)
-		VERBOSE=1    Print commands
+		VERBOSE=n    Verbosity level (1: print commands, 2: print results)
 		HELP=1       Print help
 
 	END
 	exit 0
 fi
 
-[[ $VERBOSE == 1 ]] && { set -x; PS4='$LINENO: '; }
+#----------------------------------------------------------------------------------------------
+
+USER_MYPY="$MYPY"
+
+# [[ $VERBOSE == 1 ]] && { set -x; PS4='$LINENO: '; }
+V="$VERBOSE"
 [[ -z $PIP ]] && PIP=1
 
 SUDO=
@@ -42,6 +49,8 @@ fi
 
 # 20.3.4 is the latest pip version that supports Python 2
 [[ $PIP == 1 ]] && PIP=20.3.4
+
+#----------------------------------------------------------------------------------------------
 
 # the end state should be:
 # in a python2 venv: `python` command (don't fix)
@@ -65,10 +74,10 @@ fix_variants() {
 }
 
 check_variants() {
-	if [[ -n $MYPY ]]; then
-		PYTHON=$MYPY
-		PYTHON2=$MYPY
-		PYTHON27=$MYPY
+	if [[ -n $USER_MYPY ]]; then
+		PYTHON="$USER_MYPY"
+		PYTHON2="$USER_MYPY"
+		PYTHON27="$USER_MYPY"
 		return
 	fi
 	PYTHON=$(command -v python)
@@ -89,6 +98,8 @@ check_variants() {
 	if [[ -n $FIX ]]; then fix_variants; fi
 }
 
+#----------------------------------------------------------------------------------------------
+
 install_python() {
 	if [[ $(uname) == Darwin ]]; then
 		if ! is_command brew; then
@@ -98,13 +109,13 @@ install_python() {
 		fi
 
 		# try to fix /usr/local/bin/python on macOS unless stated otherwize
-		[[ $FIX != 0 ]] && export FIX=1
+		[[ $FIX != 0 ]] && FIX=1
 	fi
 
 	if is_command apt-get; then
 		export DEBIAN_FRONTEND=noninteractive
-		runn $SUDO apt-get -qq update
-		runn $SUDO apt-get -qq install --fix-missing -y python
+		runn $SUDO apt-get -qq update --fix-missing
+		runn $SUDO apt-get install --fix-missing -y python
 	elif is_command dnf; then
 		runn $SUDO dnf install -y python2
 	elif is_command yum; then
@@ -119,8 +130,12 @@ install_python() {
 		# runn brew install python2
 	elif is_command pkg; then
 		runn $SUDO pkg install -y python2
+	elif is_command pacman; then
+		runn $SUDO pacman -Syy --noconfirm python2
 	fi
 }
+
+#----------------------------------------------------------------------------------------------
 
 install_pip() {
 	if [[ $FORCE != 1 ]]; then
@@ -141,7 +156,7 @@ install_pip() {
 
 	if is_command apt-get; then
 		export DEBIAN_FRONTEND=noninteractive
-		runn $SUDO apt-get -qq update
+		runn $SUDO apt-get -qq update --fix-missing
 		runn $SUDO apt-get install --fix-missing -y $packs # python-pip
 	elif is_command dnf; then
 		runn $SUDO dnf install -y $packs # python2-pip
@@ -172,11 +187,15 @@ install_pip() {
 	# runn $MYPY -m pip install $PIP_USER --upgrade $pipspec
 }
 
+#----------------------------------------------------------------------------------------------
+
 check_variants
 
 # [[ -n $MYPY && $PIP == 0 && $FORCE != 1 ]] && exit 0
+
 if [[ $CHECK == 1 ]]; then
-	if $MYPY -m pip --version 2>&1 > /dev/null; then exit 0; fi
+	# Make sure pip is installed
+	if $MYPY -m pip --version &> /dev/null; then exit 0; fi
 	exit 1
 fi
 
@@ -197,10 +216,10 @@ if ! is_command $MYPY; then
 	exit 1
 fi
 
-PIP_USER=""
-if [[ $(uname) == Darwin ]]; then
-	PIP_USER="--user"
-fi
+PIP_USER="--user"
+# if [[ $(uname) == Darwin ]]; then
+# 	PIP_USER="--user"
+# fi
 
 [[ $PIP != 0 ]] && install_pip
 
