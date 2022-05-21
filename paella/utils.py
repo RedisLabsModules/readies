@@ -4,9 +4,9 @@ import inspect
 import os.path
 
 if sys.version_info > (3, 0):
-	from .utils3 import *
+    from .utils3 import *
 else:
-	from .utils2 import *
+    from .utils2 import *
 
 #----------------------------------------------------------------------------------------------
 
