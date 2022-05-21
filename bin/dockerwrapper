@@ -248,7 +248,7 @@ if __name__ == "__main__":
 
     db.generate()
     if opts.GENERATE_ONLY:
-        sys.stderr.write("Wrote generated file to {}. Exiting.\n".format(self.dockerfile))
+        sys.stderr.write("Wrote generated file to {}. Exiting.\n".format(opts.DOCKERFILE))
         sys.exit(0)
 
     # if we're only pushing, things are already built
