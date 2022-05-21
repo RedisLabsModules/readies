@@ -17,7 +17,7 @@ fi
 if [[ $NO_PY3 != 1 ]]; then
 	if is_command python3; then
 		xinstall git
-		if ! runn python3 -m pip install --no-cache-dir git+https://github.com/inducer/pudb.git@main; then
+		if runn python3 -m pip install --no-cache-dir git+https://github.com/inducer/pudb.git@main; then
 			cd /tmp
 			runn git clone https://github.com/inducer/pudb.git
 			cd pudb
@@ -31,11 +31,13 @@ if [[ $NO_PY3 != 1 ]]; then
 
 		pudb=/usr/local/bin/pudb
 		if [[ ! -e $pudb ]]; then
-			cat <<-EOF > $pudb
+			pudb_tmp=$(mktemp /tmp/pudb.XXXXXX)
+			cat <<-EOF > $pudb_tmp
 				#!/bin/bash
 
 				python3 -m pudb "$@"
 				EOF
+			$SUDO cp $pudb_tmp $pudb
 		fi
 	fi
 fi
