@@ -3,12 +3,8 @@ import os
 
 #----------------------------------------------------------------------------------------------
 
-pydebug = os.environ.get('PYDEBUG', '')
-if pydebug == '':
-    pydebug = os.environ.get('BB', '')
-    if pydebug != '':
-        os.environ['PYDEBUG'] = pydebug
-if pydebug == '1':
+env_bb = os.environ.get('BB', '')
+if env_bb == '1':
     try:
         from pudb import set_trace as bb
     except ImportError:
@@ -16,13 +12,13 @@ if pydebug == '1':
             from ipdb import set_trace as bb
         except ImportError:
             from pdb import set_trace as bb
-elif pydebug == 'pudb':
+elif env_bb == 'pudb':
     from pudb import set_trace as bb
-elif pydebug == 'pdb':
+elif env_bb == 'pdb':
     from pdb import set_trace as bb
-elif pydebug == 'ipdb':
+elif env_bb == 'ipdb':
     from ipdb import set_trace as bb
 else:
-	def bb(): pass
+    def bb(): pass
 
 #----------------------------------------------------------------------------------------------
