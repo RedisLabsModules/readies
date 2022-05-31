@@ -17,6 +17,7 @@ os.environ["PYTHONWARNINGS"] = 'ignore:DEPRECATION::pip._internal.cli.base_comma
 
 CLANG_COMMON_VER="13"
 CLANG_FORMAT_VER="13"
+ARM_CLANG_FORMAT_VER="12"
 
 #----------------------------------------------------------------------------------------------
 
@@ -36,10 +37,11 @@ class CLangFormatSetup(paella.Setup):
             self.run("chmod +x /usr/local/bin/clang-format-{vER}".format(VER=self.version), sudo=True)
             self.run("ln -sf /usr/local/bin/clang-format-{VER} /usr/local/bin/clang-format".format(VER=self.version), sudo=True)
         elif self.platform.is_arm():
+            self.version = ARM_CLANG_FORMAT_VER
             self.install("clang-format-{VER}".format(VER=self.version))
             self.run("ln -sf `command -v clang-format-{VER}` /usr/local/bin/clang-format".format(VER=self.version), sudo=True)
         else:
-            raise paella.Error("Error installing CLang Format on not-x64 platform")
+            raise paella.Error("Error installing CLang Format on not-x64/arm platform")
 
     def macos(self):
         self.install("clang-format")
