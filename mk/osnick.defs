@@ -33,6 +33,3 @@ OS.jammy=ubuntu:jammy
 endif # OS
 
 OS=$(OS.$(OSNICK))
-ifeq ($(OS),)
-$(error Invalid OSNICK. Aborting.)
-endif

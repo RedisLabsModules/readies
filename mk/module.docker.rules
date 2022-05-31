@@ -6,15 +6,17 @@ make build          # Build Docker image
   OSNICK=nick         # Build for given OSNICK (default: as host)
   BRANCH=branch       # Build for tip of given branch (default: current branch)
   VERSION=version     # Build for give version tag
-  OFFICIAL=1          # Create Docker image tags for official repo
   ARTIFACTS=1         # Copy atrifacts from container into local directory (default: 1)
-  
+
 make publish        # Push Docker image to remote repository (requires authentication)
   OSNICK=nick         # Publish for given OSNICK (default: as host)
   BRANCH=branch       # Publish for tip of given branch (default: current branch)
   VERSION=version     # Publish for give version tag
-  OFFICIAL=1          # Publish Docker image tags for official repo
   TEST=1              # Run tests inside container
+
+make publish_multiarch_docker # publish multi platform docker image
+  BRANCH=branch       # Build for tip of given branch (default: current branch)
+  VERSION=version     # Build for give version tag
 
 Additional options:
   NOP=1             # Just print commands, don't execute
@@ -100,7 +102,7 @@ ifeq ($(OFFICIAL),1)
 
 		#--------------------------------------------------------------------------------------
 		ifneq ($(VERSION),)
-			# since we cannot reliably deduce git branch from a version spec, 
+			# since we cannot reliably deduce git branch from a version spec,
 			# we assume it's 'x.y' for version 'x.y*'
 			VERSION_BRANCH:=$(shell echo "$(VERSION)" | cut -d '.' -f 1-2)
 
@@ -200,6 +202,28 @@ endif
 		>&2 echo "Tests failed - aborting." ;\
 		false ;\
 	fi
+
+# take the component docker images, build the manifest, and
+# publish it
+publish_multiarch_docker:
+ifeq ($(BRANCH),master)
+	docker manifest create redislabs/${REPO}:edge \
+		${MULTIARCH_DOCKER_IMAGES}
+	docker manifest push redislabs/${REPO}:edge
+endif
+ifeq ($(LATEST_BRANCH),$(VERSION_BRANCH))
+	docker manifest create redislabs/${REPO}:latest \
+		${MULTIARCH_DOCKER_IMAGES}
+	docker manifest push redislabs/${REPO}:latest
+endif
+ifeq ($(PREVIEW_BRANCH),$(VERSION_BRANCH))
+	docker manifest create redislabs/${REPO}:preview \
+		${MULTIARCH_DOCKER_IMAGES}
+	docker manifest push redislabs/${REPO}:preview
+endif
+	docker manifest create redislabs/${REPO}:${VERSPEC} \
+		${MULTIARCH_DOCKER_IMAGES}
+	docker manifest push redislabs/${REPO}:${VERSPEC}
 
 publish:
 	@$(DOCKERWRAPPER_CMD) --publish-only
