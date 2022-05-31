@@ -34,7 +34,7 @@ class CLangFormatSetup(paella.Setup):
 
         if self.arch == 'x64':
             self.run("wget -q -O /usr/local/bin/clang-format-{VER} {URL}".format(VER=self.version, URL=CLANG_FORMAT_URL), sudo=True)
-            self.run("chmod +x /usr/local/bin/clang-format-{vER}".format(VER=self.version), sudo=True)
+            self.run("chmod +x /usr/local/bin/clang-format-{VER}".format(VER=self.version), sudo=True)
             self.run("ln -sf /usr/local/bin/clang-format-{VER} /usr/local/bin/clang-format".format(VER=self.version), sudo=True)
         elif self.platform.is_arm():
             self.version = ARM_CLANG_FORMAT_VER
