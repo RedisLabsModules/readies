@@ -89,7 +89,7 @@ class RMPyToolsSetup(paella.Setup):
 
         if self.redispy_version is None:
             if self.modern:
-                self.pip_install("--no-cache-dir --ignore-installed redis~=4.2")
+                self.pip_install("--no-cache-dir --ignore-installed redis~=4.2.2")
             else:
                 self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/redisfab/redis-py.git@3.5")
 
@@ -106,7 +106,7 @@ class RMPyToolsSetup(paella.Setup):
 
         if self.rltest_version is None:
             if self.modern:
-                self.pip_install("--no-cache-dir --ignore-installed RLTest~=0.5")
+                self.pip_install("--no-cache-dir --ignore-installed RLTest~=0.5.4")
             else:
                 self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/RedisLabsModules/RLTest.git@0.4")
         else:
@@ -114,7 +114,7 @@ class RMPyToolsSetup(paella.Setup):
 
         if self.ramp_version is None:
             if self.modern:
-                self.pip_install("--no-cache-dir --ignore-installed ramp-packer~=2.3")
+                self.pip_install("--no-cache-dir --ignore-installed ramp-packer~=2.3.1")
             else:
                 self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/RedisLabs/RAMP@2.2")
         else:
