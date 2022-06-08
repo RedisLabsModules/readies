@@ -89,36 +89,36 @@ class RMPyToolsSetup(paella.Setup):
 
         if self.redispy_version is None:
             if self.modern:
-                self.pip_install("--no-cache-dir --ignore-installed redis~=4.2.2")
+                self.pip_install("--no-cache-dir redis~=4.2.2")
             else:
-                self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/redisfab/redis-py.git@3.5")
+                self.pip_install("--no-cache-dir git+https://github.com/redisfab/redis-py.git@3.5")
 
-                self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/redisfab/redis-py-cluster@2.1")
+                self.pip_install("--no-cache-dir git+https://github.com/redisfab/redis-py-cluster@2.1")
         else:
-            self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/{ORG}/redis-py.git@{VER}".\
+            self.pip_install("--no-cache-dir git+https://github.com/{ORG}/redis-py.git@{VER}".\
                              format(ORG=self.redispy_org, VER=self.redispy_version))
 
         if not self.master and not self.modern:
             # redis-py-cluster should be installed from git due to redis-py dependency
             # self.pip_install("--no-cache-dir git+https://github.com/Grokzen/redis-py-cluster.git@master")
-            # self.pip_install("--no-cache-dir --ignore-installed redis-py-cluster")
-            self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/redisfab/redis-py-cluster@2.1")
+            # self.pip_install("--no-cache-dir redis-py-cluster")
+            self.pip_install("--no-cache-dir git+https://github.com/redisfab/redis-py-cluster@2.1")
 
         if self.rltest_version is None:
             if self.modern:
-                self.pip_install("--no-cache-dir --ignore-installed RLTest~=0.5.4")
+                self.pip_install("--no-cache-dir RLTest~=0.5.4")
             else:
-                self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/RedisLabsModules/RLTest.git@0.4")
+                self.pip_install("--no-cache-dir git+https://github.com/RedisLabsModules/RLTest.git@0.4")
         else:
-            self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/RedisLabsModules/RLTest.git@{VER}".format(VER=self.rltest_version))
+            self.pip_install("--no-cache-dir git+https://github.com/RedisLabsModules/RLTest.git@{VER}".format(VER=self.rltest_version))
 
         if self.ramp_version is None:
             if self.modern:
-                self.pip_install("--no-cache-dir --ignore-installed ramp-packer~=2.3.1")
+                self.pip_install("--no-cache-dir ramp-packer~=2.3.1")
             else:
-                self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/RedisLabs/RAMP@2.2")
+                self.pip_install("--no-cache-dir git+https://github.com/RedisLabs/RAMP@2.2")
         else:
-            self.pip_install("--no-cache-dir --ignore-installed git+https://github.com/RedisLabs/RAMP@{VER}".format(VER=self.ramp_version))
+            self.pip_install("--no-cache-dir git+https://github.com/RedisLabs/RAMP@{VER}".format(VER=self.ramp_version))
 
 #----------------------------------------------------------------------------------------------
 
