@@ -53,6 +53,8 @@ class SystemSetup(paella.Setup):
 
     def redhat_compat(self):
         self.group_install("'Development Tools'")
+        if not self.has_command("sudo"):
+            self.install("sudo") # needed due to SCL sudo script
         if self.modern:
             if self.dist in ['centos', 'ol'] and self.os_version[0] == 8:
                 self.install("gcc-toolset-11-gcc gcc-toolset-11-gcc-c++")
