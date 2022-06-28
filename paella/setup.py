@@ -89,10 +89,11 @@ class Runner:
             os.close(fd)
             cmd = "{{ {CMD}; }} >{LOG} 2>&1".format(CMD=cmd, LOG=temppath)
         if at is None:
-            rc = subprocess.call(["bash", "-e", "-c", cmd])
+            rc = subprocess.call(["bash", "-l", "-e", "-c", cmd])
         else:
             with cwd(at):
-                rc = os.system(cmd)
+                # rc = os.system(cmd)
+                rc = subprocess.call(["bash", "-l", "-e", "-c", cmd])
         if rc > 0:
             if output != True:
                 if output.on_error():
