@@ -149,36 +149,57 @@ get_profile_d() {
 setup_profile_d() {
 	local d
 	local profile
+	local sudo
 	if [[ `uname -s` == Darwin ]]; then
 		d="$HOME/.profile.d"
 		profile="$HOME/.bash_profile"
 		[[ ! -f $profile ]] && touch $profile
+		sudo=
 	else
 		d="/etc/profile.d"
 		profile="/etc/profile"
+		sudo="$SUDO"
 	fi
 	if [[ ! -d $d ]]; then
-		mkdir -p "$d"
+		$sudo mkdir -p "$d"
 	fi
 	if ! grep -q 'profile.d' $profile 2>/dev/null; then
-		printf "\nif [ -d $d ]; then if [ -n `ls $d/*.sh 2> /dev/null` ]; then for __sh in $d/*.sh; do if [ -r \$__sh ]; then . \$__sh; fi; done; unset __sh; fi; fi\n" >> $profile
+		tmp_profile=$(mktemp /tmp/profiled.XXXXXX)
+		cp $profile $tmp_profile
+		printf "\nif [ -d $d ]; then if [ -n `ls $d/*.sh 2> /dev/null` ]; then for __sh in $d/*.sh; do if [ -r \$__sh ]; then . \$__sh; fi; done; unset __sh; fi; fi\n" >> $tmp_profile
+#		cat <<-'END' > $tmp_profile
+#			if [ -d $d ]; then
+#				if [ -n `ls $d/*.sh 2> /dev/null` ]; then
+#					for __sh in $d/*.sh; do
+#						if [ -r \$__sh ]; then
+#							. \$__sh
+#						fi
+#					done
+#					unset __sh
+#				fi
+#			fi
+#			END
+		$sudo cp $tmp_profile $profile
 	fi
 }
 
 add_to_profile_d() {
 	local files="$@"
 	local d
+	local sudo
 	if [[ `uname -s` == Darwin ]]; then
 		d="$HOME/.profile.d"
+		sudo=
 	else
 		d="/etc/profile.d"
+		sudo="$SUDO"
 	fi
 	if [[ ! -d $d ]]; then
-		mkdir -p $d
+		$sudo mkdir -p $d
 	fi
 	local f
 	for f in $files; do
-		cp $f $d/
+		$sudo cp $f $d/
 	done
 }
 
