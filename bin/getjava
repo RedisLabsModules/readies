@@ -60,33 +60,40 @@ OPENJDK_DIR=/opt/$OPENJDK_NAME
 MAVEN_NAME=apache-maven-${MAVEN_VERSION}
 MAVEN_DIR=/opt/$MAVEN_NAME
 
+tmpdir=$(mktemp -d /tmp/openjdk.XXXXXX)
+
+install_openjdk=1
 if [[ -d $OPENJDK_DIR ]]; then
-	if [[ $FORCE == 1 ]]; then
+	if [[ $FORCE == 1 || ! -f $OPENJDK_DIR/bin/java ]]; then
 		$SUDO rm -rf $OPENJDK_DIR
 	else
-		eprint "$OPENJDK_DIR exists - use FORCE=1 to overrite"
-		exit 1
+		echo "$OPENJDK_DIR is in place"
+		install_openjdk=0
 	fi
 fi
+if [[ $install_openjdk == 1 ]]; then
+	runn wget -q -O $tmpdir/openjdk.tgz https://github.com/adoptium/temurin18-binaries/releases/download/jdk-${VER_URL_DIR}/OpenJDK18U-${TYPE}_${ARCH}_${OS}_hotspot_${OPENJDK_VERSION}.tar.gz
 
-dir=$(mktemp -d /tmp/openjdk.XXXXXX)
-runn wget -q -O $dir/openjdk.tgz https://github.com/adoptium/temurin18-binaries/releases/download/jdk-${VER_URL_DIR}/OpenJDK18U-${TYPE}_${ARCH}_${OS}_hotspot_${OPENJDK_VERSION}.tar.gz
+	cd $tmpdir
+	tar xzf openjdk.tgz
+	$OP $SUDO mv $OPENJDK_NAME $OPENJDK_DIR
+fi
 
-cd $dir
-tar xzf openjdk.tgz
-$OP $SUDO mv $OPENJDK_NAME $OPENJDK_DIR
-
+install_maven=0
 if [[ $JDK == 1 ]]; then
+	install_maven=1
 	if [[ -d $MAVEN_DIR ]]; then
-		if [[ $FORCE == 1 ]]; then
+		if [[ $FORCE == 1 || ! -f $MAVEN_DIR/bin/mvn ]]; then
 			$SUDO rm -rf $MAVEN_DIR
 		else
-			eprint "$MAVEN_DIR exists - use FORCE=1 to overrite"
-			exit 1
+			echo "$MAVEN_DIR is in place"
+			install_maven=0
 		fi
 	fi
-
-	runn wget -q -O $dir/maven.tgz https://dlcdn.apache.org/maven/maven-$(echo "$MAVEN_VERSION" | cut -f1 -d.)/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz
+fi
+if [[ $install_maven == 1 ]]; then
+	runn wget -q -O $tmpdir/maven.tgz https://dlcdn.apache.org/maven/maven-$(echo "$MAVEN_VERSION" | cut -f1 -d.)/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz
+	cd $tmpdir
 	tar xzf maven.tgz
 	$OP $SUDO mv $MAVEN_NAME $MAVEN_DIR
 fi
@@ -105,4 +112,4 @@ add_to_profile_d $tmp_profiled/openjdk.sh
 rm -rf $tmp_profiled
 
 cd $HERE
-rm -rf $dir
+rm -rf $tmpdir

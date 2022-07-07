@@ -179,7 +179,7 @@ setup_profile_d() {
 #				fi
 #			fi
 #			END
-		$sudo cp $tmp_profile $profile
+		$sudo mv $tmp_profile $profile
 	fi
 }
 
