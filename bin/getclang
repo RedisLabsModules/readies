@@ -84,8 +84,11 @@ class CLangSetup(paella.Setup):
                 """.format(ARGS=install_args), sudo=True)
             if self.osnick == "xenial":
                 self.run(r'''
-                    sed -i -e 's/libunwind$LLVM_VERSION/libunwind/g' llvm.sh
+                    sed -i -e 's/libunwind$LLVM_VERSION/libunwind/g' /tmp/llvm.sh
                     ''')
+            self.run(r'''
+            sed -i -e 's/lld-$LLVM_VERSION/lld-$LLVM_VERSION python3-lldb-$LLVM_VERSION/g' /tmp/llvm.sh
+            ''')
             self.run(r"""
                 bash /tmp/llvm.sh {ARGS}
                 rm /tmp/llvm.sh
