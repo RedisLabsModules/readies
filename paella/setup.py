@@ -65,7 +65,7 @@ class Runner:
         cmd_file = None
         if cmd.find('\n') > -1:
             cmds1 = str.lstrip(textwrap.dedent(cmd))
-            cmds = filter(lambda s: str.lstrip(s) != '', cmds1.split("\n"))
+            cmds = list(filter(lambda s: str.lstrip(s) != '', cmds1.split("\n")))
             if venv != '':
                 cmds = [". {VENV}/bin/activate".format(VENV=venv)] + cmds
             cmd = "; ".join(cmds)
