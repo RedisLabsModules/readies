@@ -49,16 +49,25 @@ class Runner:
 
     # sudo: True/False/"file"
     def run(self, cmd, at=None, output=None, nop=None, _try=False, sudo=False):
+        # We're running cmd(s) with a login shell ("bash -l") in order to run profile.d
+        # scripts (installation commands may add such scripts and subsequent installation
+        # commands may rely on them).
+        # Howerver, "bash -l" will wreck PATH of active virtualenvs, thus python scripts will
+        # file. So if we're in one (i.e. VIRTUAL_ENV is not empty) PATH sould be restored
+        # by re-invoking the activation script.
         if (self.is_root or not self.has_sudo) and sudo is not False:
             sudo = False
         if output is None:
             output = self.output
         else:
             output = OutputMode(output)
+        venv = ENV['VIRTUAL_ENV']
         cmd_file = None
         if cmd.find('\n') > -1:
             cmds1 = str.lstrip(textwrap.dedent(cmd))
             cmds = filter(lambda s: str.lstrip(s) != '', cmds1.split("\n"))
+            if venv != '':
+                cmds = [". {VENV}/bin/activate".format(VENV=venv)] + cmds
             cmd = "; ".join(cmds)
             cmd_for_log = cmd
             if sudo is not False:
@@ -67,6 +76,8 @@ class Runner:
                 cmd = "bash {}".format(cmd_file)
                 cmd_for_log = "sudo { %s }" % cmd_for_log
         else:
+            if venv != '':
+                cmd = "{{ . {VENV}/bin/activate; {CMD}; }}".format(VENV=venv, CMD=cmd)
             cmd_for_log = cmd
         if sudo is not False:
             if sudo == "file":
