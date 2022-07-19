@@ -216,10 +216,11 @@ if ! is_command $MYPY; then
 	exit 1
 fi
 
-PIP_USER="--user"
-# if [[ $(uname) == Darwin ]]; then
-# 	PIP_USER="--user"
-# fi
+if [[ -z $VIRTUAL_ENV ]]; then
+	PIP_USER="--user"
+else
+	PIP_USER=""
+fi
 
 [[ $PIP != 0 ]] && install_pip
 
