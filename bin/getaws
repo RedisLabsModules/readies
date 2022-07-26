@@ -8,10 +8,79 @@ READIES=$(cd $HERE/.. && pwd)
 $HERE/getget
 tempd=$(mktemp -d /tmp/awscli.XXXXXX)
 cd $tempd
-runn curl -q "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-runn unzip -q awscliv2.zip
-runn $SUDO ./aws/install --update
+
+install_awscli_linux() {
+	runn wget -O awscliv2.zip https://awscli.amazonaws.com/awscli-exe-linux-${ARCH}.zip
+	runn unzip -q awscliv2.zip
+	runn $SUDO ./aws/install --update
+}
+
+install_awscli_macos() {
+	if [[ -d $HOME/.local/opt/aws-cli ]]; then
+		if [[ $FORCE == 1 ]]; then
+			rm -rf $HOME/.local/opt/aws-cli
+		else
+			echo "aws: already installed"
+			return 0
+		fi
+	fi
+	runn wget -O AWSCLIV2.pkg https://awscli.amazonaws.com/AWSCLIV2.pkg
+	cat <<-END > choices.xml
+			<?xml version="1.0" encoding="UTF-8"?>
+			<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+			<plist version="1.0">
+			  <array>
+				<dict>
+				  <key>choiceAttribute</key>
+				  <string>customLocation</string>
+				  <key>attributeSetting</key>
+				  <string>$HOME/.local/opt</string>
+				  <key>choiceIdentifier</key>
+				  <string>default</string>
+				</dict>
+			  </array>
+			</plist>
+			END
+	mkdir -p $HOME/.local/opt $HOME/.local/bin
+	installer -pkg AWSCLIV2.pkg -target CurrentUserHomeDirectory -applyChoiceChangesXML choices.xml
+	ln -sf $HOME/.local/opt/aws-cli/aws $HOME/.local/bin/aws
+	ln -sf $HOME/.local/opt/aws-cli/aws_completer  $HOME/.local/bin/aws_completer 
+}
+
+install_s3cmd() {
+	PIP_USER=
+	if [[ -z $VIRTUAL_ENV ]]; then
+		PIP_USER="--user"
+	fi
+	runn python3 -m pip install $PIP_USER s3cmd
+	$SUDO ln -s $HOME/.local/bin/s3cmd /usr/local/bin/s3cmd
+}
+
+NO_AWSCLI=
+ARCH=`uname -m`
+if [[ $ARCH == x86_64 || $ARCH == aarch64 || $ARCH == arm64 ]]; then
+	:
+else
+	echo "$ARCH: unsupported"
+	NO_AWSCLI=1
+fi
+
+OS=`uname -s`
+if [[ $NO_AWSCLI != 1 ]]; then
+	if [[ $OS == Linux ]]; then
+		install_awscli_linux
+	elif [[ $OS == Darwin ]]; then
+		install_awscli_macos
+	else
+		echo "$OS: unsupported"
+	fi
+fi
+
+if [[ $OS == Darwin ]]; then
+	runn brew install s3cmd
+else
+	install_s3cmd
+fi
+
 cd $HERE
 rm -rf $tempd
-
-runn python3 -m pip install s3cmd
