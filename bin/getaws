@@ -20,7 +20,7 @@ install_awscli_macos() {
 		if [[ $FORCE == 1 ]]; then
 			rm -rf $HOME/.local/opt/aws-cli
 		else
-			echo "aws: already installed"
+			echo "awscli: already installed"
 			return 0
 		fi
 	fi
@@ -42,7 +42,7 @@ install_awscli_macos() {
 			</plist>
 			END
 	mkdir -p $HOME/.local/opt $HOME/.local/bin
-	installer -pkg AWSCLIV2.pkg -target CurrentUserHomeDirectory -applyChoiceChangesXML choices.xml
+	runn installer -pkg AWSCLIV2.pkg -target CurrentUserHomeDirectory -applyChoiceChangesXML choices.xml
 	ln -sf $HOME/.local/opt/aws-cli/aws $HOME/.local/bin/aws
 	ln -sf $HOME/.local/opt/aws-cli/aws_completer  $HOME/.local/bin/aws_completer 
 }
@@ -53,7 +53,12 @@ install_s3cmd() {
 		PIP_USER="--user"
 	fi
 	runn python3 -m pip install $PIP_USER s3cmd
-	$SUDO ln -s $HOME/.local/bin/s3cmd /usr/local/bin/s3cmd
+	if [[ $OS == Darwin ]]; then
+		SITE=`python3 -m site --user-base`
+		ln -sf $SITE/bin/s3cmd $HOME/.local/bin/s3cmd
+	else
+		$SUDO ln -sf $HOME/.local/bin/s3cmd /usr/local/bin/s3cmd
+	fi
 }
 
 NO_AWSCLI=
@@ -77,7 +82,10 @@ if [[ $NO_AWSCLI != 1 ]]; then
 fi
 
 if [[ $OS == Darwin ]]; then
-	runn brew install s3cmd
+	runn "brew install s3cmd || true"
+	if ! s3cmd --version >/dev/null 2>&1; then
+		install_s3cmd
+	fi
 else
 	install_s3cmd
 fi
