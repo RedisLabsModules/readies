@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+apt-get update && apt-get install git
+
+set -e
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+READIES=$(cd $HERE/.. && pwd)
+. $READIES/shibumi/defs
+
+profile_d=`get_profile_d`
+
+if [ ! -r ~/.pyenv/ ]
+then
+    git clone https://github.com/pyenv/pyenv.git ~/.pyenv
+echo '
+export PATH="$HOME/.pyenv/bin:$PATH"
+export PATH="$PYENV_ROOT/bin:$PATH"
+
+if command -v pyenv 1>/dev/null 2>&1; then
+  eval "$(pyenv init -)"
+fi' >> $profile_d/pyenv.sh
+    source $profile_d/pyenv.sh
+    exec "$SHELL"
+fi
+
