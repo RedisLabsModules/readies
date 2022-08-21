@@ -1,0 +1,20 @@
+
+ifeq ($(OS),macos)
+ifneq ($(GCC),1)
+CLANG=1
+endif
+endif
+
+ifneq ($(CLANG),1)
+GCC=1
+endif
+
+ifeq ($(CC),)
+ifeq ($(GCC),1)
+override CC=gcc
+override CXX=g++
+else ifeq ($(CLANG),1)
+override CC=clang
+override CXX=clang++
+endif
+endif
