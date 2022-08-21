@@ -83,10 +83,15 @@ class SystemSetup(paella.Setup):
     def macos(self):
         if self.modern:
             self.install("gcc@11")
-            self.run("%s/bin/symlink -f --target /usr/local/bin/gcc-11 --link /usr/local/bin/gcc" % ROOT, sudo=True)
-            self.run("%s/bin/symlink -f --target /usr/local/bin/g++-11 --link /usr/local/bin/g++" % ROOT, sudo=True)
-            self.run("%s/bin/symlink -f --target /usr/local/bin/gcc-11 --link /usr/local/bin/cc" % ROOT, sudo=True)
-            self.run("%s/bin/symlink -f --target /usr/local/bin/g++-11 --link /usr/local/bin/c++" % ROOT, sudo=True)
+            gccdir = sh("brew --prefix gcc@11")
+            self.run(f"ln -sf {gccdir}/bin/gcc-11 $HOME/.local/bin/gcc-11")
+            self.run(f"ln -sf {gccdir}/bin/g++-11 $HOME/.local/bin/g++-11")
+			self.run(f"ln -sf {gccdir}/bin/cpp-11 $HOME/.local/bin/cpp-11")
+            self.run(f"cd $HOME/.local/bin; ln -sf gcc-11 gcc")
+            self.run(f"cd $HOME/.local/bin; ln -sf g++-11 g++")
+			self.run(f"cd $HOME/.local/bin; ln -sf cpp-11 cpp")
+            # self.run(f"cd $HOME/.local/bin; ln -sf gcc-11 cc")
+            # self.run(f"cd $HOME/.local/bin; ln -sf gcc-11 c++")
         else:
             if sh('xcode-select -p') == '':
                 fatal("Xcode tools are not installed. Please run xcode-select --install.")
