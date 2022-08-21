@@ -73,6 +73,5 @@ include $(MK)/git.defs
 include $(MK)/variant.defs
 include $(MK)/bindirs.defs
 include $(MK)/nproc.defs
-include $(MK)/cc.defs
 
 endif # __NO_PYTHON

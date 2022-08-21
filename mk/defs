@@ -1,6 +1,7 @@
 
 include $(MK)/help.defs
 include $(MK)/build.defs
+include $(MK)/cc.defs
 
 ifneq ($(MK.cmake),)
 include $(MK)/cmake.defs
