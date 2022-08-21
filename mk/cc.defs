@@ -1,20 +1,41 @@
 
-ifeq ($(OS),macos)
-ifneq ($(GCC),1)
-CLANG=1
+ifneq ($(SAN),)
+	ifeq ($(GCC),1)
+		_:=$(error Cannot build for SAN=$(SAN) with GCC=1)
+	endif
+	CLANG=1
 endif
+
+ifeq ($(OS),macos)
+	ifeq ($(GCC),1)
+		REAL_GCC:=$(shell gcc --version | grep clang &> /dev/null; echo $$?)
+		ifeq ($(REAL_GCC),0)
+			override GCC=
+			CLANG=1
+		else
+			GCC=1
+		endif
+	else
+		CLANG=1
+	endif
 endif
 
 ifneq ($(CLANG),1)
 GCC=1
 endif
 
-ifeq ($(CC),)
-ifeq ($(GCC),1)
-override CC=gcc
-override CXX=g++
-else ifeq ($(CLANG),1)
-override CC=clang
-override CXX=clang++
+ifeq ($(origin CC),default) # CC not explicitly overridden
+	ifeq ($(GCC),1)
+		override CC=gcc
+		override CXX=g++
+	else ifeq ($(CLANG),1)
+		override CC=clang
+		override CXX=clang++
+	endif
 endif
-endif
+
+export CC
+export CXX
+
+$(info # Using CC=$(CC))
+
