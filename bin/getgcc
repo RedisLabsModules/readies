@@ -90,8 +90,8 @@ class SystemSetup(paella.Setup):
             self.run(f"cd $HOME/.local/bin; ln -sf gcc-11 gcc")
             self.run(f"cd $HOME/.local/bin; ln -sf g++-11 g++")
             self.run(f"cd $HOME/.local/bin; ln -sf cpp-11 cpp")
-            # self.run(f"cd $HOME/.local/bin; ln -sf gcc-11 cc")
-            # self.run(f"cd $HOME/.local/bin; ln -sf gcc-11 c++")
+            self.run(f"cd $HOME/.local/bin; ln -sf gcc-11 cc")
+            self.run(f"cd $HOME/.local/bin; ln -sf gcc-11 c++")
         else:
             if sh('xcode-select -p') == '':
                 fatal("Xcode tools are not installed. Please run xcode-select --install.")
