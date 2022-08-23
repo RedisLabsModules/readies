@@ -12,11 +12,14 @@ if [[ $1 == --help || $1 == help || $HELP == 1 ]]; then
 		[ARGVARS...] getpyenv [--help|help]
 
 		Argument variables:
-		THIN=1        Do not install packages to build Python
+		THIN=1         Do not install packages to build Python
 
-		NOP=1         Do not execute, just print commands
-		V|VERBOSE=1   Print commands
-		HELP=1        Print help
+		NOP=1          Do not execute, just print commands
+		V|VERBOSE=1    Print commands
+		HELP=1         Print help
+
+        PYTHON=3.10.6  Python version to be installed 
+        VENV=dir       Install virtualenv, create one in `dir`
 
 		Notes:
 		This installs a profile.d script. Invoke `bash -l` to activate.
@@ -74,6 +77,20 @@ if [[ ! -f $profile_d/pyenv.sh ]]; then
 	echo "# Done."
 else
 	echo "# Already installed."
+fi
+
+if [[ -n $PYTHON && $PYTHON != 0 ]]; then
+    echo "# Installing python"
+    runn pyenv install $PYTHON -f
+    runn pyenv global $PYTHON
+    WHICHPY=$(pyenv which python)
+fi
+
+if [[ -n $VENV && $VENV != 0 ]]; then
+    echo "# Installing virtualenv"
+    runn $WHICHPY -m pip install virtualenv
+    runn $WHICHPY -m virtualenv $VENV --system-site-packages
+    runn . $VENV/bin/activate
 fi
 
 # $OP source $profile_d/pyenv.sh
