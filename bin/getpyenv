@@ -18,9 +18,9 @@ if [[ $1 == --help || $1 == help || $HELP == 1 ]]; then
 		NOP=1          Do not execute, just print commands
 		V|VERBOSE=1    Print commands
 		HELP=1         Print help
-
-        PYTHON=ver     Python version to be installed 
-        VENV=dir       Install a virtualenv in `dir`
+		
+		PYTHON=ver     Python version to be installed 
+		VENV=dir       Install a virtualenv in `dir`
 
 		Notes:
 		This installs a profile.d script. Invoke `bash -l` to activate.
