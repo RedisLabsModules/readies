@@ -72,6 +72,8 @@ class RMPyToolsSetup(paella.Setup):
 
     def macos(self):
         self.pip_install("psutil==5.8.0")
+        # without this, RLTest installation may fail (pip install does not install dev dependencies)
+        self.pip_install("poetry")
 
     def alpine(self):
         self.install("linux-headers")
@@ -87,6 +89,7 @@ class RMPyToolsSetup(paella.Setup):
             self.rltest_version = 'master'
             self.ramp_version = 'master'
 
+        redis_py_cluster_installed = False
         if self.redispy_version is None:
             if self.modern:
                 self.pip_install("--no-cache-dir redis~=4.2.2")
@@ -94,11 +97,12 @@ class RMPyToolsSetup(paella.Setup):
                 self.pip_install("--no-cache-dir git+https://github.com/redisfab/redis-py.git@3.5")
 
                 self.pip_install("--no-cache-dir git+https://github.com/redisfab/redis-py-cluster@2.1")
+                redis_py_cluster_installed = True
         else:
             self.pip_install("--no-cache-dir git+https://github.com/{ORG}/redis-py.git@{VER}".\
                              format(ORG=self.redispy_org, VER=self.redispy_version))
 
-        if not self.master and not self.modern:
+        if not self.master and not self.modern and not redis_py_cluster_installed:
             # redis-py-cluster should be installed from git due to redis-py dependency
             # self.pip_install("--no-cache-dir git+https://github.com/Grokzen/redis-py-cluster.git@master")
             # self.pip_install("--no-cache-dir redis-py-cluster")
