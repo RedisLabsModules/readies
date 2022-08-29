@@ -34,8 +34,10 @@ class GitSetupModern(paella.Setup):
   openssl-devel perl-devel zlib-devel asciidoc xmlto docbook2X getopt", sudo=True)
         self.run("ln -s /usr/bin/db2x_docbook2texi /usr/bin/docbook2x-texi", sudo=True)
 
+    # todo replace hardcoded git version
     def common_last(self):
         self.run("""
+        export LDFLAGS=-L/usr/local/lib64/
         curl -L -O http://kernel.org/pub/software/scm/git/git-2.8.0.tar.gz
         tar -zxf git-2.8.0.tar.gz
         cd git-2.8.0
