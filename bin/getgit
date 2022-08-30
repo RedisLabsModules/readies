@@ -13,8 +13,8 @@ import paella
 #----------------------------------------------------------------------------------------------
 
 class GitSetup(paella.Setup):
-    def __init__(self, nop=False):
-        paella.Setup.__init__(self, nop)
+    def __init__(self, args):
+        paella.Setup.__init__(self, nop=args.nop)
 
     def common_first(self):
         self.install("git")
@@ -22,39 +22,52 @@ class GitSetup(paella.Setup):
 #----------------------------------------------------------------------------------------------
 
 class GitSetupModern(paella.Setup):
-    def __init__(self, nop=False):
-        paella.Setup.__init__(self, nop)
+    def __init__(self, args):
+        paella.Setup.__init__(self, nop=args.nop)
+
+    def common_first(self):
+        self.install_downloaders()
 
     def debian_compat(self):
-        self.run("apt-get install-info dh-autoreconf libcurl4-gnutls-dev libexpat1-dev \
-  gettext libz-dev libssl-dev asciidoc xmlto docbook2x", sudo=True)
+        self.install("install-info dh-autoreconf libcurl4-gnutls-dev libexpat1-dev \
+                      gettext libz-dev libssl-dev asciidoc xmlto docbook2x", sudo=True)
 
     def fedora(self):
-        self.run("apt-get install dh-autoreconf curl-devel expat-devel gettext-devel \
-  openssl-devel perl-devel zlib-devel asciidoc xmlto docbook2X getopt", sudo=True)
+        self.install("dh-autoreconf curl-devel expat-devel gettext-devel \
+                      openssl-devel perl-devel zlib-devel asciidoc xmlto docbook2X getopt", sudo=True)
         self.run("ln -s /usr/bin/db2x_docbook2texi /usr/bin/docbook2x-texi", sudo=True)
 
-    # todo replace hardcoded git version
+    # todo:
+    # replace hardcoded git version
+    # extract into tempdir and remove it too
+    # change the prefix to /usr/local/bin unless we're on macOS, then we use ~/.local/opt/git and ~/.local/bin
+    # consider not installing the document part
     def common_last(self):
         self.run("""
-        export LDFLAGS=-L/usr/local/lib64/
-        curl -L -O http://kernel.org/pub/software/scm/git/git-2.8.0.tar.gz
-        tar -zxf git-2.8.0.tar.gz
-        cd git-2.8.0
-        make configure
-        ./configure --prefix=/usr
-        make all doc info
-        sudo make install install-doc install-html install-info
-        """)
+            curl -L -O http://kernel.org/pub/software/scm/git/git-2.8.0.tar.gz
+            tar -zxf git-2.8.0.tar.gz
+            cd git-2.8.0
+            export LDFLAGS=-L/usr/local/lib64
+            make configure
+            ./configure --prefix=/usr
+            make all doc info
+            """)
+        self.run("""
+            make install install-doc install-html install-info
+            """, sudo=True)
 
 #----------------------------------------------------------------------------------------------
 
 parser = argparse.ArgumentParser(description='Install Docker CE')
 parser.add_argument('-n', '--nop', action="store_true", help='no operation')
-parser.add_argument('--modern', action="store_true", help='install Docker Compose')
+parser.add_argument('--version', metavar='VER', type=str, default=None, help="git version to install")
+parser.add_argument('--modern', action="store_true", help='install latest git')
+parser.add_argument('--github', action="store_true", help='install GitHub CLI (gh)')
+# parser.add_argument('--lfs', action="store_true", help='install Git LFS')
+# parser.add_argument('--docs', action="store_true", help='install documentation')
 args = parser.parse_args()
 
 if args.modern:
-    GitSetupModern(nop = args.nop).setup()
+    GitSetupModern(args).setup()
 else:
-    GitSetup(nop = args.nop).setup()
+    GitSetup(args).setup()
