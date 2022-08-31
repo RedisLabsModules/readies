@@ -92,6 +92,31 @@ class GitSetupModern(paella.Setup):
 
 #----------------------------------------------------------------------------------------------
 
+class GitHubCLISetup(paella.Setup):
+    def __init__(self, args):
+        paella.Setup.__init__(self, nop=args.nop)
+
+    def debian_compat(self):
+        self.run("""
+        curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+        sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
+        echo 'deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main' | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+        sudo apt update
+        sudo apt install gh -y
+        """)
+
+    def fedora(self):
+        self.run("""
+        sudo dnf install 'dnf-command(config-manager)'
+        sudo dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo
+        sudo dnf install gh
+        """)
+
+    def macos(self):
+        self.install("gh")
+
+#----------------------------------------------------------------------------------------------
+
 parser = argparse.ArgumentParser(description='Install Docker CE')
 parser.add_argument('-n', '--nop', action="store_true", help='no operation')
 parser.add_argument('--version', metavar='VER', type=str, default=None, help="git version to install")
@@ -105,3 +130,6 @@ if args.modern:
     GitSetupModern(args).setup()
 else:
     GitSetup(args).setup()
+
+if args.github:
+    GitHubCLISetup(args).setup()
