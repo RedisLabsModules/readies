@@ -104,12 +104,9 @@ class GitHubCLISetup(paella.Setup):
         apt install -y gh
         """, sudo=True)
 
-    def fedora(self):
-        self.run("""
-        dnf install 'dnf-command(config-manager)'
-        dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo
-        dnf install -y gh
-        """, sudo=True)
+    def redhat_compat(self):
+        self.run("yum-config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo", sudo=True)
+        self.install("gh")
 
     def macos(self):
         self.install("gh")
