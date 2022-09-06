@@ -46,14 +46,14 @@ class GitSetupModern(paella.Setup):
         self.prefix = "~/.local"
 
     def debian_compat(self):
-        self.run(f"{HERE}/getgcc")
+        self.run("{pwd}/getgcc".format(pwd=HERE))
         self.install("dh-autoreconf libcurl4-gnutls-dev libexpat1-dev \
                       gettext libz-dev libssl-dev")
         if self.install_git_docs:
             self.install("install-info gettext asciidoc xmlto docbook2x")
 
     def redhat_compat(self):
-        self.run(f"{HERE}/getgcc --modern")
+        self.run("{pwd}/getgcc --modern".format(pwd=HERE))
         self.install("dh-autoreconf curl-devel expat-devel gettext-devel \
                       gettext-devel openssl-devel perl-devel zlib-devel getopt")
         if self.install_git_docs:
@@ -97,9 +97,9 @@ class GitHubCLISetup(paella.Setup):
 
     def debian_compat(self):
         self.run("""
-        curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
-        sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
-        echo 'deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main' | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+        curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+        chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null
         apt update
         apt install -y gh
         """, sudo=True)
