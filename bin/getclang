@@ -81,7 +81,7 @@ class CLangSetup(paella.Setup):
                 install_args = "{CLANG_VER} all".format(CLANG_VER=clang_ver)
             self.run(r"""
                 wget -q https://apt.llvm.org/llvm.sh -O /tmp/llvm.sh
-                """.format(ARGS=install_args), sudo=True)
+                """.format(ARGS=install_args))
             if self.osnick == "xenial":
                 self.run(r'''
                     sed -i -e 's/libunwind$LLVM_VERSION/libunwind/g' /tmp/llvm.sh
