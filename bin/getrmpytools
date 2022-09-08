@@ -71,7 +71,8 @@ class RMPyToolsSetup(paella.Setup):
             self.build_and_install_psutil("python%s-devel" % self.pyver[0])
 
     def macos(self):
-        self.pip_install("psutil==5.8.0")
+        if not self.psutil_installed:
+            self.pip_install("psutil==5.8.0")
         # without this, RLTest installation may fail (pip install does not install dev dependencies)
         self.pip_install("poetry")
 
@@ -95,7 +96,6 @@ class RMPyToolsSetup(paella.Setup):
                 self.pip_install("--no-cache-dir redis~=4.2.2")
             else:
                 self.pip_install("--no-cache-dir git+https://github.com/redisfab/redis-py.git@3.5")
-
                 self.pip_install("--no-cache-dir git+https://github.com/redisfab/redis-py-cluster@2.1")
                 redis_py_cluster_installed = True
         else:
@@ -112,17 +112,29 @@ class RMPyToolsSetup(paella.Setup):
             if self.modern:
                 self.pip_install("--no-cache-dir RLTest~=0.5.4")
             else:
-                self.pip_install("--no-cache-dir git+https://github.com/RedisLabsModules/RLTest.git@0.4")
+                if not self.pypi:
+                    self.pip_install("--no-cache-dir git+https://github.com/RedisLabsModules/RLTest.git@0.4")
+                else:
+                    self.pip_install("--no-cache-dir RLTest=~0.4.2")
         else:
-            self.pip_install("--no-cache-dir git+https://github.com/RedisLabsModules/RLTest.git@{VER}".format(VER=self.rltest_version))
+            if not self.pypi:
+                self.pip_install("--no-cache-dir git+https://github.com/RedisLabsModules/RLTest.git@{VER}".format(VER=self.rltest_version))
+            else:
+                self.pip_install("--no-cache-dir RLTest=~{VER}".format(VER=self.rltest_version))
 
         if self.ramp_version is None:
             if self.modern:
                 self.pip_install("--no-cache-dir ramp-packer~=2.3.1")
             else:
-                self.pip_install("--no-cache-dir git+https://github.com/RedisLabs/RAMP@2.2")
+                if not self.pypi:
+                    self.pip_install("--no-cache-dir git+https://github.com/RedisLabs/RAMP@2.2")
+                else:
+                    self.pip_install("--no-cache-dir ramp-packer~=2.2.1")
         else:
-            self.pip_install("--no-cache-dir git+https://github.com/RedisLabs/RAMP@{VER}".format(VER=self.ramp_version))
+            if not self.pypi:
+                self.pip_install("--no-cache-dir git+https://github.com/RedisLabs/RAMP@{VER}".format(VER=self.ramp_version))
+            else:
+                self.pip_install("--no-cache-dir ramp-packer~={VER}".format(VER=self.ramp_version))
 
 #----------------------------------------------------------------------------------------------
 
@@ -141,6 +153,7 @@ parser.add_argument('--reinstall', action="store_true", default=False, help='Rei
 parser.add_argument('--remove', action="store_true", default=False, help='Uninstall everything')
 parser.add_argument('--modern', action="store_true", default=False, help='Install modern versions of redis-py (4.x), RLTest, and RAMP')
 parser.add_argument('--master', action="store_true", default=False, help='Install redis-py, RLTest, RAMP from master')
+parser.add_argument('--pypi', action="store_true", default=False, help='Install via PyPI')
 parser.add_argument('--redispy-version', metavar='VER', type=str, default=None, help="redis-py github version: version or branch or org/branch")
 parser.add_argument('--rltest-version', metavar='VER', type=str, default=None, help="RLTest github version or branch")
 parser.add_argument('--ramp-version', metavar='VER', type=str, default=None, help="RAMP github version or branch")
