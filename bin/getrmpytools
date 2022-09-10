@@ -26,6 +26,7 @@ class RMPyToolsSetup(paella.Setup):
         else:
             self.reinstall = args.reinstall
         self.master = args.master
+        self.pypi = ags.pypi
         self.modern = args.modern
         if args.redispy_version:
             verspec = args.redispy_version.split('/')
@@ -115,12 +116,12 @@ class RMPyToolsSetup(paella.Setup):
                 if not self.pypi:
                     self.pip_install("--no-cache-dir git+https://github.com/RedisLabsModules/RLTest.git@0.4")
                 else:
-                    self.pip_install("--no-cache-dir RLTest=~0.4.2")
+                    self.pip_install("--no-cache-dir RLTest~=0.4.2")
         else:
             if not self.pypi:
                 self.pip_install("--no-cache-dir git+https://github.com/RedisLabsModules/RLTest.git@{VER}".format(VER=self.rltest_version))
             else:
-                self.pip_install("--no-cache-dir RLTest=~{VER}".format(VER=self.rltest_version))
+                self.pip_install("--no-cache-dir RLTest~={VER}".format(VER=self.rltest_version))
 
         if self.ramp_version is None:
             if self.modern:
