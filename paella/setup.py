@@ -53,7 +53,7 @@ class Runner:
         # scripts (installation commands may add such scripts and subsequent installation
         # commands may rely on them).
         # Howerver, "bash -l" will wreck PATH of active virtualenvs, thus python scripts will
-        # file. So if we're in one (i.e. VIRTUAL_ENV is not empty) PATH sould be restored
+        # fail. So if we're in one (i.e. VIRTUAL_ENV is not empty) PATH sould be restored
         # by re-invoking the activation script.
         if (self.is_root or not self.has_sudo) and sudo is not False:
             sudo = False
@@ -86,7 +86,7 @@ class Runner:
                 cmd = "sudo bash {}".format(cmd_file)
                 cmd_for_log = "sudo { %s }" % cmd_for_log
             else:
-                cmd = "sudo " + cmd
+                cmd = "sudo bash -c '{}'".format(cmd)
         print(cmd)
         if cmd_file is not None:
             print("# {}".format(cmd_for_log))
@@ -355,7 +355,7 @@ class Alpine(PackageManager):
 #----------------------------------------------------------------------------------------------
 
 class Setup(OnPlatform):
-    def __init__(self, nop=False, verbose=False):
+    def __init__(self, nop=False, verbose=False, sudo=True):
         OnPlatform.__init__(self)
         self.verbose = verbose
         self.nop = nop
@@ -378,6 +378,8 @@ class Setup(OnPlatform):
 
         self.python = sys.executable
         os.environ["PYTHONWARNINGS"] = 'ignore:DEPRECATION::pip._internal.cli.base_command'
+
+        self.sudoIf(sudo)
 
     def setup(self):
         if self.repo_refresh:
@@ -426,6 +428,10 @@ class Setup(OnPlatform):
             self.run('mkdir -p "{}"'.format(d), sudo=True)
         self.run('cp "{FROM}" "{TO}"'.format(FROM=file, TO=os.path.join(d, as_file)), sudo=True)
         os.unlink(file)
+
+    def sudoIf(sudo=True):
+        if sudo:
+            self.run("true", sudo=True)
 
     #------------------------------------------------------------------------------------------
 
