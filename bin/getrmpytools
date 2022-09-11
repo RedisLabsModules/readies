@@ -44,7 +44,9 @@ class RMPyToolsSetup(paella.Setup):
     def build_and_install_psutil(self, deps):
         self.run("%s/bin/getgcc" % READIES)
         self.install(deps)
-        self.pip_install("psutil")
+        self.psutil_installed = self.pip_install("psutil~=5.8.0", _try=True) == 0
+        if not self.psutil_installed:
+            self.pip_install("psutil")
 
     def common_first(self):
         self.psutil_installed = self.pip_install("psutil~=5.8.0", _try=True, output=False) == 0
