@@ -73,7 +73,7 @@ class Runner:
             if sudo is not False:
                 cmd_file = paella.tempfilepath()
                 paella.fwrite(cmd_file, cmd)
-                cmd = "bash {}".format(cmd_file)
+                cmd = "bash -l {}".format(cmd_file)
                 cmd_for_log = "sudo { %s }" % cmd_for_log
         else:
             if venv != '':
@@ -83,10 +83,10 @@ class Runner:
             if sudo == "file":
                 cmd_file = paella.tempfilepath()
                 paella.fwrite(cmd_file, cmd)
-                cmd = "sudo bash {}".format(cmd_file)
+                cmd = "sudo bash -l {}".format(cmd_file)
                 cmd_for_log = "sudo { %s }" % cmd_for_log
             else:
-                cmd = "sudo bash -c '{}'".format(cmd)
+                cmd = "sudo bash -l -c '{}'".format(cmd)
         if echo:
             print(cmd)
         if cmd_file is not None:
