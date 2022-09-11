@@ -48,7 +48,7 @@ class Runner:
         self.output = OutputMode(output)
 
     # sudo: True/False/"file"
-    def run(self, cmd, at=None, output=None, nop=None, _try=False, sudo=False):
+    def run(self, cmd, at=None, output=None, nop=None, _try=False, sudo=False, echo=True):
         # We're running cmd(s) with a login shell ("bash -l") in order to run profile.d
         # scripts (installation commands may add such scripts and subsequent installation
         # commands may rely on them).
@@ -87,7 +87,8 @@ class Runner:
                 cmd_for_log = "sudo { %s }" % cmd_for_log
             else:
                 cmd = "sudo bash -c '{}'".format(cmd)
-        print(cmd)
+        if echo:
+            print(cmd)
         if cmd_file is not None:
             print("# {}".format(cmd_for_log))
         sys.stdout.flush()
@@ -156,7 +157,7 @@ class PackageManager(object):
         else:
             raise Error("Cannot determine package manager for OS %s" % platform.os)
 
-    def run(self, cmd, at=None, output="on_error", nop=None, _try=False, sudo=False):
+    def run(self, cmd, at=None, output="on_error", nop=None, _try=False, sudo=False, echo=True):
         return self.runner.run(cmd, at=at, output=output, nop=nop, _try=_try, sudo=sudo)
 
     def has_command(self, cmd):
@@ -394,8 +395,8 @@ class Setup(OnPlatform):
 
         self.invoke()
 
-    def run(self, cmd, at=None, output="on_error", nop=None, _try=False, sudo=False):
-        return self.runner.run(cmd, at=at, output=output, nop=nop, _try=_try, sudo=sudo)
+    def run(self, cmd, at=None, output="on_error", nop=None, _try=False, sudo=False, echo=True):
+        return self.runner.run(cmd, at=at, output=output, nop=nop, _try=_try, sudo=sudo, echo=echo)
 
     @staticmethod
     def has_command(cmd):
@@ -429,9 +430,9 @@ class Setup(OnPlatform):
         self.run('cp "{FROM}" "{TO}"'.format(FROM=file, TO=os.path.join(d, as_file)), sudo=True)
         os.unlink(file)
 
-    def sudoIf(sudo=True):
+    def sudoIf(self, sudo=True):
         if sudo:
-            self.run("true", sudo=True)
+            self.run("true", sudo=True, echo=False)
 
     #------------------------------------------------------------------------------------------
 

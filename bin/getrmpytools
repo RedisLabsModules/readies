@@ -26,7 +26,7 @@ class RMPyToolsSetup(paella.Setup):
         else:
             self.reinstall = args.reinstall
         self.master = args.master
-        self.pypi = ags.pypi
+        self.pypi = args.pypi
         self.modern = args.modern
         if args.redispy_version:
             verspec = args.redispy_version.split('/')
