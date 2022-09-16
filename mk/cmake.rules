@@ -11,7 +11,7 @@ endif
 ifneq ($(MK_CUSTOM_CMAKE_BUILD),1)
 
 cmake-build $(TARGET): $(MK_MAKEFILES)
-	$(SHOW)$(MAKE) -C $(BINDIR)
+	$(SHOW)$(MAKE) -C $(BINDIR) -j $(NPROC)
 
 endif
 
