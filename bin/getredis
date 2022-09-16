@@ -3,6 +3,8 @@
 
 import sys
 import os
+import time
+import http
 import argparse
 import json
 import shutil
@@ -68,9 +70,18 @@ class RedisSourceSetup(paella.Setup):
         j = []
         url = 'https://api.github.com/repos/redis/redis/tags?per_page=100'
         while True:
-            r = urlopen(url)
+            disconnectsCount = 0
+            while disconnectsCount < 10:
+                try:
+                    r = urlopen(url)
+                    disconnectsCount = 10
+                except http.client.RemoteDisconnected:
+                    time.sleep(6)
+                    disconnectsCount += 1
+                    if disconnectsCount == 10:
+                        raise RuntimeError('cannot read Redis version list from github. Reason: RemoteDisconnected')
             if r.code != 200:
-                raise RuntimeError('cannot read Redis version list from guthub')
+                raise RuntimeError('cannot read Redis version list from github')
             t = r.read()
             # for 3 <= Python < 3.6
             try:

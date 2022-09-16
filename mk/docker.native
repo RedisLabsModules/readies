@@ -99,6 +99,7 @@ OS.archlinux=archlinux:latest
 OS.ol8=oraclelinux:8
 OS.alma8=almalinux:8
 OS.rocky8=rockylinux:8
+OS.jammy=ubuntu:jammy
 
 endif # OS
 
