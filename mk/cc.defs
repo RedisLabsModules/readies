@@ -36,6 +36,3 @@ endif
 
 export CC
 export CXX
-
-$(info # Using CC=$(CC))
-
