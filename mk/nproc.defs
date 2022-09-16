@@ -1,6 +1,10 @@
 
-ifeq ($(OS),linux)
-NPROC:=$(shell nproc)
-else ifeq ($(OS),macos)
-NPROC:=$(shell sysctl -n hw.physicalcpu)
+ifeq ($(SLOW),1)
+NPROC:=1
+else
+	ifeq ($(OS),linux)
+		NPROC:=$(shell nproc)
+	else ifeq ($(OS),macos)
+		NPROC:=$(shell sysctl -n hw.physicalcpu)
+	endif
 endif

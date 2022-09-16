@@ -19,3 +19,13 @@ endef
 ifneq ($(filter coverage show-cov upload-cov,$(MAKECMDGOALS)),)
 COV=1
 endif
+
+ifeq (n,$(findstring n,$(firstword -$(MAKEFLAGS))))
+DRY_RUN:=1
+else
+DRY_RUN:=
+endif
+
+ifneq ($(BB),)
+SLOW:=1
+endif
