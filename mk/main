@@ -31,7 +31,7 @@ endif
 
 MK:=$(READIES)/mk
 
-MK.pyver ?= 2
+MK.pyver ?= 3
 MK.getpy=getpy$(MK.pyver)
 
 ifneq ($(shell { CHECK=1 $(READIES)/bin/$(MK.getpy); echo -n $$?; }),0)
