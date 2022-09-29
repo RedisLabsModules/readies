@@ -1,0 +1,9 @@
+README.md
+pyproject.toml
+setup.cfg
+setup.py
+ecmgm/ecmgm.egg-info/PKG-INFO
+ecmgm/ecmgm.egg-info/SOURCES.txt
+ecmgm/ecmgm.egg-info/dependency_links.txt
+ecmgm/ecmgm.egg-info/not-zip-safe
+ecmgm/ecmgm.egg-info/top_level.txt
