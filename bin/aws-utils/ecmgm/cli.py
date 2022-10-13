@@ -16,6 +16,38 @@ console = Console()
 
 
 @app.command()
+def listvm():
+    ec2 = boto3.client("ec2")
+    response = ec2.describe_instances()
+    table = Table(title="Instance list")
+
+    for column in [
+        "Tags",
+        "ImageId",
+        "InstanceId",
+        "InstanceType",
+        "LaunchTime",
+        "Monitoring",
+        "PublicDnsName",
+    ]:
+        table.add_column(column, style="magenta")
+
+    for r in response["Reservations"]:
+        for i in r["Instances"]:
+            table.add_row(
+                i["Tags"][0]["Value"],
+                i["ImageId"],
+                i["InstanceId"],
+                i["InstanceType"],
+                str(i["LaunchTime"]),
+                str(i["Monitoring"]),
+                i["PublicDnsName"],
+            )
+
+    console.print(table)
+
+
+@app.command()
 def describe(instance_id: str = typer.Argument(..., help="EC2 Instance Id")):
     ec2 = boto3.client("ec2")
     table = Table(title="Instance details")
@@ -55,7 +87,25 @@ def create(
     ssh_key_name: str = typer.Option(
         "", help="You can specify your SSH key name in case its already created in AWS"
     ),
+    host_id: str = typer.Option(
+        "",
+        help="Dedicated host id (in case you are spinning macos instance) if not provided will be created by default",
+    ),
 ):
+    if (
+        instance_type == schemas.InstanceTypes.macmetal.value
+        and instance_arch != schemas.InstanceArch.x86_64_mac.value
+    ):
+        raise ValueError(
+            f"Unsoported instance_arch, mac instance types supports only {schemas.InstanceArch.x86_64_mac.value}"
+        )
+    if (
+        instance_arch == schemas.InstanceArch.x86_64_mac.value
+        and instance_type != schemas.InstanceTypes.macmetal.value
+    ):
+        raise ValueError(
+            f"Unsoported instance type, mac instance arch supports only {schemas.InstanceTypes.macmetal.value}"
+        )
     ec2 = boto3.client("ec2")
     image_filter_query = schemas.OS_SEARCH_MAPPING[os_image]
 
@@ -86,7 +136,9 @@ def create(
             Owners=["amazon"],
         )
 
-    sorted_amis = sorted(images["Images"], key=lambda x: x["CreationDate"], reverse=True)
+    sorted_amis = sorted(
+        images["Images"], key=lambda x: x["CreationDate"], reverse=True
+    )
     target_image = sorted_amis[0]
     panel_group = Group(
         Panel(
@@ -110,15 +162,25 @@ def create(
         key_pair = utils.create_key_pair(private_key_name, private_key_filename)
         console.print(f"Created a key pair [bold cyan]{key_pair.key_name}[/bold cyan]")
 
+    if instance_type == schemas.InstanceTypes.macmetal.value and not host_id:
+        console.print(
+            f"Creating dedicated host for instance type: [bold cyan]{instance_type}[/bold cyan]"
+        )
+        host_id = utils.allocate_hosts(instance_type)
+        console.print(
+            f"Dedicated host with id [bold cyan]{host_id}[/bold cyan] created"
+        )
+
     instance = utils.create_instance(
         target_image["ImageId"],
         name,
         instance_type,
         ssh_key_name or key_pair.key_name,
-        ["redis-io-group"],
+        ["redis-io-group"],  # todo default security group is temporary hardcoded
+        host_id,
     )
 
-    with console.status("[bold green]Waiting EC2 Instance to start..."):
+    with console.status("[bold green]Waiting for EC2 Instance to start..."):
         instance.wait_until_running()
         # updating instance attributes to obtain public ip/dns immediately
         instance.reload()
@@ -137,11 +199,11 @@ def create(
         Panel(
             Syntax(
                 f"# you also might need to make key to be only readable by you\nchmod 400 {private_key_filename}\n"
-                f"# You may use that instance id [{instance.id}] in other CLI commands like\n"
+                f"# You may use that instance id -> [{instance.id} <- in other CLI commands like\n"
                 "# Get VM details\n"
-                f"ec2 describe {instance.id}\n"
+                f"ecmgm describe {instance.id}\n"
                 "# Terminate VM\n"
-                f"ec2 teardown {instance.id}",
+                f"ecmgm teardown {instance.id}",
                 "shell",
                 theme="monokai",
             ),
