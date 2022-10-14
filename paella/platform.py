@@ -355,7 +355,7 @@ class Platform:
     #------------------------------------------------------------------------------------------
 
     def is_debian_compat(self):
-        return self.dist in ['debian', 'ubuntu', 'linuxmint', 'rasbpian']
+        return self.dist in ['debian', 'ubuntu', 'linuxmint', 'raspbian']
 
     def is_redhat_compat(self):
         return self.dist in ['redhat', 'centos', 'amzn', 'ol']
