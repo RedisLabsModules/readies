@@ -40,7 +40,7 @@ MK.nobindir:=1
 else
 define PYERROR
 Cannot find python$(MK.pyver) interpreter.
-Use can install one by running 'make setup'.
+You can install one by running 'make setup'.
 endef
 $(error $(PYERROR))
 endif
