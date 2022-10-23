@@ -16,7 +16,7 @@ ifeq ($(SAN),memory)
 endif
 
 CC_FLAGS.asan=-fno-omit-frame-pointer -fsanitize=address
-CC_FLAGS.msan -fno-omit-frame-pointer -fsanitize=memory -fsanitize-memory-track-origins=2
+CC_FLAGS.msan=-fno-omit-frame-pointer -fsanitize=memory -fsanitize-memory-track-origins=2
 CC_FLAGS.tsan=-fno-omit-frame-pointer -fsanitize=thread -pie
 
 CXX_FLAGS.msan=-stdlib=libc++ -I$(MSAN_PREFIX)/include -I$(MSAN_PREFIX)/include/c++/v1
