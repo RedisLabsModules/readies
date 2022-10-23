@@ -415,9 +415,10 @@ class Setup(OnPlatform):
         d = self.profile_d
         if as_file is None:
             as_file = os.path.basename(file)
+        not_mac = self.os != 'macos'
         if not os.path.isdir(d):
-            self.run('mkdir -p "{}"'.format(d), sudo=True)
-        self.run('cp "{FROM}" "{TO}"'.format(FROM=file, TO=os.path.join(d, as_file)), sudo=True)
+            self.run('mkdir -p "{}"'.format(d), sudo=not_mac)
+        self.run('cp "{FROM}" "{TO}"'.format(FROM=file, TO=os.path.join(d, as_file)), sudo=not_mac)
 
     def cat_to_profile_d(self, text, as_file=None):
         file = paella.tempfilepath()
@@ -425,9 +426,10 @@ class Setup(OnPlatform):
         d = self.profile_d
         if as_file is None:
             as_file = os.path.basename(file)
+        not_mac = self.os != 'macos'
         if not os.path.isdir(d):
-            self.run('mkdir -p "{}"'.format(d), sudo=True)
-        self.run('cp "{FROM}" "{TO}"'.format(FROM=file, TO=os.path.join(d, as_file)), sudo=True)
+            self.run('mkdir -p "{}"'.format(d), sudo=not_mac)
+        self.run('cp "{FROM}" "{TO}"'.format(FROM=file, TO=os.path.join(d, as_file)), sudo=not_mac)
         os.unlink(file)
 
     def sudoIf(self, sudo=True):
