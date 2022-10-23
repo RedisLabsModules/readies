@@ -14,3 +14,7 @@ endif
 ifeq ($(COV),1)
 include $(MK)/coverage.defs
 endif
+
+ifneq ($(SAN),)
+include $(MK)/clang-sanitizer.defs
+endif

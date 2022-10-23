@@ -1,11 +1,4 @@
 
-ifneq ($(SAN),)
-	ifeq ($(GCC),1)
-		_:=$(error Cannot build for SAN=$(SAN) with GCC=1)
-	endif
-	CLANG=1
-endif
-
 ifeq ($(OS),macos)
 	ifeq ($(GCC),1)
 		REAL_GCC:=$(shell gcc --version | grep clang &> /dev/null; echo $$?)

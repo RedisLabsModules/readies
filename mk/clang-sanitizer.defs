@@ -1,0 +1,35 @@
+
+ifneq ($(SAN),)
+	ifeq ($(GCC),1)
+		_:=$(error Cannot build for SAN=$(SAN) with GCC=1)
+	endif
+	CLANG=1
+endif
+
+ifeq ($(SAN),memory)
+    ifneq ($(MSAN_PREFIX),)
+        MSAN_PREFIX=/opt/llvm-project/build-msan
+		ifeq ($(wildcard $(MSAN_PREFIX)),)
+            message(FATAL_ERROR "LLVM/MSAN stdlibc++ directory '$(MSAN_PREFIX)' is missing")
+        endif
+    endif
+endif
+
+CC_FLAGS.asan=-fno-omit-frame-pointer -fsanitize=address
+CC_FLAGS.msan -fno-omit-frame-pointer -fsanitize=memory -fsanitize-memory-track-origins=2
+CC_FLAGS.tsan=-fno-omit-frame-pointer -fsanitize=thread -pie
+
+CXX_FLAGS.msan=-stdlib=libc++ -I$(MSAN_PREFIX)/include -I$(MSAN_PREFIX)/include/c++/v1
+LD_FLAGS.msan=-stdlib=libc++ -Wl,-rpath=$(MSAN_PREFIX)/lib -L$(MSAN_PREFIX)/lib -lc++abi
+
+ifeq ($(SAN),address)
+CC_FLAGS += $(CC_FLAGS.asan)
+
+else ifeq ($(SAN),memory)
+CC_FLAGS += $(CC_FLAGS.msan)
+CXX_FLAGS += $(CXX_FLAGS.msan)
+LD_FLAGS += $(LD_FLAGS.msan)
+
+else ifeq ($(SAN),thread)
+CC_FLAGS += $(CC_FLAGS.tsan)
+endif

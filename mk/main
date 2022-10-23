@@ -60,6 +60,7 @@ USER:=$(shell whoami)
 
 include $(MK)/functions
 include $(MK)/common.defs
+include $(MK)/cfg
 
 ifneq ($(__NO_PYTHON),1)
 
