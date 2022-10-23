@@ -15,8 +15,8 @@ import paella  # noqa: F401
 
 os.environ["PYTHONWARNINGS"] = 'ignore:DEPRECATION::pip._internal.cli.base_command'
 
-CLANG_COMMON_VER="13"
-CLANG_FORMAT_VER="13"
+CLANG_COMMON_VER="15"
+CLANG_FORMAT_VER="14"
 ARM_CLANG_FORMAT_VER="12"
 
 #----------------------------------------------------------------------------------------------
@@ -64,59 +64,48 @@ class CLangSetup(paella.Setup):
             return
 
         if self.osnick == "xenial":
-            self.install_from_github()
+            self.install_v13_from_github()
             return
 
         self.install("software-properties-common apt-transport-https")
         self.install("unzip lsb-release gnupg2")
 
-        if self.osnick != "trusty":
-            if self.osnick in ["xenial", "stretch", "buster"]:
-                clang_ver = "12"
-            else:
-                clang_ver = args.version if args.version is not None else CLANG_COMMON_VER
-            if clang_ver == "": # "" is for auto-detect
-                install_args = ""
-            else:
-                install_args = "{CLANG_VER} all".format(CLANG_VER=clang_ver)
-            self.run(r"""
-                wget -q https://apt.llvm.org/llvm.sh -O /tmp/llvm.sh
-                """.format(ARGS=install_args))
-            if self.osnick == "xenial":
-                self.run(r'''
-                    sed -i -e 's/libunwind$LLVM_VERSION/libunwind/g' /tmp/llvm.sh
-                    ''')
+        if self.osnick == "trusty":
+            self.install_trusty()
+            self.create_symlinks()
+            return
+
+        if self.osnick in ["xenial", "stretch", "buster"]:
+            clang_ver = "12"
+        else:
+            clang_ver = args.version if args.version is not None else CLANG_COMMON_VER
+        if clang_ver == "": # "" is for auto-detect
+            install_args = ""
+        else:
+            install_args = "{CLANG_VER} all".format(CLANG_VER=clang_ver)
+        self.run("wget -q https://apt.llvm.org/llvm.sh -O /tmp/llvm.sh")
+        self.run(r'''
+            sed -i -e 's/add-apt-repository "${REPO_NAME}"/add-apt-repository -y "${REPO_NAME}"/g' /tmp/llvm.sh
+            ''')
+        if self.osnick == "xenial":
             self.run(r'''
+                sed -i -e 's/libunwind$LLVM_VERSION/libunwind/g' /tmp/llvm.sh
+                ''')
+        self.run(r'''
             sed -i -e 's/lld-$LLVM_VERSION/lld-$LLVM_VERSION python3-lldb-$LLVM_VERSION/g' /tmp/llvm.sh
             ''')
-            self.run(r"""
-                bash /tmp/llvm.sh {ARGS}
-                rm /tmp/llvm.sh
-                """.format(ARGS=install_args), sudo=True)
-            # sed -e 's/\libunwind$LLVM_VERSION/libunwind/g' llvm.sh
-            clang_ver = sh("ls /usr/bin/clang-* 2>/dev/null | grep -E 'clang-[[:digit:]].*' | cut -f2 -d- | sort -nr | head -1").strip()
-            if clang_ver == "" and not self.nop:
-                raise paella.Error("Error installing CLang via apt.llvm.org")
-
-            self.install("clang-tools-{VER}".format(VER=clang_ver))
-        else:
-            clang_ver = "8"
-            self.run("%s/bin/getgcc --modern" % READIES)
-            self.run('add-apt-repository  "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-8 main"', sudo=True)
-            self.run("wget -q -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -", sudo=True)
-            self.run("apt-get update -qq", sudo=True)
-            self.install("llvm-8 llvm-8-dev llvm-8-doc llvm-8-examples llvm-8-runtime "
-                         "libllvm-8-ocaml-dev libllvm8 "
-                         "clang-8 clang-tools-8 clang-8-doc "
-                         "libclang-common-8-dev libclang-8-dev libclang1-8 libc++-8-dev libc++abi-8-dev libfuzzer-8-dev "
-                         "clang-format-8 python-clang-8 "
-                         "lldb-8 lld-8")
-
-        # arrange llvm-* and clang-* version-neutral symlinks
         self.run(r"""
-            cd /usr/bin
-            for f in `ls llvm*-{CLANG_VER} clang*-{CLANG_VER} 2>/dev/null`; do ln -sf $f ${{f/%-{CLANG_VER}/}}; done
-            """.format(CLANG_VER=clang_ver), sudo=True)
+            bash /tmp/llvm.sh {ARGS}
+            rm /tmp/llvm.sh
+            """.format(ARGS=install_args), sudo=True)
+
+        clang_ver = sh("ls /usr/bin/clang-* 2>/dev/null | grep -E 'clang-[[:digit:]].*' | cut -f2 -d- | sort -nr | head -1").strip()
+        if clang_ver == "" and not self.nop:
+            raise paella.Error("Error installing CLang via apt.llvm.org")
+
+        self.install("clang-tools-{VER}".format(VER=clang_ver))
+
+        self.create_symlinks(clang_ver)
 
     def redhat_compat(self):
         if not self.modern:
@@ -133,14 +122,35 @@ class CLangSetup(paella.Setup):
             self.install("clang")
 
     def macos(self):
-        self.install("llvm")
+        # self.install("llvm")
+        self.install_latest_from_github()
 
     def common_last(self):
         pass
 
-    def install_from_github(self):
+    def create_symlinks(self, clang_ver):
+        # arrange llvm-* and clang-* version-neutral symlinks
+        self.run(r"""
+            cd /usr/bin
+            for f in `ls llvm*-{CLANG_VER} clang*-{CLANG_VER} 2>/dev/null`; do ln -sf $f ${{f/%-{CLANG_VER}/}}; done
+            """.format(CLANG_VER=clang_ver), sudo=True)
+    
+    def install_trusty(self):
+        clang_ver = "8"
+        self.run("%s/bin/getgcc --modern" % READIES)
+        self.run('add-apt-repository  "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-8 main"', sudo=True)
+        self.run("wget -q -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -", sudo=True)
+        self.run("apt-get update -qq", sudo=True)
+        self.install("llvm-8 llvm-8-dev llvm-8-doc llvm-8-examples llvm-8-runtime "
+                     "libllvm-8-ocaml-dev libllvm8 "
+                     "clang-8 clang-tools-8 clang-8-doc "
+                     "libclang-common-8-dev libclang-8-dev libclang1-8 libc++-8-dev libc++abi-8-dev libfuzzer-8-dev "
+                     "clang-format-8 python-clang-8 "
+                     "lldb-8 lld-8")
+    
+    def install_v13_from_github(self):
         file = None
-        LLVM_VER="13.0.0"
+        LLVM_VER = "13.0.0"
         if self.arch == "x64":
             arch = "x86_64"
             if self.osnick == "xenial":
@@ -164,6 +174,31 @@ class CLangSetup(paella.Setup):
         self.cat_to_profile_d(r'''
             export PATH=/opt/llvm-13/bin:${PATH}
             ''', "llvm-13.sh")
+
+    def install_latest_from_github(self):
+        file = None
+        ver = "15.0.3"
+        if self.arch == "x64":
+            arch = "x86_64"
+            if self.os == "macos":
+                file = f"clang+llvm-{ver}-{arch}-apple-darwin.tar.xz"
+        elif self.arch == "arm64v8":
+            arch = "arm64"
+            if self.os == "macos":
+                file = f"clang+llvm-{ver}-{arch}-apple-darwin21.0.tar.xz"
+
+        if file is None:
+            raise Error("artifacts not available at github")
+
+        tar = paella.wget(f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{ver}/{file}",
+                          tempdir=True)
+        self.run(r'''
+            tar -C /opt -xJf {tar}
+            ln -s /opt/`basename {tar} .tar.xz` /opt/llvm-15
+            '''.format(tar=tar), sudo=True)
+        self.cat_to_profile_d(r'''
+            export PATH=/opt/llvm-15/bin:${PATH}
+            ''', "llvm-15.sh")
 
 #----------------------------------------------------------------------------------------------
 
