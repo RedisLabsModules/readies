@@ -16,14 +16,18 @@ ifeq ($(SAN),memory)
 endif
 
 CC_FLAGS.asan=-fno-omit-frame-pointer -fsanitize=address
-CC_FLAGS.msan=-fno-omit-frame-pointer -fsanitize=memory -fsanitize-memory-track-origins=2
-CC_FLAGS.tsan=-fno-omit-frame-pointer -fsanitize=thread -pie
+LD_FLAGS.asan=-fsanitize=address
 
-CXX_FLAGS.msan=-stdlib=libc++ -I$(MSAN_PREFIX)/include -I$(MSAN_PREFIX)/include/c++/v1
-LD_FLAGS.msan=-stdlib=libc++ -Wl,-rpath=$(MSAN_PREFIX)/lib -L$(MSAN_PREFIX)/lib -lc++abi
+CC_FLAGS.tsan=-fno-omit-frame-pointer -fsanitize=thread -pie
+LD_FLAGS.tsan=-fsanitize=thread
+
+CC_FLAGS.msan=-fno-omit-frame-pointer -fsanitize=memory -fsanitize-memory-track-origins=2
+CXX_FLAGS.msan=$(CC_FLAGS.msan) -stdlib=libc++ -I$(MSAN_PREFIX)/include -I$(MSAN_PREFIX)/include/c++/v1
+LD_FLAGS.msan=-fsanitize=memory -stdlib=libc++ -Wl,-rpath=$(MSAN_PREFIX)/lib -L$(MSAN_PREFIX)/lib -lc++abi
 
 ifeq ($(SAN),address)
 CC_FLAGS += $(CC_FLAGS.asan)
+LD_FLAGS += $(LD_FLAGS.asan)
 
 else ifeq ($(SAN),memory)
 CC_FLAGS += $(CC_FLAGS.msan)
@@ -32,4 +36,5 @@ LD_FLAGS += $(LD_FLAGS.msan)
 
 else ifeq ($(SAN),thread)
 CC_FLAGS += $(CC_FLAGS.tsan)
+LD_FLAGS += $(LD_FLAGS.tsan)
 endif
