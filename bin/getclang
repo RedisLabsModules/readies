@@ -22,7 +22,7 @@ ARM_CLANG_FORMAT_VER="12"
 #----------------------------------------------------------------------------------------------
 
 CLANG_FORMAT_URL_BASE="https://github.com/muttleyxd/clang-tools-static-binaries/releases/download"
-CLANG_FORMAT_URL = "{BASE}/master-f3a37dd2/clang-format-{VER}_linux-amd64".format(BASE=CLANG_FORMAT_URL_BASE, VER=CLANG_FORMAT_VER)
+CLANG_FORMAT_URL = "{BASE}/master-208096c1/clang-format-{VER}_linux-amd64".format(BASE=CLANG_FORMAT_URL_BASE, VER=CLANG_FORMAT_VER)
 
 class CLangFormatSetup(paella.Setup):
     def __init__(self, args):
