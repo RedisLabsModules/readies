@@ -36,6 +36,11 @@ fi
 
 USER_MYPY="$MYPY"
 
+if [[ -f /etc/os-release ]]; then
+	osver=$(source /etc/os-release; echo "${ID}${VERSION_ID}")
+fi
+arch=$(uname -m)
+
 # [[ $VERBOSE == 1 ]] && { set -x; PS4='$LINENO: '; }
 V="$VERBOSE"
 [[ -z $PIP ]] && PIP=1
@@ -115,7 +120,11 @@ install_python() {
 	if is_command apt-get; then
 		export DEBIAN_FRONTEND=noninteractive
 		runn $SUDO apt-get -qq update --fix-missing
-		runn $SUDO apt-get install --fix-missing -y python
+		if [[ $osver == ubuntu22.04 ]]; then
+			runn $SUDO apt-get install --fix-missing -y python2
+		else
+			runn $SUDO apt-get install --fix-missing -y python
+		fi
 	elif is_command dnf; then
 		runn $SUDO dnf install -y python2
 	elif is_command yum; then
