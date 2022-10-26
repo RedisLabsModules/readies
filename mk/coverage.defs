@@ -1,9 +1,7 @@
 
-ifneq ($(filter cov-upload,$(MAKECMDGOALS)),)
-COV=1
-endif
-
 ifeq ($(COV),1)
+
+#----------------------------------------------------------------------------------------------
 
 CC_FLAGS.coverage += --coverage
 LD_FLAGS.coverage += --coverage
@@ -14,6 +12,8 @@ COV_INFO=$(BINROOT)/cov.info
 
 export LLVM_PROFILE_FILE=$(COV_DIR)/cov-%p-%m.profraw
 
+#----------------------------------------------------------------------------------------------
+
 COV_EXCLUDE += \
 	'/Applications/*' \
 	'/usr/*'
@@ -21,6 +21,8 @@ COV_EXCLUDE += \
 COV_EXCLUDE.llvm += \
 	"/rustc/*" \
 	"$$HOME/.cargo/*"
+
+#----------------------------------------------------------------------------------------------
 
 define COVERAGE_RESET
 $(SHOW)set -e ;\
@@ -37,6 +39,8 @@ mkdir -p $(COV_DIR)
 endef
 
 COVERAGE_RESET.rust=$(COVERAGE_RESET.llvm)
+
+#----------------------------------------------------------------------------------------------
 
 define COVERAGE_COLLECT
 $(SHOW)set -e ;\
@@ -62,12 +66,16 @@ llvm-cov export --format=lcov --instr-profile $(COV_PROFDATA) $(TARGET) > $(COV_
 lcov -o $(COV_INFO) -r $(COV_INFO).all $(COV_EXCLUDE.llvm) &> /dev/null
 endef
 
+#----------------------------------------------------------------------------------------------
+
 define COVERAGE_REPORT
 $(SHOW)set -e ;\
 lcov -l $(COV_INFO) ;\
 genhtml --legend --ignore-errors source -o $(COV_DIR) $(COV_INFO) > /dev/null 2>&1 ;\
 echo "Coverage info at $$(realpath $(COV_DIR))/index.html"
 endef
+
+#----------------------------------------------------------------------------------------------
 
 define COVERAGE_COLLECT_REPORT
 $(COVERAGE_COLLECT)
@@ -79,7 +87,8 @@ $(COVERAGE_COLLECT.llvm)
 $(COVERAGE_REPORT)
 endef
 
-else
+#----------------------------------------------------------------------------------------------
+else # ! COV
 
 COVERAGE_RESET=
 COVERAGE_COLLECT=
@@ -89,5 +98,7 @@ COVERAGE_COLLECT_REPORT=
 COVERAGE_RESET.llvm=
 COVERAGE_COLLECT.llvm=
 COVERAGE_COLLECT_REPORT.llvm=
+
+#----------------------------------------------------------------------------------------------
 
 endif # COV

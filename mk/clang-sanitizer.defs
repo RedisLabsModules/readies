@@ -10,7 +10,7 @@ ifeq ($(SAN),memory)
     ifneq ($(MSAN_PREFIX),)
         MSAN_PREFIX=/opt/llvm-project/build-msan
 		ifeq ($(wildcard $(MSAN_PREFIX)),)
-            message(FATAL_ERROR "LLVM/MSAN stdlibc++ directory '$(MSAN_PREFIX)' is missing")
+			_:=$(error LLVM/MSAN stdlibc++ directory '$(MSAN_PREFIX)' is missing)
         endif
     endif
 endif
