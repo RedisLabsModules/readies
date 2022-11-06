@@ -29,6 +29,10 @@ $(error Cannot find readies root)
 endif
 endif
 
+ifeq ($(wildcard $(READIES)/*),)
+___:=$(shell git submodule update --init --recursive &> /dev/null)
+endif
+
 MK:=$(READIES)/mk
 
 MK.pyver ?= 3
