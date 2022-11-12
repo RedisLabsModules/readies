@@ -130,7 +130,10 @@ class CLangSetup(paella.Setup):
     def common_last(self):
         pass
 
-    def create_symlinks(self, clang_ver):
+    def create_symlinks(self, clang_ver=None):
+        if clang_ver is None:
+            clang_ver = self.version
+
         # arrange llvm-* and clang-* version-neutral symlinks
         self.run(r"""
             cd /usr/bin
@@ -206,19 +209,36 @@ class CLangSetup(paella.Setup):
 
 parser = argparse.ArgumentParser(description='Install CLang tools')
 parser.add_argument('-n', '--nop', action="store_true", help='no operation')
+parser.add_argument('--force', action="store_true", default=False, help='Install clang even if already installed')
 parser.add_argument('--format', action="store_true", default=False, help='Install clang-format')
 parser.add_argument('--modern', action="store_true", help="Install modern CLang/LLVM version")
 parser.add_argument('-v', '--version', type=str, default=None, help='CLang version')
+parser.add_argument('--just-fix-links', action="store_true", default=False, help='Fix symlinks to specified version')
 args = parser.parse_args()
 
 if args.modern and args.version:
     eprint("arguments --modern and --version are conflicting.")
     exit(1)
 
+if args.just_fix_links:
+    if args.format:
+        eprint(f"arguments --format and --just-fix-links are conflicting.")
+        exit(1)
+    if args.version is None:
+        eprint(f"argument --just-fix-links requires --version.")
+        exit(1)
+
 try:
     if args.format:
         CLangFormatSetup(args).setup()
     else:
+        if args.just_fix_links:
+            CLangSetup(args).create_symlinks()
+            exit(0)
+        if paella.Setup.has_command('clang') and not args.force:
+            vermsg = sh(f'clang --version')
+            eprint(f"clang is present:\n{vermsg}")
+            exit(0)
         CLangSetup(args).setup()
 except Exception as x:
     traceback.print_exc()
