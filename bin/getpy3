@@ -110,13 +110,15 @@ install_python_on_old_ubuntu() {
 	# Possible workaround - currently disabled
 	# PYTHON=1 $READIES/bin/getconda
 
+	gpg_bypass="--allow-unauthenticated"
+	
 	# ppa:deadsnakes no longer provides for xenial, trusty
 	runn $SUDO apt-get install --fix-missing -y software-properties-common
 	runn $SUDO add-apt-repository -y ppa:fkrull/deadsnakes
-	runn $SUDO apt-get -qq update
-	runn $SUDO apt-get install --fix-missing -y python3.6
+	runn $SUDO apt-get -qq $gpg_bypass update
+	runn $SUDO apt-get install $gpg_bypass --fix-missing -y python3.6
 	runn ln -sf `command -v python3.6` /usr/local/bin/python3
-	runn $SUDO apt-get install --fix-missing -y python3.6-venv
+	runn $SUDO apt-get install $gpg_bypass --fix-missing -y python3.6-venv
 }
 
 install_python36_on_debian9_x64() {
