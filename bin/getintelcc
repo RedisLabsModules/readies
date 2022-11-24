@@ -44,17 +44,19 @@ OP=""
 
 [[ $NOP != 1 && -n $SUDO ]] && $SUDO echo
 
-if [[ -n $POST && $POST != 0 ]]; then
+if [[ -n $POST || $POST != 0 ]]; then
 	runn $SUDO $READIES/bin/getget
 	shfile=$(mktemp /tmp/icx.XXXXXX)
-	runn wget -O $shfile https://registrationcenter-download.intel.com/akdlm/irc_nas/18673/l_BaseKit_p_2022.2.0.262.sh
+	runn wget -O $shfile https://registrationcenter-download.intel.com/akdlm/irc_nas/18852/l_BaseKit_p_2022.3.0.8767.sh
 	runn $SUDO bash $shfile -a -s --eula accept --install-dir $ICX_DIR --components intel.oneapi.lin.dpcpp-cpp-compiler
 	# rm $shfile
 fi
 
 tmp_profiled=$(mktemp -d)
 cat <<-END > $tmp_profiled/intelcc.sh
-	. $ICX_DIR/setvars.sh
+	if [[ -z $ONEAPI_ROOT ]]; then
+		. $ICX_DIR/setvars.sh > /dev/null
+	fi
 	END
 add_to_profile_d $tmp_profiled/intelcc.sh
 rm -rf $tmp_profiled
