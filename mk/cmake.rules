@@ -1,18 +1,30 @@
 
 ifneq ($(MK.cmake),)
 
-$(BINDIR)/Makefile : $(MK_CMAKE_FILES)
-	$(SHOW)if [ ! -d $(BINDIR) ]; then echo "CMake: $(BINDIR) does not exist."; exit 1; fi
-	$(SHOW)cd $(BINDIR); cmake $(CMAKE_WHY) $(CMAKE_FLAGS) $(abspath $(SRCDIR)) $(CMAKE_SINK)
+ifeq ($(FORCE),1)
+.PHONY: __force
+
+$(BINDIR)/Makefile: __force
+else
+$(BINDIR)/Makefile : $(MK_CMAKE_FILES) $(CMAKE_FILES)
+endif
+	$(SHOW)mkdir -p $(BINROOT)
+	$(SHOW)cd $(BINDIR) && cmake $(CMAKE_WHY) $(CMAKE_FLAGS) $(abspath $(SRCDIR))
+#	$(CMAKE_SINK)
 ifeq ($(WHY),1)
 	@echo CMake log is in /tmp/cmake.why
 endif
 
 ifneq ($(MK_CUSTOM_CMAKE_BUILD),1)
 
-cmake-build $(TARGET): $(MK_MAKEFILES)
-	$(SHOW)$(MAKE) -C $(BINDIR) -j $(NPROC)
-
+cmake-build $(TARGET): $(MISSING_DEPS) $(MK_MAKEFILES)
+	@echo Building $(TARGET) ...
+ifneq ($(DRY_RUN),1)
+	$(SHOW)$(MAKE) -C $(BINDIR) $(MAKE_J)
+else
+	@make -C $(BINDIR) $(MAKE_J)
 endif
+
+endif # MK_CUSTOM_CMAKE_BUILD
 
 endif # MK.cmake
