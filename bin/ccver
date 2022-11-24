@@ -28,7 +28,7 @@ m = re.match("\w+ \([^)]*\) (\d+)\.(\d+)\.(\d+)", ccver_str)
 if m:
     major, minor, patch = m[1], m[2], m[3]
 else:
-    m = re.match(r"clang version (\d+)\.(\d+)\.(\d+)", ccver_str)
+    m = re.match(r".*clang version (\d+)\.(\d+)\.(\d+)", ccver_str)
     if m:
         major, minor, patch = m[1], m[2], m[3]
     else:
