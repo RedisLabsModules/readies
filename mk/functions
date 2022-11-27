@@ -12,4 +12,6 @@ endef
 filter2=$(foreach v,$(2),$(if $(findstring $(1),$(v)),$(v),))
 filter-out2=$(foreach v,$(2),$(if $(findstring $(1),$(v)),,$(v)))
 
-uniq = $(if $1,$(firstword $1) $(call uniq,$(filter-out $(firstword $1),$1)))
+uniq=$(if $1,$(firstword $1) $(call uniq,$(filter-out $(firstword $1),$1)))
+
+flatten=$(filter %,$(subst $(__NL), ,$1))

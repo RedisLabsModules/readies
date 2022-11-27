@@ -1,0 +1,13 @@
+
+ifneq ($(OS),macos)
+	LIBOMP=-fopenmp
+else
+	ifeq ($(STATIC_OMP),1)
+		LIBOMP_PREFIX:=$(shell brew --prefix libomp)
+		LIBOMP=$(LIBOMP_PREFIX)/lib/libomp.a
+	else
+		LIBOMP=-lomp -L$(shell brew --prefix libomp)/lib -Wl,-no_compact_unwind
+	endif
+endif
+
+export LIBOMP

@@ -3,8 +3,8 @@ ifeq ($(OS),macos)
 
 #----------------------------------------------------------------------------------------------
 
-# pip install --user puts packages here:
-export PATH:=$(PATH):$(HOME)/Library/Python/2.7/bin
+## pip install --user puts packages here:
+#export PATH:=$(PATH):$(HOME)/Library/Python/2.7/bin
 
 #----------------------------------------------------------------------------------------------
 

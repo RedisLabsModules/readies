@@ -6,6 +6,9 @@ include $(MK)/variant.rules
 include $(MK)/bindirs.rules
 include $(MK)/help.rules
 include $(MK)/build.rules
+include $(MK)/cc.rules
+include $(MK)/binutils.rules
+include $(MK)/run.rules
 include $(MK)/coverage.rules
 
 ifneq ($(MK.cmake),)

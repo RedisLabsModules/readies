@@ -4,7 +4,7 @@ ifneq (,$(MK.configure))
 $(CONFIGURE_BUILD_DIR)/Makefile: $(SRCDIR)/configure
 	$(SHOW)set -e ;\
 		cd $(CONFIGURE_BUILD_DIR) ;\
-		$(abspath $(SRCDIR))/configure $(CONFIGURE_FLAGS)
+		$(abspath $(SRCDIR))/configure --enable-silent-rules $(CONFIGURE_FLAGS)
 
 $(CONFIGURE_TARGET): $(CONFIGURE_BUILD_DIR)/Makefile
 	$(SHOW)make -C $(CONFIGURE_BUILD_DIR) -j $(NPROC)

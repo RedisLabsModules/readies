@@ -1,0 +1,17 @@
+
+ifneq ($(RUN_CMD),)
+
+run:
+ifeq ($(GDB),1)
+ifeq ($(CLANG),1)
+	$(SHOW)lldb -o run -- $(RUN_CMD)
+else
+	$(SHOW)gdb -ex r --args $(RUN_CMD)
+endif
+else
+	$(SHOW)$(RUN_CMD)
+endif
+
+.PHONY: run
+
+endif

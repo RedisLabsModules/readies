@@ -1,0 +1,7 @@
+
+set(MK "${root}/deps/readies/mk/cmake")
+
+include(${MK}/policy)
+include(${MK}/common)
+include(${MK}/platform)
+include(${MK}/functions)

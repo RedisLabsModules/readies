@@ -29,3 +29,59 @@ endif
 
 export CC
 export CXX
+
+#----------------------------------------------------------------------------------------------
+
+define CC_FLAGS.ccdeps
+	-MMD
+	-MF $(@:.o=.d)
+endef
+
+define CC_FLAGS.common
+	$(CC_FLAGS.opt)
+	$(CC_FLAGS.warnings)
+	$(CC_FLAGS.debug)
+	$(CC_FLAGS.coverage)
+	$(CC_FLAGS.$(OS))
+endef
+
+ifneq ($(wildcard $(SRCDIR)/common.h),)
+CC_FLAGS.common += -include $(SRCDIR)/common.h
+endif
+
+ifeq ($(PEDANTIC),1)
+CC_FLAGS.warnings += -Wpedantic
+endif
+
+CC_FLAGS.defs=$(foreach d,$(call flatten,$(CC_DEFS)),-D$(d))
+CC_FLAGS.includes=$(foreach d,$(call flatten,$(CC_INCLUDES)),-I$(d))
+
+CC_FLAGS.debug += -g -ggdb
+ifeq ($(DEBUG),1)
+	CC_FLAGS.opt += -O0
+	CC_FLAGS.debug += -fno-omit-frame-pointer -D_DEBUG
+else
+	ifeq ($(PROFILE),1)
+		CC_FLAGS.opt += -O2
+	else
+		CC_FLAGS.opt += -O3
+	endif
+endif
+
+define _CC_FLAGS
+	$(CC_FLAGS.ccdeps)
+	-fPIC
+	$(CC_FLAGS.common)
+	$(CC_FLAGS.defs)
+	$(CC_FLAGS.includes)
+endef
+CC_FLAGS=$(call flatten,$(_CC_FLAGS))
+
+export CMAKE_CC_FLAGS=$(call flatten,$(CC_FLAGS.common))
+
+#----------------------------------------------------------------------------------------------
+
+
+#----------------------------------------------------------------------------------------------
+
+include $(MK)/openmp.defs

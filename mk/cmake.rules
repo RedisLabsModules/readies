@@ -17,12 +17,19 @@ endif
 
 ifneq ($(MK_CUSTOM_CMAKE_BUILD),1)
 
-cmake-build $(TARGET): $(MISSING_DEPS) $(MK_MAKEFILES)
+$(TARGET): $(MISSING_DEPS) $(MK_MAKEFILES)
 	@echo Building $(TARGET) ...
 ifneq ($(DRY_RUN),1)
-	$(SHOW)$(MAKE) -C $(BINDIR) $(MAKE_J)
+	$(SHOW)$(MAKE) -C $(BINDIR) $(MAKE_J) $(CMAKE_TARGETS)
 else
-	@make -C $(BINDIR) $(MAKE_J)
+	@make -C $(BINDIR) $(MAKE_J) $(CMAKE_TARGETS)
+endif
+ifeq ($(EXTRACT_TARGET_SYMBOLS),1)
+ifeq ($(OS),linux)
+ifneq ($(DEBUG),1)
+	$(SHOW)$(call extract_symbols,$(TARGET))
+endif
+endif
 endif
 
 endif # MK_CUSTOM_CMAKE_BUILD
