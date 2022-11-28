@@ -1,5 +1,5 @@
 
-set(MK "${root}/deps/readies/mk/cmake")
+set(MK "${root}/deps/readies/cmake")
 
 include(${MK}/policy)
 include(${MK}/common)

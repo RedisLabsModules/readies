@@ -38,6 +38,8 @@ define CC_FLAGS.ccdeps
 endef
 
 define CC_FLAGS.common
+	-fPIC
+
 	$(CC_FLAGS.opt)
 	$(CC_FLAGS.warnings)
 	$(CC_FLAGS.debug)
@@ -68,9 +70,17 @@ else
 	endif
 endif
 
+define _CC_C_FLAGS
+	-fcommon
+endef
+CC_C_FLAGS=$(call flatten,$(_CC_C_FLAGS))
+
+define _CC_CXX_FLAGS
+endef
+CC_CXX_FLAGS=$(call flatten,$(_CC_CXX_FLAGS))
+
 define _CC_FLAGS
 	$(CC_FLAGS.ccdeps)
-	-fPIC
 	$(CC_FLAGS.common)
 	$(CC_FLAGS.defs)
 	$(CC_FLAGS.includes)
@@ -78,9 +88,26 @@ endef
 CC_FLAGS=$(call flatten,$(_CC_FLAGS))
 
 export CMAKE_CC_FLAGS=$(call flatten,$(CC_FLAGS.common))
+export CMAKE_CC_C_FLAGS=$(CC_C_FLAGS)
+export CMAKE_CC_CXX_FLAGS=$(CC_CXX_FLAGS)
 
 #----------------------------------------------------------------------------------------------
 
+define _LD_FLAGS
+	$(LD_FLAGS.common)
+	$(LD_FLAGS.$(OS))
+	$(LD_FLAGS.coverage)
+endef
+LD_FLAGS=$(call flatten,$(_LD_FLAGS))
+
+define _SO_LD_FLAGS
+	$(SO_LD_FLAGS.common)
+	$(SO_LD_FLAGS.$(OS))
+endef
+SO_LD_FLAGS=$(call flatten,$(_SO_LD_FLAGS))
+
+export CMAKE_LD_FLAGS=$(LD_FLAGS)
+export CMAKE_SO_LD_FLAGS=$(SO_LD_FLAGS)
 
 #----------------------------------------------------------------------------------------------
 

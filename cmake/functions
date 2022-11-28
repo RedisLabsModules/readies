@@ -1,0 +1,12 @@
+
+function(list_from_env VARNAME)
+	string(REPLACE " " ";" V $ENV{${VARNAME}})
+	set(${VARNAME} ${V} PARENT_SCOPE)
+endfunction()
+
+function(lists_from_env)
+	foreach(VARNAME ${ARGN})
+		string(REPLACE " " ";" V $ENV{${VARNAME}})
+		set(${VARNAME} ${V} PARENT_SCOPE)
+	endforeach()
+endfunction()
