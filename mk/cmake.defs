@@ -1,10 +1,25 @@
 
 ifneq ($(MK.cmake),)
 
+#----------------------------------------------------------------------------------------------
+
+CMAKE_FLAGS += \
+	-Wno-dev \
+	-DGIT_SHA=$(GIT_SHA) \
+	-DGIT_VERSPEC=$(GIT_VERSPEC)
+
+# ifeq ($(VERBOSE),1)
+# CMAKE_FLAGS += -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+# endif
+
+#----------------------------------------------------------------------------------------------
+
 MK_CMAKE_FILES ?= $(SRCDIR)/CMakeLists.txt
 
 MK_MAKEFILES += $(BINDIR)/Makefile
 DEFAULT_TARGETS += $(TARGET)
+
+#----------------------------------------------------------------------------------------------
 
 ifeq ($(DEBUG),1)
 CMAKE_FLAGS += -DCMAKE_BUILD_TYPE=Debug
@@ -12,9 +27,20 @@ else
 CMAKE_FLAGS += -DCMAKE_BUILD_TYPE=RelWithDebInfo
 endif
 
+#----------------------------------------------------------------------------------------------
+
+CMAKE_FLAGS += \
+	-DOS=$(OS) \
+	-DOSNICK=$(OSNICK) \
+	-DARCH=$(ARCH)
+
+#----------------------------------------------------------------------------------------------
+
 ifeq ($(WHY),1)
 CMAKE_WHY=--trace-expand
 CMAKE_SINK= >/tmp/cmake.why 2>&1
 endif
+
+#----------------------------------------------------------------------------------------------
 
 endif # MK.cmake

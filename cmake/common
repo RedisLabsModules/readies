@@ -5,3 +5,5 @@ if (_CMAKE_BUILD_TYPE STREQUAL "DEBUG")
 else()
 	set(DEBUG FALSE)
 endif()
+
+# set(CMAKE_VERBOSE_MAKEFILE OFF)

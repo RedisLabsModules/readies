@@ -1,7 +1,7 @@
 
-set(MK "${root}/deps/readies/cmake")
+set(CMK "${root}/deps/readies/cmake")
 
-include(${MK}/policy)
-include(${MK}/common)
-include(${MK}/platform)
-include(${MK}/functions)
+include(${CMK}/policy)
+include(${CMK}/common)
+include(${CMK}/platform)
+include(${CMK}/functions)
