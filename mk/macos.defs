@@ -8,41 +8,48 @@ ifeq ($(OS),macos)
 
 #----------------------------------------------------------------------------------------------
 
-ZLIB_PREFIX:=$(shell brew --prefix zlib)
-LIBSSL_PREFIX:=$(shell brew --prefix openssl)
-READLINE_PREFIX:=$(shell brew --prefix readline)
-LIBICONV_PREFIX:=$(shell brew --prefix libiconv)
-
-ifneq ($(wildcard /usr/local/lib/libintl.a),)
-GETTEXT_PREFIX:=/usr/local
-else
-GETTEXT_PREFIX:=$(shell brew --prefix gettext)
+ifeq ($(OSNICK),ventura)
+OSX_MIN_SDK_VER=13.0
+else ifeq ($(OSNICK),monterey)
+OSX_MIN_SDK_VER=12.0
+else ifeq ($(OSNICK),bigsur)
+OSX_MIN_SDK_VER=11.00
+else ifeq ($(OSNICK),catalina)
+OSX_MIN_SDK_VER=10.15
 endif
 
-SDK_PREFIX:=$(shell xcrun --show-sdk-path)
+CC_FLAGS.macos += -mmacosx-version-min=$(OSX_MIN_SDK_VER)
+CMAKE_FLAGS += -DCMAKE_OSX_DEPLOYMENT_TARGET=$(OSX_MIN_SDK_VER)
 
-export CPPFLAGS:=\
-	-I$(ZLIB_PREFIX)/include \
-	-I$(READLINE_PREFIX)/include \
-	-I$(LIBSSL_PREFIX)/include \
-	-I$(GETTEXT_PREFIX)/include \
-	-I$(LIBICONV_PREFIX)/include \
-	-I$(SDK_PREFIX)/usr/include
+MACOS_SDK_PREFIX:=$(shell xcrun --show-sdk-path)
 
-export LDFLAGS:=\
-	-L$(ZLIB_PREFIX)/lib \
-	-L$(LIBSSL_PREFIX)/lib \
-	-L$(READLINE_PREFIX)/lib \
-	-L$(GETTEXT_PREFIX)/lib \
-	-L$(LIBICONV_PREFIX)/lib \
-	-L$(SDK_PREFIX)/usr/lib
+export CPPFLAGS += -I$(MACOS_SDK_PREFIX)/usr/include
+export LDFLAGS += -L$(MACOS_SDK_PREFIX)/usr/lib
 
-PKG_CONFIG_DIRS += \
-	$(ZLIB_PREFIX) \
-	$(LIBSSL_PREFIX) \
-	$(READLINE_PREFIX) \
-	$(GETTEXT_PREFIX) \
-	$(LIBICONV_PREFIX)
+#----------------------------------------------------------------------------------------------
+
+define add_macos_package
+	__$1:=$(call toupper,$1)
+	ifeq ($$($1_prefix),)
+		$1_prefix:=$$(shell brew --prefix $1)
+	endif
+
+	ifneq ($$($1_prefix),)
+		PKG_CONFIG_DIRS += $$($1_prefix)
+		CPPFLAGS += -I$$($1_prefix)/include
+		LDFLAGS += -L$$($1_prefix)/lib
+	endif
+endef
+
+ifneq ($(wildcard /usr/local/lib/libintl.a),)
+gettxt_prefix := /usr/local
+endif
+
+ifeq ($(MACOS_PACKAGES),ALL)
+override MACOS_PACKAGES=zlib openssl readline libiconv gettext
+endif
+
+$(foreach pkg,$(MACOS_PACKAGES),$(eval $(call add_macos_package,$(pkg))))
 
 export PKG_CONFIG_PATH:=$(subst $(__SPACE),:,$(strip $(addsuffix /lib/pkgconfig,$(PKG_CONFIG_DIRS)))):$(PKG_CONFIG_PATH)
 

@@ -62,6 +62,7 @@ MACOS_VERSIONS = {
     "catalina":     "10.15",
     "bigsur":       "11",
     "monterey":     "12",
+    "ventura":      "13",
 }
 
 DARWIN_VERSIONS = {
@@ -83,6 +84,7 @@ DARWIN_VERSIONS = {
     "catalina":     "19",
     "bigsur":       "20",
     "monterey":     "21",
+    "ventura":      "22",
 }
 
 MACOS_VERSIONS_NICKS = {v: k for k, v in MACOS_VERSIONS.items()}
@@ -145,7 +147,7 @@ class Platform:
             if brand in self.RHEL_BRANDS:
                 ver = self.defs.get("VERSION_ID", "").split('.')
                 return ver[0]
-            
+
             ver = self.defs.get("VERSION_ID", "")
             if ver == "" and self.id() == 'debian':
                 ver, _ = self.debian_sid_version()
