@@ -4,6 +4,7 @@ ifneq ($(MK.cmake),)
 #----------------------------------------------------------------------------------------------
 
 CMAKE_FLAGS += \
+	--no-warn-unused-cli \
 	-Wno-dev \
 	-DGIT_SHA=$(GIT_SHA) \
 	-DGIT_VERSPEC=$(GIT_VERSPEC)
