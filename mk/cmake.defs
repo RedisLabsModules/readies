@@ -6,6 +6,7 @@ ifneq ($(MK.cmake),)
 CMAKE_FLAGS += \
 	--no-warn-unused-cli \
 	-Wno-dev \
+	-DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
 	-DGIT_SHA=$(GIT_SHA) \
 	-DGIT_VERSPEC=$(GIT_VERSPEC)
 
