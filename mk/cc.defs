@@ -87,7 +87,7 @@ define _CC_FLAGS
 endef
 CC_FLAGS=$(call flatten,$(_CC_FLAGS))
 
-export CMAKE_CC_FLAGS=$(call flatten,$(CC_FLAGS.common))
+export CMAKE_CC_FLAGS=-UNDEBUG $(call flatten,$(CC_FLAGS.common))
 export CMAKE_CC_C_FLAGS=$(CC_C_FLAGS)
 export CMAKE_CC_CXX_FLAGS=$(CC_CXX_FLAGS)
 
