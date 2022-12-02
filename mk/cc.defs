@@ -106,6 +106,21 @@ define _SO_LD_FLAGS
 endef
 SO_LD_FLAGS=$(call flatten,$(_SO_LD_FLAGS))
 
+SO_LD_FLAGS.$(OS)=$(call flatten,$(_SO_LD_FLAGS.$(OS)))
+
+define _SO_LD_FLAGS.linux
+endef
+
+define _SO_LD_FLAGS.macos
+endef
+
+LINK_SO_INTERNAL_BINDING ?= 1
+ifeq ($(LINK_SO_INTERNAL_BINDING),1)
+	SO_LD_FLAGS.linux += -Wl,-Bsymbolic,-Bsymbolic-functions
+endif
+
+#----------------------------------------------------------------------------------------------
+
 export CMAKE_LD_FLAGS=$(LD_FLAGS)
 export CMAKE_SO_LD_FLAGS=$(SO_LD_FLAGS)
 
