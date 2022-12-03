@@ -1,37 +1,36 @@
 
 ifneq ($(MK.cmake),)
+ifneq ($(MK_CUSTOM_CMAKE_BUILD),1)
 
-ifeq ($(FORCE),1)
 .PHONY: __force
 
+#----------------------------------------------------------------------------------------------
+
+ifeq ($(FORCE),1)
 $(BINDIR)/Makefile: __force
 else
 $(BINDIR)/Makefile : $(MK_CMAKE_FILES) $(CMAKE_FILES)
 endif
+	@echo
+	@echo Generating $(BINDIR)/Makefile ...
 	$(SHOW)mkdir -p $(BINROOT)
-	$(SHOW)cd $(BINDIR) && cmake $(CMAKE_WHY) $(CMAKE_FLAGS) $(abspath $(SRCDIR))
-#	$(CMAKE_SINK)
+	$(SHOW)cmake $(CMAKE_WHY) $(CMAKE_FLAGS) -S $(abspath $(SRCDIR)) -B $(BINDIR) $(CMAKE_SINK)
 ifeq ($(WHY),1)
 	@echo CMake log is in /tmp/cmake.why
 endif
 
-ifneq ($(MK_CUSTOM_CMAKE_BUILD),1)
+#----------------------------------------------------------------------------------------------
 
-$(TARGET): $(MISSING_DEPS) $(MK_MAKEFILES)
+$(TARGET): $(MISSING_DEPS) $(MK_MAKEFILES) __force
+	@echo
 	@echo Building $(TARGET) ...
 ifneq ($(DRY_RUN),1)
 	$(SHOW)$(MAKE) -C $(BINDIR) $(MAKE_J) $(CMAKE_TARGETS)
 else
 	@make -C $(BINDIR) $(MAKE_J) $(CMAKE_TARGETS)
 endif
-ifeq ($(EXTRACT_TARGET_SYMBOLS),1)
-ifeq ($(OS),linux)
-ifneq ($(DEBUG),1)
-	$(SHOW)$(call extract_symbols,$(TARGET))
-endif
-endif
-endif
+
+#----------------------------------------------------------------------------------------------
 
 endif # MK_CUSTOM_CMAKE_BUILD
-
 endif # MK.cmake
