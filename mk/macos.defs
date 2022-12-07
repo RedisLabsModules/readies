@@ -45,6 +45,8 @@ ifneq ($(wildcard /usr/local/lib/libintl.a),)
 gettxt_prefix := /usr/local
 endif
 
+MACOS_PACKAGES ?= ALL
+
 ifeq ($(MACOS_PACKAGES),ALL)
 override MACOS_PACKAGES=zlib openssl readline libiconv gettext
 endif
@@ -56,7 +58,7 @@ export PKG_CONFIG_PATH:=$(subst $(__SPACE),:,$(strip $(addsuffix /lib/pkgconfig,
 CONFIGURE_FLAGS.macos += \
 	CPPFLAGS='$(CPPFLAGS)' \
 	LDFLAGS='$(LDFLAGS)' \
-	--with-openssl=$(LIBSSL_PREFIX)
+	--with-openssl=$(openssl_prefix)
 
 #----------------------------------------------------------------------------------------------
 
