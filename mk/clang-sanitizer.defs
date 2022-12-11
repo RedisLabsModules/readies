@@ -15,7 +15,10 @@ ifeq ($(SAN),memory)
     endif
 endif
 
-CC_FLAGS.asan=-fno-omit-frame-pointer -fsanitize=address
+CC_FLAGS.asan=-fno-omit-frame-pointer -fsanitize=address -fsanitize-recover=all 
+ifneq ($(SAN_IGNORELIST),)
+CC_FLAGS.asan += -fsanitize-blacklist=$(SAN_IGNORELIST)
+endif
 LD_FLAGS.asan=-fsanitize=address
 
 CC_FLAGS.tsan=-fno-omit-frame-pointer -fsanitize=thread -pie
@@ -26,15 +29,15 @@ CXX_FLAGS.msan=$(CC_FLAGS.msan) -stdlib=libc++ -I$(MSAN_PREFIX)/include -I$(MSAN
 LD_FLAGS.msan=-fsanitize=memory -stdlib=libc++ -Wl,-rpath=$(MSAN_PREFIX)/lib -L$(MSAN_PREFIX)/lib -lc++abi
 
 ifeq ($(SAN),address)
-CC_FLAGS += $(CC_FLAGS.asan)
-LD_FLAGS += $(LD_FLAGS.asan)
+	CC_FLAGS.sanitizer += $(CC_FLAGS.asan)
+	LD_FLAGS.sanitizer += $(LD_FLAGS.asan)
 
 else ifeq ($(SAN),memory)
-CC_FLAGS += $(CC_FLAGS.msan)
-CXX_FLAGS += $(CXX_FLAGS.msan)
-LD_FLAGS += $(LD_FLAGS.msan)
+	CC_FLAGS.sanitizer += $(CC_FLAGS.msan)
+	CC_CXX_FLAGS.sanitizer += $(CXX_FLAGS.msan)
+	LD_FLAGS.sanitizer += $(LD_FLAGS.msan)
 
 else ifeq ($(SAN),thread)
-CC_FLAGS += $(CC_FLAGS.tsan)
-LD_FLAGS += $(LD_FLAGS.tsan)
+	CC_FLAGS.sanitizer += $(CC_FLAGS.tsan)
+	LD_FLAGS.sanitizer += $(LD_FLAGS.tsan)
 endif
