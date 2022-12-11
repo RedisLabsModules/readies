@@ -100,7 +100,7 @@ define _CC_FLAGS
 	$(CC_FLAGS.defs)
 	$(CC_FLAGS.includes)
 endef
-CC_FLAGS + =$(call flatten,$(_CC_FLAGS))
+CC_FLAGS += $(call flatten,$(_CC_FLAGS))
 
 #----------------------------------------------------------------------------------------------
 
