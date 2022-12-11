@@ -51,8 +51,8 @@ ifneq ($(wildcard $(SRCDIR)/common.h),)
 CC_FLAGS.common += -include $(SRCDIR)/common.h
 endif
 
-ifeq ($(PEDANTIC),1)
-CC_FLAGS.warnings += -Wpedantic
+ifeq ($(CC_PEDANTIC),1)
+CC_FLAGS.warnings += -Wall -Wpedantic
 endif
 
 CC_FLAGS.defs=$(foreach d,$(call flatten,$(CC_DEFS)),-D$(d))
@@ -60,11 +60,11 @@ CC_FLAGS.includes=$(foreach d,$(call flatten,$(CC_INCLUDES)),-I$(d))
 
 CC_FLAGS.debug += -g -ggdb
 ifeq ($(DEBUG),1)
-	CC_FLAGS.opt += -O0
-	CC_FLAGS.debug += -fno-omit-frame-pointer -D_DEBUG
+	CC_FLAGS.opt += -fno-omit-frame-pointer -O0
+	CC_FLAGS.debug += -DDEBUG -D_DEBUG
 else
 	ifeq ($(PROFILE),1)
-		CC_FLAGS.opt += -O2
+		CC_FLAGS.opt += -fno-omit-frame-pointer -O2
 	else
 		CC_FLAGS.opt += -O3
 	endif
@@ -79,13 +79,13 @@ define _CC_CXX_FLAGS
 endef
 CC_CXX_FLAGS=$(call flatten,$(_CC_CXX_FLAGS))
 
-define _CC_FLAGS
-	$(CC_FLAGS.ccdeps)
+define _CC_FLAGS.all
 	$(CC_FLAGS.common)
+	$(CC_FLAGS.ccdeps)
 	$(CC_FLAGS.defs)
 	$(CC_FLAGS.includes)
 endef
-CC_FLAGS=$(call flatten,$(_CC_FLAGS))
+CC_FLAGS += $(call flatten,$(_CC_FLAGS.all))
 
 export CMAKE_CC_FLAGS=-UNDEBUG $(call flatten,$(CC_FLAGS.common))
 export CMAKE_CC_C_FLAGS=$(CC_C_FLAGS)
@@ -97,21 +97,28 @@ define _LD_FLAGS
 	$(LD_FLAGS.common)
 	$(LD_FLAGS.$(OS))
 	$(LD_FLAGS.coverage)
+	$(LD_FLAGS.sanitizer)
 endef
-LD_FLAGS=$(call flatten,$(_LD_FLAGS))
+LD_FLAGS += $(call flatten,$(_LD_FLAGS))
 
 define _SO_LD_FLAGS
 	$(SO_LD_FLAGS.common)
 	$(SO_LD_FLAGS.$(OS))
 endef
-SO_LD_FLAGS=$(call flatten,$(_SO_LD_FLAGS))
+SO_LD_FLAGS += $(call flatten,$(_SO_LD_FLAGS))
 
-SO_LD_FLAGS.$(OS)=$(call flatten,$(_SO_LD_FLAGS.$(OS)))
+SO_LD_FLAGS.$(OS) += $(call flatten,$(_SO_LD_FLAGS.$(OS)))
 
 define _SO_LD_FLAGS.linux
+	-shared
 endef
 
 define _SO_LD_FLAGS.macos
+	-bundle
+endef
+
+define _DYLIB_LD_FLAGS.macos
+	-dynamiclib
 endef
 
 LINK_SO_INTERNAL_BINDING ?= 1

@@ -9,4 +9,9 @@ $(CONFIGURE_BUILD_DIR)/Makefile: $(SRCDIR)/configure
 $(CONFIGURE_TARGET): $(CONFIGURE_BUILD_DIR)/Makefile
 	$(SHOW)make -C $(CONFIGURE_BUILD_DIR) -j $(NPROC)
 
+clean-configure:
+	$(SHOW)make -C $(CONFIGURE_BUILD_DIR) distclean
+
+.PHONY: clean-configure
+
 endif # MK.configure
