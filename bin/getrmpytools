@@ -120,10 +120,18 @@ class RMPyToolsSetup(paella.Setup):
                 else:
                     self.pip_install("--no-cache-dir RLTest~=0.4.2")
         else:
-            if not self.pypi:
-                self.pip_install("--no-cache-dir git+https://github.com/RedisLabsModules/RLTest.git@{VER}".format(VER=self.rltest_version))
+            if self.rltest_version.startswith('pypi:'):
+                pypi = True
+                self.rltest_version = self.rltest_version[5:]
+            elif self.rltest_version.startswith('github:'):
+                pypi = False
+                self.rltest_version = self.rltest_version[7:]
             else:
+                pypi = self.pypi
+            if pypi:
                 self.pip_install("--no-cache-dir RLTest~={VER}".format(VER=self.rltest_version))
+            else:
+                self.pip_install("--no-cache-dir git+https://github.com/RedisLabsModules/RLTest.git@{VER}".format(VER=self.rltest_version))
 
         if self.ramp_version is None:
             if self.modern:
@@ -134,10 +142,18 @@ class RMPyToolsSetup(paella.Setup):
                 else:
                     self.pip_install("--no-cache-dir ramp-packer~=2.4.0")
         else:
-            if not self.pypi:
-                self.pip_install("--no-cache-dir git+https://github.com/RedisLabs/RAMP@{VER}".format(VER=self.ramp_version))
+            if self.ramp_version.startswith('pypi:'):
+                pypi = True
+                self.ramp_version = self.ramp_version[5:]
+            elif self.ramp_version.startswith('github:'):
+                pypi = False
+                self.ramp_version = self.ramp_version[7:]
             else:
+                pypi = self.pypi
+            if pypi:
                 self.pip_install("--no-cache-dir ramp-packer~={VER}".format(VER=self.ramp_version))
+            else:
+                self.pip_install("--no-cache-dir git+https://github.com/RedisLabs/RAMP@{VER}".format(VER=self.ramp_version))
 
 #----------------------------------------------------------------------------------------------
 
