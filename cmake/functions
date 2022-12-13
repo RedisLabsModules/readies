@@ -1,6 +1,6 @@
 
 function(list_from_env VARNAME)
-	if (CMAKE_VERBOSE_MAKEFILE)
+	if (CMK_VERBOSE)
 #		message("# ENV ${VARNAME}='$ENV{${VARNAME}}'")
 	endif()
 	if (DEFINED ENV{${VARNAME}})
@@ -13,7 +13,7 @@ endfunction()
 
 function(lists_from_env)
 	foreach(VARNAME ${ARGN})
-		if (CMAKE_VERBOSE_MAKEFILE)
+		if (CMK_VERBOSE)
 #			message("# ENV ${VARNAME}='$ENV{${VARNAME}}'")
 		endif()
 		if (DEFINED ENV{${VARNAME}})
@@ -23,4 +23,11 @@ function(lists_from_env)
 			message(WARNING "# warning: no ${VARNAME} in environment")
 		endif()
 	endforeach()
+endfunction()
+
+function(extract_debug_symbols TARGET)
+	if (NOT DEBUG AND NOT APPLE)
+		add_custom_command(TARGET ${TARGET} POST_BUILD
+			COMMAND "$ENV{MK}/extract-obj-symbols" "$<TARGET_FILE:${TARGET}>")
+	endif()
 endfunction()

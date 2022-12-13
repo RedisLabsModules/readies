@@ -1,0 +1,11 @@
+
+lists_from_env(CMAKE_CC_FLAGS CMAKE_CC_C_FLAGS CMAKE_CC_CXX_FLAGS)
+lists_from_env(CMAKE_LD_FLAGS CMAKE_SO_LD_FLAGS)
+
+if (CMK_VERBOSE)
+	message("# CC=$ENV{CC}")
+	message("# CXX=$ENV{CXX}")
+	message("# CMAKE_CC_FLAGS=${CMAKE_CC_FLAGS}")
+	message("# CMAKE_CC_C_FLAGS=${CMAKE_CC_C_FLAGS}")
+	message("# CMAKE_CC_CXX_FLAGS=${CMAKE_CC_CXX_FLAGS}")
+endif()

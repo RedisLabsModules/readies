@@ -1,5 +1,5 @@
 
-if(NOT DEFINED MK)
+if (NOT DEFINED MK)
 	set(MK $ENV{MK})
 endif()
 
@@ -10,4 +10,8 @@ else()
 	set(DEBUG FALSE)
 endif()
 
-# set(CMAKE_VERBOSE_MAKEFILE OFF)
+if (DEFINED $ENV{VERBOSE} AND $ENV{VERBOSE} STREQUAL "1")
+	set(CMK_VERBOSE TRUE)
+else()
+	set(CMK_VERBOSE FALSE)
+endif()
