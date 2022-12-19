@@ -21,7 +21,7 @@ create_utf8_profile_script() {
 	fi
 }
 
-__language="$(echo "$LANGUAGE" | cut -f1 -d:)"
+__language="$(echo "$LANGUAGE" | cut -f1 -d.)"
 
 export __language=${__language:-en_US}
 export __utf8=utf8
