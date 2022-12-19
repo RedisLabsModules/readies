@@ -7,31 +7,32 @@ READIES=$(cd $HERE/.. && pwd)
 
 create_utf8_profile_script() {
 	local profile_d=`get_profile_d`
-	# [[ -f $profile_d/utf8.sh ]] && return
 	if [[ -n $1 ]]; then
-		local language=$1
-	else
-		local language="$(echo "$LANGUAGE" | cut -f1 -d:)"
+		local language="$__language"
 	fi
-	language="${language:-C}"
 	cat <<-EOF > $profile_d/utf8.sh
-		export LANG="${language}.${__UTF8}"
-		# export LANGUAGE="${language}"
-		export LC_ALL="${language}.${__UTF8}"
+		export LANG="${__language}.${__utf8}"
+		export LC_ALL="${__language}.${__utf8}"
 		EOF
+	if [[ -z $LANGUAGE ]]; then
+		cat <<-EOF >> $profile_d/utf8.sh
+			export LANGUAGE="${__language}"
+			EOF
+	fi
 }
 
-export __UTF8=utf8
-export __language=en_US
+__language="$(echo "$LANGUAGE" | cut -f1 -d:)"
+
+export __language=${__language:-en_US}
+export __utf8=utf8
 
 if is_command apt-get; then
-	# if export LANG="en_US.${__UTF8}" 2>&1 | grep warning &> /dev/null; then
-	if ! locale -a 2>/dev/null | grep 'en_US.utf8' &> /dev/null; then
+	if ! locale -a 2>/dev/null | grep "${__language}\.${__utf8}" &> /dev/null; then
 		if ! dpkg -l locales locale-gen &> /dev/null; then
 			runn apt-get -qq update
 			runn apt-get install --fix-missing -q -y locales
 		fi
-		runn locale-gen --purge en_US.${__UTF8}
+		runn locale-gen --purge ${__language}.${__utf8}
 		runn dpkg-reconfigure -f noninteractive locales
 	fi
 	create_utf8_profile_script
@@ -49,11 +50,19 @@ elif is_command yum; then
 	create_utf8_profile_script
 
 elif is_command brew; then
-	export __UTF8=UTF-8
-	if ! locale -a 2>/dev/null | grep 'en_US.UTF-8' &> /dev/null; then
+	export __utf8=UTF-8
+	if ! locale -a 2>/dev/null | grep "${__language}\.${__utf8}" &> /dev/null; then
+		create_utf8_profile_script
+	else
+		export __language="C"
 		create_utf8_profile_script
 	fi
 
 else
-	create_utf8_profile_script "C"
+	if ! locale -a 2>/dev/null | grep "${__language}\.${__utf8}" &> /dev/null; then
+		create_utf8_profile_script
+	else
+		export __language="C"
+		create_utf8_profile_script
+	fi
 fi
