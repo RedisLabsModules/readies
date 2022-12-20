@@ -14,17 +14,55 @@ create_utf8_profile_script() {
 		export LANG="${__language}.${__utf8}"
 		export LC_ALL="${__language}.${__utf8}"
 		EOF
-	if [[ -z $LANGUAGE ]]; then
+	if [[ $FORCE == 1 || -z $LANGUAGE ]]; then
 		cat <<-EOF >> $profile_d/utf8.sh
 			export LANGUAGE="${__language}"
 			EOF
 	fi
 }
 
-__language="$(echo "$LANGUAGE" | cut -f1 -d.)"
+FORCE=${FORCE:-1}
 
-export __language=${__language:-en_US}
-export __utf8=utf8
+if [[ $FORCE != 1 ]]; then
+	# LANGUAGE can be erronously set to something like en_US.utf8
+	# so only take the language part:
+	__language="$(echo "$LANGUAGE" | cut -f1 -d.)"
+	if [[ -n $__language ]]; then
+		if ! locale -a 2>/dev/null | grep -w "$__language" &> /dev/null; then
+			__language=''
+		fi
+	fi
+else
+	__language=''
+fi
+
+if [[ -z $__language ]]; then
+	__language=en_US
+	if ! locale -a 2>/dev/null | grep -w "$__language" &> /dev/null; then
+		__language=C
+	fi
+fi
+
+# cat prevents grep from failing
+utf8_loc=$(locale -a | grep -w "$__language" | grep -i utf | grep 8 | cat)
+if [[ -n $utf8_loc ]]; then
+	__utf8=$(echo "$utf8_loc" | cut -d. -f2)
+else
+	# it is possible to have en_US language with no utf8
+	# if so, fallback on C and try our luck
+	utf8_loc1="$utf8_loc"
+	utf8_loc=$(locale -a | grep -w C | grep -i utf | grep 8 | cat)
+	if [[ -n $utf8_loc ]]; then
+		__language=C
+	else
+		# stick to en_US.utf8
+		# A distribution-specific scripts may enable it eventually
+		__utf8=utf8
+	fi
+fi
+
+export __language
+export __utf8
 
 if is_command apt-get; then
 	if ! locale -a 2>/dev/null | grep "${__language}\.${__utf8}" &> /dev/null; then
@@ -38,10 +76,10 @@ if is_command apt-get; then
 	create_utf8_profile_script
 
 elif is_command yum; then
-	EPEL=$(source /etc/os-release; echo $VERSION_ID;)
+	EPEL=$(source /etc/os-release; echo "$VERSION_ID";)
 	if [[ $EPEL == 8 ]]; then
 		runn dnf install -y langpacks-en glibc-all-langpacks
-	elif [[ -f /etc/yum.conf && -n $(grep '^override_install_langs=' /etc/yum.conf) ]]; then
+	elif [[ -f /etc/yum.conf && -n $(grep '^override_install_langs=' /etc/yum.conf | cat) ]]; then
 		runn @ <<-EOF
 			sed -i 's/^\(override_install_langs=\)/# \1/' /etc/yum.conf
 			EOF
@@ -49,20 +87,9 @@ elif is_command yum; then
 	fi
 	create_utf8_profile_script
 
-elif is_command brew; then
-	export __utf8=UTF-8
-	if ! locale -a 2>/dev/null | grep "${__language}\.${__utf8}" &> /dev/null; then
-		create_utf8_profile_script
-	else
-		export __language="C"
-		create_utf8_profile_script
-	fi
-
 else
 	if ! locale -a 2>/dev/null | grep "${__language}\.${__utf8}" &> /dev/null; then
-		create_utf8_profile_script
-	else
-		export __language="C"
-		create_utf8_profile_script
+		export __language=C
 	fi
+	create_utf8_profile_script
 fi
