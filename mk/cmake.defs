@@ -27,7 +27,7 @@ define _CMAKE_DEFS +=
 	GIT_SHA=$(GIT_SHA)
 	GIT_VERSPEC=$(GIT_VERSPEC)
 endef
-CMAKE_DEFS=$(call flatten,$(_CMAKE_DEFS))
+CMAKE_DEFS += $(call flatten,$(_CMAKE_DEFS))
 
 # ifeq ($(VERBOSE),1)
 # CMAKE_DEFS += CMAKE_VERBOSE_MAKEFILE:BOOL=ON
