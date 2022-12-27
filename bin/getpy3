@@ -26,6 +26,7 @@ if [[ $1 == --help || $1 == help || $HELP == 1 ]]; then
 		FORCE=1      Install even if present
 		FIX=1        Create /usr/local/bin/python3 symlink (default on macOS)
 		VERBOSE=n    Verbosity level (1: print commands, 2: print results)
+		NOP=1        Print commands, don't execute
 		HELP=1       Print help
 
 	END
@@ -33,6 +34,9 @@ if [[ $1 == --help || $1 == help || $HELP == 1 ]]; then
 fi
 
 #----------------------------------------------------------------------------------------------
+
+OP=""
+[[ $NOP == 1 ]] && OP=echo
 
 USER_MYPY="$MYPY"
 
@@ -73,7 +77,7 @@ fix_variants() {
 
 	if [[ -z $PYTHON3 ]]; then
 		if [[ -n $PYTHON && "$PYTHON_VER" == "3"  ]]; then
-			ln -sf $PYTHON /usr/local/bin/python3
+			runn ln -sf $PYTHON /usr/local/bin/python3
 		fi
 	fi
 }
@@ -122,7 +126,7 @@ install_python_on_old_ubuntu() {
 }
 
 install_python36_on_debian9_x64() {
-	$SUDO $READIES/bin/getget
+	runn $SUDO $READIES/bin/getget
 
 	runn $SUDO apt-get install --fix-missing -y \
 		software-properties-common apt-transport-https \
@@ -134,7 +138,7 @@ install_python36_on_debian9_x64() {
 	runn wget https://github.com/chriskuehl/python3.6-debian-stretch/releases/download/v3.6.3-1-deb9u1/{python3.6_3.6.3-1.deb9u1_amd64,python3.6-minimal_3.6.3-1.deb9u1_amd64,python3.6-dev_3.6.3-1.deb9u1_amd64,libpython3.6_3.6.3-1.deb9u1_amd64,libpython3.6-minimal_3.6.3-1.deb9u1_amd64,libpython3.6-stdlib_3.6.3-1.deb9u1_amd64,libpython3.6-dev_3.6.3-1.deb9u1_amd64}.deb
 	runn $SUDO dpkg -i *.deb
 	if [[ -f /usr/bin/python3.6 ]]; then
-		ln -sf /usr/bin/python3.6 /usr/local/bin/python3
+		runn ln -sf /usr/bin/python3.6 /usr/local/bin/python3
 		MYPY=/usr/local/bin/python3
 	fi
 	cd $HERE

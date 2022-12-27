@@ -8,6 +8,8 @@ READIES=$(cd $HERE/.. && pwd)
 OP=""
 [[ $NOP == 1 ]] && OP=echo
 
+NO_PY2=${NO_PY2:-1}
+
 if [[ $NO_PY2 != 1 ]]; then
 	if is_command python2; then
 		runn python2 -m pip install pudb
@@ -18,16 +20,18 @@ if [[ $NO_PY3 != 1 ]]; then
 	if is_command python3; then
 		xinstall git
 		if runn python3 -m pip install --no-cache-dir git+https://github.com/inducer/pudb.git@main; then
-			cd /tmp
+			tmpdir=$(mktemp -d /tmp/pudb.XXXXXX)
+			cd $tmpdir
 			runn git clone https://github.com/inducer/pudb.git
 			cd pudb
 			if is_command apt-get; then
 				# this is debian-specific right now, as pip/git install is failing on arm
 				xinstall python3-dev
 			fi
-			runn python3 setup.py install --user
-			cd ..
-			$OP rm -rf pudb
+			# --prefix= is required for install to succeed
+			runn python3 setup.py install --user --prefix=
+			cd /tmp
+			$OP rm -rf $tmpdir
 			PY3=1
 		fi
 

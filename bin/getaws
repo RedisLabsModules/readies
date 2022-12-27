@@ -43,8 +43,8 @@ install_awscli_macos() {
 			END
 	mkdir -p $HOME/.local/opt $HOME/.local/bin
 	runn installer -pkg AWSCLIV2.pkg -target CurrentUserHomeDirectory -applyChoiceChangesXML choices.xml
-	ln -sf $HOME/.local/opt/aws-cli/aws $HOME/.local/bin/aws
-	ln -sf $HOME/.local/opt/aws-cli/aws_completer  $HOME/.local/bin/aws_completer 
+	runn ln -sf $HOME/.local/opt/aws-cli/aws $HOME/.local/bin/aws
+	runn ln -sf $HOME/.local/opt/aws-cli/aws_completer  $HOME/.local/bin/aws_completer 
 }
 
 install_s3cmd() {
@@ -55,9 +55,9 @@ install_s3cmd() {
 	runn python3 -m pip install $PIP_USER s3cmd
 	if [[ $OS == Darwin ]]; then
 		SITE=`python3 -m site --user-base`
-		ln -sf $SITE/bin/s3cmd $HOME/.local/bin/s3cmd
+		runn ln -sf $SITE/bin/s3cmd $HOME/.local/bin/s3cmd
 	else
-		$SUDO ln -sf $HOME/.local/bin/s3cmd /usr/local/bin/s3cmd
+		runn $SUDO ln -sf $HOME/.local/bin/s3cmd /usr/local/bin/s3cmd
 	fi
 }
 
