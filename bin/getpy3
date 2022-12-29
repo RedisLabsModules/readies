@@ -250,13 +250,15 @@ fi
 
 [[ -z $MYPY || $FORCE == 1 ]] && install_python
 
-if is_command brew; then
-	# The following is for avoiding python to be upgraded by brew silently,
-	# hence disrupting pip installaitons.
-	# This however gets trickier, as brew mighit not recognize a currently installed
-	# python version, and upgrade will fail. Thus, we need to force installation, and
-	# still be graceful about failures.
-	runn "brew upgrade python || brew install python3 || true"
+if [[ $(uname) == Darwin ]]; then
+	if is_command brew; then
+		# The following is for avoiding python to be upgraded by brew silently,
+		# hence disrupting pip installaitons.
+		# This however gets trickier, as brew mighit not recognize a currently installed
+		# python version, and upgrade will fail. Thus, we need to force installation, and
+		# still be graceful about failures.
+		runn "brew upgrade python || brew install python3 || true"
+	fi
 fi
 
 check_variants

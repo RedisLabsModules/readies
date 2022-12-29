@@ -41,6 +41,7 @@ UBUNTU_VERSIONS = {
     'hirsute': '21.04',
     'impish':  '21.10',
     'jammy':   '22.04',
+    'kinetic':   '22.10',
 }
 
 MACOS_VERSIONS = {

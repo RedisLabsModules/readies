@@ -120,7 +120,7 @@ install_python() {
 	if is_command apt-get; then
 		export DEBIAN_FRONTEND=noninteractive
 		runn $SUDO apt-get -qq update --fix-missing
-		if [[ $osver == ubuntu22.04 ]]; then
+		if [[ $osver == ubuntu22.04 || $osver == ubuntu22.10 ]]; then
 			runn $SUDO apt-get install --fix-missing -y python2
 		else
 			runn $SUDO apt-get install --fix-missing -y python
