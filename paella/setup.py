@@ -291,17 +291,19 @@ class Brew(PackageManager):
     def __init__(self, runner):
         super(Brew, self).__init__(runner)
 
+        # prevents brew from performing auto updates
+        os.environ["HOMEBREW_NO_AUTO_UPDATE"] = "1"
+
         if os.getuid() == 0 and os.getenv("BREW_AS_ROOT") != "1":
             eprint("Cannot run as root. Set BREW_AS_ROOT=1 to override.")
             sys.exit(1)
         if sh('xcode-select -p') == '':
             eprint("Xcode tools are not installed. Please run xcode-select --install.")
             sys.exit(1)
-        if 'VIRTUAL_ENV' not in os.environ:
-            # required because osx pip installed are done with --user
-            os.environ["PATH"] = os.environ["PATH"] + ':' + os.environ["HOME"] + '/Library/Python/2.7/bin'
-        # this prevents brew updating before each install
-        os.environ["HOMEBREW_NO_AUTO_UPDATE"] = "1"
+        if sys.version_info < (3, 0):
+            if 'VIRTUAL_ENV' not in os.environ:
+                # required because osx pip installed are done with --user
+                os.environ["PATH"] = os.environ["PATH"] + ':' + os.environ["HOME"] + '/Library/Python/2.7/bin'
 
     def install(self, packs, group=False, output="on_error", _try=False):
         # brew will fail if package is already installed
