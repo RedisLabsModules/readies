@@ -1,5 +1,5 @@
 
-OSNICK ?= $(shell $(READIES)/bin/platform --osnick)
+OSNICK=$(call cached-shell,OSNICK,$(READIES)/bin/platform --osnick)
 
 ifeq ($(OS.custom),)
 

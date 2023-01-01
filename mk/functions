@@ -20,3 +20,6 @@ tolower=$(shell echo "$1" | tr '[:upper:]' '[:lower:]')
 toupper=$(shell echo "$1" | tr '[:lower:]' '[:upper:]')
 
 files_missing=$(strip $(foreach f,$(1),$(shell test -e "${f}" || echo "${f}";)))
+
+cached-shell=$(eval $1:=$(shell $2))$($1)
+

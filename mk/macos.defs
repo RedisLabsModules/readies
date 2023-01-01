@@ -34,7 +34,7 @@ LD_FLAGS.macos += -L$(MACOS_SDK_PREFIX)/usr/lib
 define add_macos_package
 	__$1:=$(call toupper,$1)
 	ifeq ($$($1_prefix),)
-		$1_prefix:=$$(shell brew --prefix $1)
+		$1_prefix=$$(call cached-shell,$1_prefix,brew --prefix $1)
 	endif
 
 	ifneq ($$($1_prefix),)
