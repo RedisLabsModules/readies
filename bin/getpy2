@@ -37,7 +37,10 @@ fi
 USER_MYPY="$MYPY"
 
 if [[ -f /etc/os-release ]]; then
-	osver=$(source /etc/os-release; echo "${ID}${VERSION_ID}")
+	osid=$(source /etc/os-release; echo "${ID}")
+	osverid=$(source /etc/os-release; echo "${VERSION_ID}")
+	osver="${osid}${osverid}"
+	osveridmajor=$(source /etc/os-release; echo "${VERSION_ID}" | cut -d. -f1)
 fi
 arch=$(uname -m)
 
@@ -120,7 +123,14 @@ install_python() {
 	if is_command apt-get; then
 		export DEBIAN_FRONTEND=noninteractive
 		runn $SUDO apt-get -qq update --fix-missing
-		if [[ $osver == ubuntu22.04 || $osver == ubuntu22.10 ]]; then
+
+		new_ubuntu=0
+		if [[ $osid == ubuntu ]]; then
+			if (( osveridmajor >= 22 )); then
+				new_ubuntu=1
+			fi
+		fi
+		if [[ $new_ubuntu == 1 ]]; then
 			runn $SUDO apt-get install --fix-missing -y python2
 		else
 			runn $SUDO apt-get install --fix-missing -y python
