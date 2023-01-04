@@ -50,7 +50,7 @@ runn() {
 		if (( V < 2 )); then
 			__runn_log=$(mktemp)
 			{ eval "$cmd" > $__runn_log 2>&1 ; E=$?; } || true
-			[ $E != 0 ] && cat $__runn_log
+			[[ $E != 0 && $LOG != 0 ]] && cat $__runn_log
 			rm -f $__runn_log
 			return $E
 		else
@@ -62,7 +62,7 @@ runn() {
 		if (( V < 2 )); then
 			__runn_log=$(mktemp)
 			{ eval "${@:1}" > $__runn_log 2>&1 ; E=$?; } || true
-			[ $E != 0 ] && cat $__runn_log
+			[[ $E != 0 && $LOG != 0 ]] && cat $__runn_log
 			rm -f $__runn_log
 			return $E
 		else
