@@ -1,12 +1,15 @@
 
 ifeq ($(SLOW),1)
-	NPROC:=1
-	MAKE_J:=
+	NPROC=1
+	MAKE_J=
 else
-	ifeq ($(OS),linux)
-		NPROC:=$(shell nproc)
-	else ifeq ($(OS),macos)
-		NPROC:=$(shell sysctl -n hw.physicalcpu)
+	ifndef NPROC
+		ifeq ($(OS),linux)
+			NPROC=$(call cached-shell,NPROC,nproc)
+		else ifeq ($(OS),macos)
+			NPROC=$(shell cached-shell,NPROC,sysctl -n hw.physicalcpu)
+		endif
 	endif
-	MAKE_J:=-j$(NPROC)
+	MAKE_J=-j$(NPROC)
 endif
+$(info NPROC=$(NPROC))
