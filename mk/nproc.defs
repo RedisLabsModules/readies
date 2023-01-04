@@ -3,13 +3,17 @@ ifeq ($(SLOW),1)
 	NPROC=1
 	MAKE_J=
 else
-	ifndef NPROC
-		ifeq ($(OS),linux)
-			NPROC=$(call cached-shell,NPROC,nproc)
-		else ifeq ($(OS),macos)
-			NPROC=$(shell cached-shell,NPROC,sysctl -n hw.physicalcpu)
+	ifeq ($(OS),linux)
+		_NPROC=$(call cached-shell,_NPROC,nproc)
+	else ifeq ($(OS),macos)
+		_NPROC=$(call cached-shell,_NPROC,sysctl -n hw.physicalcpu)
+	endif
+	ifdef NPROC
+		ifeq ($(shell echo $$(( $(_NPROC) < $(NPROC) )) 2>/dev/null),1)
+			NPROC=$(_NPROC)
 		endif
+	else
+		NPROC=$(_NPROC)
 	endif
 	MAKE_J=-j$(NPROC)
 endif
-$(info NPROC=$(NPROC))
