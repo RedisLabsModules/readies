@@ -1,12 +1,12 @@
 
-list-undefs:
-	$(SHOW)nm -AC $(TARGET) | grep -v @@ | grep ' U '
+show-undefs:
+	$(SHOW)nm -AC $(TARGET) | grep -v '@@' | grep ' U ' | cat
 
-list-bindeps:
+show-bindeps:
 ifneq ($(OS),macos)
 	$(SHOW)ldd $(TARGET)
 else
 	$(SHOW)otool -L $(TARGET)
 endif
 
-.PHONY: list-undefs list-bindeps
+.PHONY: show-undefs show-bindeps

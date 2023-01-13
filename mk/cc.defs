@@ -1,4 +1,6 @@
 
+#------------------------------------------------------------------------------------- Compiler
+
 ifeq ($(origin CC),default) # CC not explicitly overridden
 	ifeq ($(GCC),1)
 		override CC=gcc
@@ -18,7 +20,7 @@ endif
 export CC
 export CXX
 
-#----------------------------------------------------------------------------------------------
+#--------------------------------------------------------------------------------- Preprocessor
 
 define CC_FLAGS.ccdeps
 	-MMD
@@ -29,24 +31,22 @@ CC_FLAGS.defs=$(foreach d,$(call flatten,$(CC_DEFS)),-D$(d))
 
 CC_FLAGS.includes=$(foreach d,$(call flatten,$(CC_INCLUDES)),-I$(d))
 
+CC_COMMON_H ?= $(SRCDIR)/common.h
+ifneq ($(CC_COMMON_H),0)
+	ifneq ($(wildcard $(CC_COMMON_H)),)
+		CC_FLAGS.common += -include $(CC_COMMON_H)
+	endif
+endif
+
 #----------------------------------------------------------------------------------------------
 
 define CC_FLAGS.common
 	-fPIC
+	-pthread
+	-fno-strict-aliasing
 endef
 
-CC_COMMON_H ?= 1
-ifneq ($(CC_COMMON_H),0)
-ifneq ($(wildcard $(SRCDIR)/common.h),)
-CC_FLAGS.common += -include $(SRCDIR)/common.h
-endif
-endif
-
-ifeq ($(CC_PEDANTIC),1)
-CC_FLAGS.warnings += -Wall -Wpedantic
-endif
-
-#----------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------------- Codegen
 
 CC_FLAGS.debug += -g -ggdb
 ifeq ($(DEBUG),1)
@@ -60,19 +60,50 @@ else
 	endif
 endif
 
+#------------------------------------------------------------------------------------- Language
+
+ifeq ($(CC_PEDANTIC),1)
+define CC_FLAGS.warnings +=
+	-Wall
+	-Wpedantic
+endef
+endif
+
+define CC_FLAGS.warnings +=
+	-Wno-unused-function
+	-Wno-unused-variable
+	-Wno-sign-compare
+endef
+
 #----------------------------------------------------------------------------------------------
 
-define _CC_C_FLAGS +=
-	-fcommon
+define CC_C_FLAGS.warnings +=
+	-Werror=incompatible-pointer-types
+	-Werror=implicit-function-declaration
 endef
-CC_C_FLAGS=$(call flatten,$(_CC_C_FLAGS))
 
-define _CC_CXX_FLAGS +=
-	$(CC_CXX_FLAGS.sanitizer)
-endef
-CC_CXX_FLAGS=$(call flatten,$(_CC_CXX_FLAGS))
+#	-Werror=implicit-function-declaration
+#	-Wno-error=incompatible-pointer-types-discards-qualifiers
+
+ifneq ($(CC_C_STD),)
+CC_C_FLAGS.lang += -std=$(CC_C_STD)
+endif
 
 #----------------------------------------------------------------------------------------------
+
+ifneq ($(CC_CXX_STD),)
+CC_CXX_FLAGS.lang += -std=$(CC_CXX_STD)
+endif
+
+ifeq ($(CC_EXCEPTIONS),0)
+CC_CXX_FLAGS.lang += -fno-exceptions
+endif
+
+ifeq ($(CC_RTTI),0)
+CC_CXX_FLAGS.lang += -fno-rtti
+endif
+
+#-------------------------------------------------------------------------------------- Summary
 
 define _CC_FLAGS.core
 	$(CC_FLAGS.common)
@@ -85,6 +116,8 @@ define _CC_FLAGS.core
 endef
 CC_FLAGS.core=$(call flatten,$(_CC_FLAGS.core))
 
+#----------------------------------------------------------------------------------------------
+
 define _CC_FLAGS
 	$(CC_FLAGS.core)
 	$(CC_FLAGS.ccdeps)
@@ -93,7 +126,37 @@ define _CC_FLAGS
 endef
 CC_FLAGS += $(call flatten,$(_CC_FLAGS))
 
+define _CC_C_FLAGS +=
+	-fcommon
+	$(CC_C_FLAGS.lang)
+	$(CC_C_FLAGS.warnings)
+endef
+CC_C_FLAGS=$(call flatten,$(_CC_C_FLAGS))
+
 #----------------------------------------------------------------------------------------------
+
+define _CC_CXX_FLAGS +=
+	$(CC_CXX_FLAGS.lang)
+	$(CC_CXX_FLAGS.warnings)
+	$(CC_CXX_FLAGS.sanitizer)
+endef
+CC_CXX_FLAGS=$(call flatten,$(_CC_CXX_FLAGS))
+
+#--------------------------------------------------------------------------------------- Linker
+
+ifeq ($(CC_STATIC_LIBSTDCXX),1)
+LD_LINKER_FLAGS.common += -static-libstdc++
+endif
+
+ifeq ($(CC_STATIC_LIBGCC),1)
+LD_LINKER_FLAGS.common += -static-libgcc
+endif
+
+#----------------------------------------------------------------------------------------------
+
+define LD_FLAGS.common +=
+	-pthread
+endef
 
 define _LD_FLAGS
 	$(LD_FLAGS.common)
@@ -117,16 +180,42 @@ define SO_LD_FLAGS.macos +=
 	-bundle
 endef
 
-define _DYLIB_LD_FLAGS.macos +=
-	-dynamiclib
-endef
-
 LINK_SO_INTERNAL_BINDING ?= 1
 ifeq ($(LINK_SO_INTERNAL_BINDING),1)
 	SO_LD_FLAGS.linux += -Wl,-Bsymbolic,-Bsymbolic-functions
 endif
 
-#----------------------------------------------------------------------------------------------
+define _DYLIB_LD_FLAGS.macos +=
+	-dynamiclib
+endef
+
+define _EXE_LD_FLAGS
+	$(EXE_LD_FLAGS.common)
+	$(EXE_LD_FLAGS.$(OS))
+endef
+EXE_LD_FLAGS += $(call flatten,$(_EXE_LD_FLAGS))
+
+#----------------------------------------------------------------------------------------- Libs
+
+
+define _LD_LIBS.linux +=
+	m
+	dl
+	rt
+endef
+
+define _LD_LIBS.macos +=
+	m
+	dl
+endef
+
+define _LD_LIBS
+	$(LD_FLAGS.common)
+	$(LD_FLAGS.$(OS))
+endef
+LD_LIBS += $(call flatten,$(_LD_LIBS))
+
+#---------------------------------------------------------------------------------------- CMake
 
 export CMAKE_CC_FLAGS=\
 	-UNDEBUG \
@@ -137,6 +226,9 @@ export CMAKE_CC_CXX_FLAGS=$(CC_CXX_FLAGS)
 
 export CMAKE_LD_FLAGS=$(LD_FLAGS)
 export CMAKE_SO_LD_FLAGS=$(SO_LD_FLAGS)
+export CMAKE_EXE_LD_FLAGS=$(EXE_LD_FLAGS)
+
+export CMAKE_LD_LIBS=$(LD_LIBS)
 
 #----------------------------------------------------------------------------------------------
 

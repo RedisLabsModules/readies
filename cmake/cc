@@ -1,13 +1,83 @@
 
+# include(CheckCCompilerFlag)
+
 lists_from_env(CMAKE_CC_FLAGS CMAKE_CC_C_FLAGS CMAKE_CC_CXX_FLAGS)
-lists_from_env(CMAKE_LD_FLAGS CMAKE_SO_LD_FLAGS)
+lists_from_env(CMAKE_LD_FLAGS CMAKE_SO_LD_FLAGS CMAKE_EXE_LD_FLAGS CMAKE_LD_LIBS)
 
 if ("$ENV{VERBOSE}" STREQUAL "1")
+	message("# CMAKE_C_COMPILER_ID: " ${CMAKE_C_COMPILER_ID})
 	message("# CC=$ENV{CC}")
 	message("# CXX=$ENV{CXX}")
 	message("# CMAKE_CC_FLAGS=${CMAKE_CC_FLAGS}")
 	message("# CMAKE_CC_C_FLAGS=${CMAKE_CC_C_FLAGS}")
 	message("# CMAKE_CC_CXX_FLAGS=${CMAKE_CC_CXX_FLAGS}")
 	message("# CMAKE_LD_FLAGS=${CMAKE_LD_FLAGS}")
+	message("# CMAKE_EXE_LD_FLAGS=${CMAKE_EXE_LD_FLAGS}")
 	message("# CMAKE_SO_LD_FLAGS=${CMAKE_SO_LD_FLAGS}")
+	message("# CMAKE_LD_LIBS=${CMAKE_LD_LIBS}")
 endif()
+
+if (DEFINED $ENV{SAN})
+	set(SANITIZER $ENV{SAN})
+endif()
+
+#----------------------------------------------------------------------------------------------
+
+function(extract_debug_symbols TARGET)
+    if (NOT DEBUG AND NOT APPLE)
+        add_custom_command(TARGET ${TARGET} POST_BUILD
+            COMMAND "$ENV{MK}/extract-obj-symbols" "$<TARGET_FILE:${TARGET}>")
+    endif()
+endfunction()
+
+#----------------------------------------------------------------------------------------------
+
+function(add_target_linker_flags TARGET FLAGS)
+    get_target_property(LD_FLAGS ${TARGET} LINK_FLAGS)
+    if (LD_FLAGS)
+        set(FLAGS "${LD_FLAGS} ${FLAGS}")
+    endif()
+    set_target_properties(${TARGET} PROPERTIES LINK_FLAGS ${FLAGS})
+endfunction()
+
+#----------------------------------------------------------------------------------------------
+
+function(setup_shared_object_target TARGET OUTPUT_NAME)
+    set_target_properties(${TARGET} PROPERTIES PREFIX "")
+    set_target_properties(${TARGET} PROPERTIES SUFFIX ".so")
+
+    add_target_linker_flags(${TARGET} "-Wl,--enable-new-dtags -Wl,-rpath,\$ORIGIN")
+
+    if (NOT $(OUTPUT_NAME) STREQUAL "")
+        set_target_properties(${TARGET} PROPERTIES OUTPUT_NAME "${OUTPUT_NAME}")
+    endif()
+
+    if (APPLE)
+        set_target_properties(${TARGET} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+    endif()
+endfunction()
+
+#----------------------------------------------------------------------------------------------
+
+function(setup_cc_options)
+	append_to_string(CMAKE_C_FLAGS ${CMAKE_CC_C_FLAGS})
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}" PARENT_SCOPE)
+	
+	append_to_string(CMAKE_CXX_FLAGS ${CMAKE_CC_CXX_FLAGS})
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}" PARENT_SCOPE)
+
+	# dirty trick to override default CMake flags (like: -O2 -DNDEBUG)
+	# by appending the overiding options using add_compile_options().
+	# we rely on the overiding options being defined in CMAKE_CC_FLAGS rather than the 
+	# language-specific CMAKE_CC_C_FLAGS and CMAKE_CC_CXX_FLAGS.
+
+	append_to_string(OPTIONS ${CMAKE_CC_FLAGS})
+	string(REPLACE " " ";" OPTION_LIST ${OPTIONS})
+	add_compile_options(${OPTION_LIST})
+	
+	append_to_string(CMAKE_EXE_LINKER_FLAGS ${CMAKE_LD_FLAGS} ${CMAKE_EXE_LD_FLAGS})
+	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}" PARENT_SCOPE)
+	
+	append_to_string(CMAKE_SHARED_LINKER_FLAGS ${CMAKE_LD_FLAGS} ${CMAKE_SO_LD_FLAGS})
+	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS}" PARENT_SCOPE)
+endfunction()
