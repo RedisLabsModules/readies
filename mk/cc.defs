@@ -197,7 +197,6 @@ EXE_LD_FLAGS += $(call flatten,$(_EXE_LD_FLAGS))
 
 #----------------------------------------------------------------------------------------- Libs
 
-
 define _LD_LIBS.linux +=
 	m
 	dl
@@ -210,8 +209,8 @@ define _LD_LIBS.macos +=
 endef
 
 define _LD_LIBS
-	$(LD_FLAGS.common)
-	$(LD_FLAGS.$(OS))
+	$(LD_LIBS.common)
+	$(LD_LIBS.$(OS))
 endef
 LD_LIBS += $(call flatten,$(_LD_LIBS))
 
