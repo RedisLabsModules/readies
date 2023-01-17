@@ -2,10 +2,12 @@
 # include(CheckCCompilerFlag)
 
 str_from_env(CMAKE_CC_FLAGS CMAKE_CC_C_FLAGS CMAKE_CC_CXX_FLAGS)
-str_from_env(CMAKE_LD_FLAGS CMAKE_SO_LD_FLAGS CMAKE_EXE_LD_FLAGS CMAKE_LD_LIBS)
+str_from_env(CMAKE_LD_FLAGS CMAKE_SO_LD_FLAGS CMAKE_EXE_LD_FLAGS)
+
+lists_from_env(CMAKE_LD_FLAGS_LIST CMAKE_SO_LD_FLAGS_LIST CMAKE_EXE_LD_FLAGS_LIST)
+lists_from_env(CMAKE_LD_LIBS)
 
 if ("$ENV{VERBOSE}" STREQUAL "1")
-	message("# CMAKE_C_COMPILER_ID: " ${CMAKE_C_COMPILER_ID})
 	message("# CC=$ENV{CC}")
 	message("# CXX=$ENV{CXX}")
 	message("# CMAKE_CC_FLAGS=${CMAKE_CC_FLAGS}")
@@ -48,9 +50,10 @@ function(setup_shared_object_target TARGET OUTPUT_NAME)
 
     add_target_linker_flags(${TARGET} "-Wl,--enable-new-dtags -Wl,-rpath,\$ORIGIN")
 
-    if (NOT $(OUTPUT_NAME) STREQUAL "")
-        set_target_properties(${TARGET} PROPERTIES OUTPUT_NAME "${OUTPUT_NAME}")
-    endif()
+	if ("${OUTPUT_NAME}" STREQUAL "")
+		set(OUTPUT_NAME "${TARGET}")
+	endif()
+    set_target_properties(${TARGET} PROPERTIES OUTPUT_NAME "${OUTPUT_NAME}")
 
     if (APPLE)
         set_target_properties(${TARGET} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
@@ -60,6 +63,8 @@ endfunction()
 #----------------------------------------------------------------------------------------------
 
 function(setup_cc_options)
+	message("# CMAKE_C_COMPILER_ID: " ${CMAKE_C_COMPILER_ID})
+
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_CC_C_FLAGS}" PARENT_SCOPE)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CC_CXX_FLAGS}" PARENT_SCOPE)
 

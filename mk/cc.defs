@@ -82,7 +82,6 @@ define CC_C_FLAGS.warnings +=
 	-Werror=implicit-function-declaration
 endef
 
-#	-Werror=implicit-function-declaration
 #	-Wno-error=incompatible-pointer-types-discards-qualifiers
 
 ifneq ($(CC_C_STD),)
@@ -197,20 +196,24 @@ EXE_LD_FLAGS += $(call flatten,$(_EXE_LD_FLAGS))
 
 #----------------------------------------------------------------------------------------- Libs
 
-define _LD_LIBS.linux +=
+define LD_LIBS.common +=
+	c
 	m
 	dl
+	pthread
+endef
+
+define LD_LIBS.linux +=
 	rt
 endef
 
-define _LD_LIBS.macos +=
-	m
-	dl
+define LD_LIBS.macos +=
 endef
 
 define _LD_LIBS
 	$(LD_LIBS.common)
 	$(LD_LIBS.$(OS))
+	$(LB_LIBS.ext)
 endef
 LD_LIBS += $(call flatten,$(_LD_LIBS))
 
@@ -226,6 +229,10 @@ export CMAKE_CC_CXX_FLAGS=$(CC_CXX_FLAGS)
 export CMAKE_LD_FLAGS=$(LD_FLAGS)
 export CMAKE_SO_LD_FLAGS=$(SO_LD_FLAGS)
 export CMAKE_EXE_LD_FLAGS=$(EXE_LD_FLAGS)
+
+export CMAKE_LD_FLAGS_LIST=$(LD_FLAGS)
+export CMAKE_SO_LD_FLAGS_LIST=$(SO_LD_FLAGS)
+export CMAKE_EXE_LD_FLAGS_LIST=$(EXE_LD_FLAGS)
 
 export CMAKE_LD_LIBS=$(LD_LIBS)
 
