@@ -13,9 +13,9 @@ import traceback
 import textwrap
 
 try:
-    from urllib2 import urlopen
+    from urllib2 import urlopen, Request
 except:
-    from urllib.request import urlopen
+    from urllib.request import urlopen, Request
 
 HERE = os.path.dirname(__file__)
 ROOT = os.path.abspath(os.path.join(HERE, ".."))
@@ -61,6 +61,7 @@ class RedisSourceSetup(paella.Setup):
         self.into = args.into
         self.suffix = args.suffix
         self.info_file = args.info_file
+        self.with_github_token = args.with_github_token
         self.verbose = args.verbose
         self.nop = args.nop
 
@@ -73,7 +74,13 @@ class RedisSourceSetup(paella.Setup):
             disconnectsCount = 0
             while disconnectsCount < 10:
                 try:
-                    r = urlopen(url)
+                    req = Request(url)
+                    if self.with_github_token:
+                        gh_token = ENV['GITHUB_TOKEN']
+                        if gh_token == '':
+                            fatal('GITHUB_TOKEN environment variable not set')
+                        req.add_header('Authorization', 'Bearer ' + gh_token)
+                    r = urlopen(req)
                     disconnectsCount = 10
                 except http.client.RemoteDisconnected:
                     time.sleep(6)
@@ -494,6 +501,7 @@ parser.add_argument('--workdir', type=str, help='Directory in which to extract a
 parser.add_argument('--info-file', type=str, help='Information file path')
 parser.add_argument('--suffix', type=str, help='Add suffix to Redis programs')
 parser.add_argument('--into', type=str, help='Copy artifacts to DIR')
+parser.add_argument('--with-github-token', action="store_true", help='Use GITHUB_TOKEN env var')
 parser.add_argument('-V', '--verbose', action="store_true", help="Verbose operation")
 # parser.add_argument('--strict', action="store_true", help="Verify we get the Redis version we ask for")
 args = parser.parse_args()
