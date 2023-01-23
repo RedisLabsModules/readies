@@ -176,7 +176,7 @@ define SO_LD_FLAGS.linux +=
 endef
 
 define SO_LD_FLAGS.macos +=
-	-bundle
+	-dynamiclib
 endef
 
 LINK_SO_INTERNAL_BINDING ?= 1
