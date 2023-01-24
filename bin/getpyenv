@@ -36,7 +36,7 @@ OP=""
 echo "# Installing pyenv ..."
 
 if [[ $FORCE == 1 ]]; then
-	rm -f $HOME/.pyenv $profile_d/pyenv.sh
+	rm -rf $HOME/.pyenv $profile_d/pyenv.sh
 fi
 
 profile_d=`get_profile_d`
@@ -52,7 +52,7 @@ else
 			xinstall git findutils make gcc zlib-devel bzip2 bzip2-devel readline-devel \
 				sqlite sqlite-devel openssl-devel tk-devel libffi-devel xz-devel
 		elif is_command yum; then
-			xinstall git gcc zlib-devel bzip2 bzip2-devel readline-devel sqlite \
+			xinstall git make gcc zlib-devel bzip2 bzip2-devel readline-devel sqlite \
 				sqlite-devel openssl-devel tk-devel libffi-devel xz-devel
 		elif is_command zypper; then
 			xinstall gcc automake bzip2 libbz2-devel xz xz-devel openssl-devel ncurses-devel \

@@ -12,6 +12,8 @@ READIES=$ROOT/readies
 
 export HOMEBREW_NO_AUTO_UPDATE=1
 
+MODERN_PYTHON_VER=3.9.16
+
 #----------------------------------------------------------------------------------------------
 
 if [[ $1 == --help || $1 == help || $HELP == 1 ]]; then
@@ -164,7 +166,7 @@ install_python() {
 		export DEBIAN_FRONTEND=noninteractive
 		runn $SUDO apt-get -qq update --fix-missing
 		if [[ $FORCE_MODERN == 1 ]]; then
-			runn PYTHON=3.9.16 GLOBAL=1 $READIES/bin/getpyenv
+			runn PYTHON=$MODERN_PYTHON_VER GLOBAL=1 $READIES/bin/getpyenv
 			$OP . $(get_profile_d)/pyenv.sh
 		elif [[ $osver == ubuntu14.04 || $osver == ubuntu16.04 ]]; then
 			install_python_on_old_ubuntu
@@ -175,7 +177,7 @@ install_python() {
 		fi
 	elif is_command dnf; then
 		if [[ $FORCE_MODERN == 1 ]]; then
-			runn PYTHON=3.9.16 GLOBAL=1 $READIES/bin/getpyenv
+			runn PYTHON=$MODERN_PYTHON_VER GLOBAL=1 $READIES/bin/getpyenv
 			$OP . $(get_profile_d)/pyenv.sh
 		else
 			runn $SUDO dnf install -y python3
@@ -183,7 +185,7 @@ install_python() {
 	elif is_command yum; then
 		runn $SUDO yum install -y epel-release
 		if [[ $FORCE_MODERN == 1 ]]; then
-			runn PYTHON=3.9.16 GLOBAL=1 $READIES/bin/getpyenv
+			runn PYTHON=$MODERN_PYTHON_VER GLOBAL=1 $READIES/bin/getpyenv
 			$OP . $(get_profile_d)/pyenv.sh
 		else
 			runn $SUDO yum install -y python36
