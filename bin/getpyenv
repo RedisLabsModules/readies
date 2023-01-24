@@ -89,7 +89,7 @@ if [[ -n $PYTHON ]]; then
     echo "# Installing python $PYTHON ..."
 	$OP . $profile_d/pyenv.sh
     runn pyenv install -f $PYTHON
-	if [[ $GLBOAL == 1 ]]; then
+	if [[ $GLOBAL == 1 ]]; then
 		runn pyenv global $PYTHON
 	fi
 fi
