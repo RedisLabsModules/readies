@@ -135,12 +135,12 @@ class RMPyToolsSetup(paella.Setup):
 
         if self.ramp_version is None:
             if self.modern:
-                self.pip_install("--no-cache-dir ramp-packer~=2.4.0")
+                self.pip_install("--no-cache-dir ramp-packer~=2.5.0")
             else:
                 if not self.pypi:
-                    self.pip_install("--no-cache-dir git+https://github.com/RedisLabs/RAMP@2.4.0")
+                    self.pip_install("--no-cache-dir git+https://github.com/RedisLabs/RAMP@2.5.0")
                 else:
-                    self.pip_install("--no-cache-dir ramp-packer~=2.4.0")
+                    self.pip_install("--no-cache-dir ramp-packer~=2.5.0")
         else:
             if self.ramp_version.startswith('pypi:'):
                 pypi = True
