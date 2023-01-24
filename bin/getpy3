@@ -10,6 +10,8 @@ ROOT=$(cd $HERE/../.. && pwd)
 READIES=$ROOT/readies
 . $READIES/shibumi/defs
 
+export HOMEBREW_NO_AUTO_UPDATE=1
+
 #----------------------------------------------------------------------------------------------
 
 if [[ $1 == --help || $1 == help || $HELP == 1 ]]; then
@@ -104,6 +106,7 @@ check_variants() {
 	MINOR="$($MYPY --version 2>&1 | awk '{print $2}' | cut -d. -f2)"
 	# Python3 <= 3.4 breaks contemporary pip
 	if (( MINOR <= 5 )); then FORCE=1; fi
+	if (( MINOR <= 6 )); then FORCE_MODERN=1; fi
 
 	if [[ -n $FIX ]]; then fix_variants; fi
 }
@@ -160,7 +163,10 @@ install_python() {
 	if is_command apt-get; then
 		export DEBIAN_FRONTEND=noninteractive
 		runn $SUDO apt-get -qq update --fix-missing
-		if [[ $osver == ubuntu14.04 || $osver == ubuntu16.04 ]]; then
+		if [[ $FORCE_MODERN == 1 ]]; then
+			runn PYTHON=3.9.16 GLOBAL=1 $READIES/bin/getpyenv
+			$OP . $(get_profile_d)/pyenv.sh
+		elif [[ $osver == ubuntu14.04 || $osver == ubuntu16.04 ]]; then
 			install_python_on_old_ubuntu
 		elif [[ $osver == debian9 && $arch == x86_64 ]]; then
 			install_python36_on_debian9_x64
@@ -168,10 +174,20 @@ install_python() {
 			runn $SUDO apt-get install --fix-missing -y python3
 		fi
 	elif is_command dnf; then
-		runn $SUDO dnf install -y python3
+		if [[ $FORCE_MODERN == 1 ]]; then
+			runn PYTHON=3.9.16 GLOBAL=1 $READIES/bin/getpyenv
+			$OP . $(get_profile_d)/pyenv.sh
+		else
+			runn $SUDO dnf install -y python3
+		fi
 	elif is_command yum; then
 		runn $SUDO yum install -y epel-release
-		runn $SUDO yum install -y python36
+		if [[ $FORCE_MODERN == 1 ]]; then
+			runn PYTHON=3.9.16 GLOBAL=1 $READIES/bin/getpyenv
+			$OP . $(get_profile_d)/pyenv.sh
+		else
+			runn $SUDO yum install -y python36
+		fi
 	elif is_command zypper; then
 		runn $SUDO zypper install -y python3
 	elif is_command apk; then
@@ -248,7 +264,7 @@ if [[ $CHECK == 1 ]]; then
 	exit 1
 fi
 
-[[ -z $MYPY || $FORCE == 1 ]] && install_python
+[[ -z $MYPY || $FORCE == 1 || $FORCE_MODERN == 1 ]] && install_python
 
 if [[ $(uname) == Darwin ]]; then
 	if is_command brew; then

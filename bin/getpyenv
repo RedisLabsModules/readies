@@ -49,10 +49,10 @@ else
 				libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm \
 				libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev
 		elif is_command dnf; then
-			xinstall make gcc zlib-devel bzip2 bzip2-devel readline-devel \
+			xinstall git findutils make gcc zlib-devel bzip2 bzip2-devel readline-devel \
 				sqlite sqlite-devel openssl-devel tk-devel libffi-devel xz-devel
 		elif is_command yum; then
-			xinstall gcc zlib-devel bzip2 bzip2-devel readline-devel sqlite \
+			xinstall git gcc zlib-devel bzip2 bzip2-devel readline-devel sqlite \
 				sqlite-devel openssl-devel tk-devel libffi-devel xz-devel
 		elif is_command zypper; then
 			xinstall gcc automake bzip2 libbz2-devel xz xz-devel openssl-devel ncurses-devel \
