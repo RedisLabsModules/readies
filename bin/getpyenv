@@ -20,6 +20,7 @@ if [[ $1 == --help || $1 == help || $HELP == 1 ]]; then
 		HELP=1         Print help
 		
 		PYTHON=ver     Python version to be installed 
+		GLOBAL=1       Setup global version
 		VENV=dir       Install a virtualenv in `dir`
 
 		Notes:
@@ -88,6 +89,9 @@ if [[ -n $PYTHON ]]; then
     echo "# Installing python $PYTHON ..."
 	$OP . $profile_d/pyenv.sh
     runn pyenv install -f $PYTHON
+	if [[ $GLBOAL == 1 ]]; then
+		runn pyenv global $PYTHON
+	fi
 fi
 
 if [[ -n $VENV ]]; then
