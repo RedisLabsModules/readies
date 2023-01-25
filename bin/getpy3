@@ -272,10 +272,22 @@ if [[ $(uname) == Darwin ]]; then
 	if is_command brew; then
 		# The following is for avoiding python to be upgraded by brew silently,
 		# hence disrupting pip installaitons.
-		# This however gets trickier, as brew mighit not recognize a currently installed
+		# This however gets trickier, as brew might not recognize a currently installed
 		# python version, and upgrade will fail. Thus, we need to force installation, and
 		# still be graceful about failures.
 		runn "brew upgrade python || brew install python3 || true"
+
+		# macOS can have system-installed /usr/bin/python3 as well as several /usr/local/bin/python3.x versions.
+		# The latter is typically installed by brew, which may or may not arrange a /usr/local/bin/python3.
+		# Thus, if /usr/local/bin/python3 exists, we let it be. Otherwise, we opt for the latest.
+		if [[ ! -e /usr/local/bin/python3 ]]; then
+			LATEST_MINOR="$(brew list --formula | grep python | cut -d@ -f2 | cut -d. -f2 | sort -nr | head -1)"
+			_MYPY="/usr/local/bin/python3.$LATEST_MINOR"
+			if [[ -f $_MYPY ]]; then
+				(cd /usr/local/bin; ln -s $(basename "$_MYPY") python3;)
+				MYPY="$_MYPY"
+			fi
+		fi
 	fi
 fi
 
