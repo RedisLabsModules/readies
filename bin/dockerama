@@ -136,6 +136,7 @@ class DockerBuilder(object):
 
     def build(self):
         """Builds and tags the docker image"""
+        ENV['BUILDKIT_PROGRESS'] = 'plain'
         build_cmd = ["docker", "build", "-t", self.docker_tag, "-f", self.dockerfile] + self.docker_options + [self.build_dir]
         res = self.runner(build_cmd)
         if self.temp_dockerfile and not self.KEEP:
