@@ -246,7 +246,7 @@ install_pip() {
 		export DEBIAN_FRONTEND=noninteractive
 		runn $SUDO apt-get -qq update --fix-missing
 		runn $SUDO apt-get install --fix-missing -y $packs
-		runn @<<-EOF
+		runn @ <<-EOF
 			$SUDO apt-get install --fix-missing -y python3-distutils || $SUDO apt-get install --fix-missing -y python3-distutils-extra
 			EOF
 	elif is_command dnf; then

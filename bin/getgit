@@ -122,7 +122,7 @@ class GitExtSetup(paella.Setup):
 
 #----------------------------------------------------------------------------------------------
 
-parser = argparse.ArgumentParser(description='Install Docker CE')
+parser = argparse.ArgumentParser(description='Install Git')
 parser.add_argument('-n', '--nop', action="store_true", help='no operation')
 parser.add_argument('--version', metavar='VER', type=str, default=None, help="git version to install")
 parser.add_argument('--modern', action="store_true", help='install latest git')
@@ -130,6 +130,7 @@ parser.add_argument('--github', action="store_true", help='install GitHub CLI (g
 parser.add_argument('--docs', action="store_true", help='install Git documentation')
 parser.add_argument('--no-ext', action="store_true", help='skip instlaling extra utilities')
 # parser.add_argument('--lfs', action="store_true", help='install Git LFS')
+# parser.add_argument('--tig', action="store_true", help='install tig (text-mode interface for Git)')
 args = parser.parse_args()
 
 if args.modern:
@@ -142,3 +143,4 @@ if args.github:
 
 if not args.no_ext:
     GitExtSetup(args).setup()
+
