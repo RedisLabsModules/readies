@@ -510,7 +510,7 @@ class Setup(OnPlatform):
             packs = "gmake coreutils findutils gsed gtar gawk"
         self.install(packs)
 
-        for x in ['make', 'find', 'sed', 'tar', 'mktemp', 'du']:
+        for x in ['make', 'find', 'xargs', 'sed', 'tar', 'mktemp', 'du']:
             dest = os.path.join(path, x)
             if not os.path.exists(dest):
                 src = paella.sh("command -v g{}".format(x)).strip()
