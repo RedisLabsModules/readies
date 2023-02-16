@@ -40,7 +40,7 @@ endif
 
 #----------------------------------------------------------------------------------------------
 
-define CC_FLAGS.common
+define CC_FLAGS.common +=
 	-fPIC
 	-pthread
 	-fno-strict-aliasing
@@ -184,8 +184,9 @@ ifeq ($(LINK_SO_INTERNAL_BINDING),1)
 	SO_LD_FLAGS.linux += -Wl,-Bsymbolic,-Bsymbolic-functions
 endif
 
-define _DYLIB_LD_FLAGS.macos +=
-	-dynamiclib
+#----------------------------------------------------------------------------------------------
+
+define EXE_LD_FLAGS.common +=
 endef
 
 define _EXE_LD_FLAGS
@@ -193,6 +194,19 @@ define _EXE_LD_FLAGS
 	$(EXE_LD_FLAGS.$(OS))
 endef
 EXE_LD_FLAGS += $(call flatten,$(_EXE_LD_FLAGS))
+
+#----------------------------------------------------------------------------------------------
+
+define DYLIB_LD_FLAGS.macos +=
+	-dynamiclib
+	 -undefined dynamic_lookup
+endef
+
+define _DYLIB_LD_FLAGS
+	$(DYLIB_LD_FLAGS.common)
+	$(DYLIB_LD_FLAGS.$(OS))
+endef
+DYLIB_LD_FLAGS += $(call flatten,$(_DYLIB_LD_FLAGS))
 
 #----------------------------------------------------------------------------------------- Libs
 
@@ -213,9 +227,13 @@ endef
 define _LD_LIBS
 	$(LD_LIBS.common)
 	$(LD_LIBS.$(OS))
-	$(LB_LIBS.ext)
+	$(LD_LIBS.ext)
 endef
-LD_LIBS += $(call flatten,$(_LD_LIBS))
+_LD_LIBS.flat=$(call flatten,$(_LD_LIBS))
+_LD_LIBS.qualified=$(filter /%,$(_LD_LIBS.flat)) $(filter -%,$(_LD_LIBS.flat))
+LD_LIBS += \
+	$(_LD_LIBS.qualified) \
+	$(foreach LIB,$(filter-out $(_LD_LIBS.qualified),$(_LD_LIBS.flat)),-l$(LIB))
 
 #---------------------------------------------------------------------------------------- CMake
 
