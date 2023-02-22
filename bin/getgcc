@@ -62,7 +62,7 @@ class SystemSetup(paella.Setup):
                 self.run("rm -f {}/gcc-toolset-*.sh".format(self.profile_d), sudo=True)
                 self.cp_to_profile_d("/opt/rh/gcc-toolset-11/enable", "gcc-toolset-11.sh")
             elif self.dist == 'amzn' and self.os_version[0] == 2:
-                self.install("devtoolset-11-gcc devtoolset-11-gcc-c++")
+                self.install("devtoolset-11-gcc devtoolset-11-gcc-c++ devtoolset-11-make")
                 # self.install("devtoolset-11-libatomic-devel")
                 self.run("rm -f {}/scl-devtoolset-*.sh".format(self.profile_d), sudo=True)
                 self.cp_to_profile_d("/opt/rh/devtoolset-11/enable", "scl-devtoolset-11.sh")
