@@ -8,6 +8,7 @@ OS.centos7.8=centos:7.8.2003
 OS.centos8=centos:8
 OS.centos8.3=centos:8.2011
 OS.fedora=fedora:latest
+OS.fedora37=fedora:37
 OS.fedora33=fedora:33
 OS.fedora27=fedora:27
 OS.hirsute=ubuntu:hirsute
@@ -28,6 +29,8 @@ OS.ol8=oraclelinux:8
 OS.alma8=almalinux:8
 OS.rocky8=rockylinux:8
 OS.jammy=ubuntu:jammy
+OS.amzn2=amazonlinux:2
+OS.amzn2022=amazonlinux:2022
 
 
 endif # OS
