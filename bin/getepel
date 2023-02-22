@@ -4,7 +4,8 @@ PROGNAME="${BASH_SOURCE[0]}"
 HERE="$(cd "$(dirname "$PROGNAME")" &>/dev/null && pwd)"
 READIES=$(cd $HERE/.. && pwd)
 . $READIES/shibumi/defs
-DIST="$(source /etc/os-release; echo $ID;)"
+
+#----------------------------------------------------------------------------------------------
 
 if [[ $1 == --help || $1 == help || $HELP == 1 ]]; then
 	cat <<-END
@@ -23,13 +24,25 @@ if [[ $1 == --help || $1 == help || $HELP == 1 ]]; then
 	exit 0
 fi
 
-if [[ ! -f /etc/redhat-release ]]; then
+#----------------------------------------------------------------------------------------------
+
+os="$(source /etc/os-release; echo $ID;)"
+osver="$(source /etc/os-release; echo "${ID}${VERSION_ID}")"
+arch=$(uname -m)
+
+if [[ ! -f /etc/redhat-release && $os != amzn ]]; then
 	eprint "Not an EPEL-compatible OS."
 	exit 1
 fi
 
 if [[ -z $EPEL ]]; then
-	EPEL=$(source /etc/os-release; echo $VERSION_ID;)
+	if [[ $os != amzn ]]; then
+		EPEL=$(source /etc/os-release; echo $VERSION_ID;)
+	elif [[ $osver == amzn2 ]]; then
+		EPEL=7
+	elif [[ $osver == amzn2022 ]]; then
+		EPEL=8
+	fi
 fi
 [[ $EPEL == 7* ]] && EPEL=7
 [[ $EPEL == 8* ]] && EPEL=8
@@ -39,7 +52,7 @@ if [[ $EPEL != 7 && $EPEL != 8 && $EPEL != 9 ]]; then
 	exit 1
 fi
 
-if [[ $DIST == "ol" ]]; then
+if [[ $os == ol ]]; then
     tee /etc/yum.repos.d/ol8-epel.repo<<-EOF
 		[ol8_developer_EPEL]
 		name= Oracle Linux \$releasever EPEL (\$basearch)
@@ -52,6 +65,22 @@ if [[ $DIST == "ol" ]]; then
     exit 0
 fi
 
+if [[ $osver == amzn2 ]]; then
+	runn amazon-linux-extras install -y epel
+	
+	runn yum install -y yum-utils
+	if ! rpm -q remi-release &> /dev/null; then
+		runn yum install -y http://rpms.remirepo.net/enterprise/remi-release-${EPEL}.rpm
+	fi
+	runn yum-config-manager -y --enable remi
+	runn yum-config-manager -y --enable rhel-server-rhscl-7-rpms
+
+	runn yum install -y http://mirror.centos.org/centos/7/extras/x86_64/Packages/centos-release-scl-rh-2-3.el7.centos.noarch.rpm || true
+	runn yum install -y http://mirror.centos.org/centos/7/extras/x86_64/Packages/centos-release-scl-2-3.el7.centos.noarch.rpm || true
+
+	exit 0
+fi
+
 if is_command dnf; then
 	runn dnf install -q -y dnf-plugins-core
 	if ! rpm -q remi-release &> /dev/null; then
@@ -62,11 +91,13 @@ if is_command dnf; then
 	runn dnf config-manager -y --set-enabled remi powertools
 
 	# enable raven repo (i.e. pkgs.org)
-	if [[ $EPEL == 8 && `uname -m` == x86_64 && NO_RAVEN != 1 ]]; then
+	if [[ $EPEL == 8 && $arch == x86_64 && NO_RAVEN != 1 ]]; then
 		runn dnf install -y https://pkgs.dyn.su/el8/base/x86_64/raven-release-1.0-2.el8.noarch.rpm
 	fi
 elif is_command yum; then
-	runn yum install -y epel-release yum-utils centos-release-scl
+	runn yum install -y epel-release yum-utils
+	runn yum install -y centos-release-scl
+
 	if ! rpm -q remi-release &> /dev/null; then
 		runn yum install -y http://rpms.remirepo.net/enterprise/remi-release-${EPEL}.rpm
 	fi
