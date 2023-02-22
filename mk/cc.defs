@@ -32,9 +32,10 @@ CC_FLAGS.defs=$(foreach d,$(call flatten,$(CC_DEFS)),-D$(d))
 CC_FLAGS.includes=$(foreach d,$(call flatten,$(CC_INCLUDES)),-I$(d))
 
 CC_COMMON_H ?= $(SRCDIR)/common.h
+_CC_COMMON_H=$(realpath $(CC_COMMON_H))
 ifneq ($(CC_COMMON_H),0)
-	ifneq ($(wildcard $(CC_COMMON_H)),)
-		CC_FLAGS.common += -include $(CC_COMMON_H)
+	ifneq ($(wildcard $(_CC_COMMON_H)),)
+		CC_FLAGS.common += -include $(_CC_COMMON_H)
 	endif
 endif
 
