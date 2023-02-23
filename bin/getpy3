@@ -17,7 +17,7 @@ MODERN_PYTHON_VER=3.9.16
 #----------------------------------------------------------------------------------------------
 
 if [[ $1 == --help || $1 == help || $HELP == 1 ]]; then
-	cat <<-END
+	cat <<-'END'
 		[ARGVARS...] getpy3 [--help|help]
 
 		Argument variables:

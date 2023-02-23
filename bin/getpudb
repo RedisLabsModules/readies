@@ -50,7 +50,7 @@ if [[ $NO_PY3 != 1 ]]; then
 		pudb=/usr/local/bin/pudb
 		if [[ ! -e $pudb ]]; then
 			pudb_tmp=$(mktemp /tmp/pudb.XXXXXX)
-			cat <<-EOF > $pudb_tmp
+			cat <<-'EOF' > $pudb_tmp
 				#!/bin/bash
 
 				python3 -m pudb "$@"
@@ -70,7 +70,7 @@ fi
 
 $OP mkdir -p `dirname $cfg`
 if [[ $PY2 == 1 ]]; then
-	cat <<-EOF > $cfg
+	cat <<-'EOF' > $cfg
 		[pudb]
 		breakpoints_weight = 1
 		current_stack_frame = top
@@ -94,7 +94,7 @@ if [[ $PY2 == 1 ]]; then
 fi
 
 if [[ $PY3 == 1 ]]; then
-	cat <<-EOF > $cfg
+	cat <<-'EOF' > $cfg
 		[pudb]
 		breakpoints_weight = 1
 		current_stack_frame = top

@@ -24,7 +24,7 @@ $OP rm -rf $vg_dir
 
 profile_d=`get_profile_d`
 if [[ $NOP != 1 ]]; then
-	cat <<-EOF > $profile_d/valgrind.sh
+	cat <<-'EOF' > $profile_d/valgrind.sh
 		export VALGRIND_LIB=/usr/local/libexec/valgrind/
 		EOF
 fi

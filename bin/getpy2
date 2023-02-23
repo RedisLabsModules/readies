@@ -13,7 +13,7 @@ READIES=$ROOT/readies
 #----------------------------------------------------------------------------------------------
 
 if [[ $1 == --help || $1 == help || $HELP == 1 ]]; then
-	cat <<-END
+	cat <<-'END'
 		[ARGVARS...] getpy2 [--help|help]
 
 		Argument variables:

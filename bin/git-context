@@ -6,7 +6,7 @@ READIES=$(cd $HERE/.. && pwd)
 . $READIES/shibumi/defs
 
 if [[ $1 == --help || $1 == help || $HELP == 1 ]]; then
-	cat <<-END
+	cat <<-'END'
 		Print Git context string.
 
 		[ARGVARS...] git-context [--help|help]
