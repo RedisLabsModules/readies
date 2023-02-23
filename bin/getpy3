@@ -49,6 +49,8 @@ note() {
 OP=""
 [[ $NOP == 1 ]] && OP=echo
 
+[[ $CHECK == 1 ]] && VERBOSE=0
+
 USER_MYPY="$MYPY"
 
 if [[ -f /etc/os-release ]]; then
