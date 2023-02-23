@@ -8,7 +8,7 @@ READIES=$(cd $HERE/.. && pwd)
 #----------------------------------------------------------------------------------------------
 
 if [[ $1 == --help || $1 == help || $HELP == 1 ]]; then
-	cat <<'-END'
+	cat <<-'END'
 		Install RHEL-compatible semi-official repositories (EPEL, Raven)
 
 		[ARGVARS...] getepel [--help|help]
