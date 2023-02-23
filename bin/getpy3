@@ -175,6 +175,12 @@ install_python36_on_debian9_x64() {
 	rm -rf $tempd
 }
 
+install_modern_python() {
+	note "install version $MODERN_PYTHON_VER using pyenv"
+	runn PYTHON=$MODERN_PYTHON_VER GLOBAL=1 $READIES/bin/getpyenv
+	$OP . $(get_profile_d)/pyenv.sh
+}
+
 install_python() {
 	note "installing Python"
 
@@ -193,21 +199,19 @@ install_python() {
 		export DEBIAN_FRONTEND=noninteractive
 		runn $SUDO apt-get -qq update --fix-missing
 		if [[ $FORCE_MODERN == 1 && $MODERN != 0 ]]; then
-			note "install version $MODERN_PYTHON_VER using pyenv"
-			runn PYTHON=$MODERN_PYTHON_VER GLOBAL=1 $READIES/bin/getpyenv
-			$OP . $(get_profile_d)/pyenv.sh
+			install_modern_python
 		elif [[ $osver == ubuntu14.04 || $osver == ubuntu16.04 ]]; then
-			install_python_on_old_ubuntu
+			install_modern_python
+			# install_python_on_old_ubuntu
 		elif [[ $osver == debian9 && $arch == x86_64 ]]; then
-			install_python36_on_debian9_x64
+			install_modern_python
+			# install_python36_on_debian9_x64
 		else
 			runn $SUDO apt-get install --fix-missing -y python3
 		fi
 	elif is_command dnf; then
 		if [[ $FORCE_MODERN == 1 && $MODERN != 0 ]]; then
-			note "install version $$MODERN_PYTHON_VER using pyenv"
-			runn PYTHON=$MODERN_PYTHON_VER GLOBAL=1 $READIES/bin/getpyenv
-			$OP . $(get_profile_d)/pyenv.sh
+			install_modern_python
 		else
 			runn $SUDO dnf install -y python3
 		fi
@@ -215,9 +219,7 @@ install_python() {
 		runn $SUDO $READIES/bin/getepel
 		# runn $SUDO yum install -y epel-release
 		if [[ $FORCE_MODERN == 1 && $MODERN != 0 ]]; then
-			note "install version $$MODERN_PYTHON_VER using pyenv"
-			runn PYTHON=$MODERN_PYTHON_VER GLOBAL=1 $READIES/bin/getpyenv
-			$OP . $(get_profile_d)/pyenv.sh
+			install_modern_python
 		else
 			if [[ $os == amzn ]]; then
 				runn $SUDO yum install -y python3
@@ -307,8 +309,7 @@ fi
 
 if [[ $(uname) == Darwin ]]; then
 	if is_command brew; then
-		# The following is for avoiding python to be upgraded by brew silently,
-		# hence disrupting pip installaitons.
+		# The following is for avoiding brew upgrading python silently, hence disrupting pip installaitons.
 		# This however gets trickier, as brew might not recognize a currently installed
 		# python version, and upgrade will fail. Thus, we need to force installation, and
 		# still be graceful about failures.
@@ -327,7 +328,12 @@ if [[ $(uname) == Darwin ]]; then
 	fi
 fi
 
+FORCE_MODERN=
 check_variants
+if [[ $FORCE_MODERN == 1 && $MODERN != 0 ]]; then
+	install_modern_python
+fi
+
 if ! is_command $MYPY; then
 	eprint "Cannot install Python3. Aborting."
 	exit 1
