@@ -25,22 +25,25 @@ fi
 if [[ $NO_PY3 != 1 ]]; then
 	if is_command python3; then
 		xinstall git
-		if LOG=0 runn python3 -m pip install $PIP_USER --no-cache-dir git+https://github.com/inducer/pudb.git@main; then
-			tmpdir=$(mktemp -d /tmp/pudb.XXXXXX)
-			cd $tmpdir
-			runn git clone https://github.com/inducer/pudb.git
-			cd pudb
-			if is_command apt-get; then
-				# this is debian-specific right now, as pip/git install is failing on arm
-				xinstall python3-dev
+		if ! LOG=0 runn python3 -m pip install $PIP_USER --no-cache-dir git+https://github.com/inducer/pudb.git@main; then
+			if ! LOG=0 runn python3 -m pip install $PIP_USER --no-cache-dir pudb; then
+				tmpdir=$(mktemp -d /tmp/pudb.XXXXXX)
+				cd $tmpdir
+				runn git clone https://github.com/inducer/pudb.git
+				cd pudb
+				if is_command apt-get; then
+					# this is debian-specific right now, as pip/git install is failing on arm
+					xinstall python3-dev
+				fi
+				# --prefix= is required for install to succeed
+				runn python3 setup.py install $PIP_USER --prefix=
+				cd /tmp
+				$OP rm -rf $tmpdir
+				PY3=1
+			else
+				PY3=1
 			fi
-			# --prefix= is required for install to succeed
-			runn python3 setup.py install $PIP_USER --prefix=
-			cd /tmp
-			$OP rm -rf $tmpdir
-			PY3=1
 		else
-			runn python3 -m pip install $PIP_USER --no-cache-dir pudb
 			PY3=1
 		fi
 
@@ -53,6 +56,7 @@ if [[ $NO_PY3 != 1 ]]; then
 				python3 -m pudb "$@"
 				EOF
 			$SUDO cp $pudb_tmp $pudb
+			$SUDO chmod +x $pudb
 		fi
 	fi
 fi
