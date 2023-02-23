@@ -226,7 +226,9 @@ xinstall() {
 		runn $SUDO pacman --noconfirm --noprogressbar -S "$packs"
 	elif is_command brew; then
 		[[ $NO_UPDATE == 1 ]] && export HOMEBREW_NO_AUTO_UPDATE=1
-		runn "brew list \"$packs\" &>/dev/null || brew install \"$packs\""
+		for p in $packs; do
+			runn "brew list $p &>/dev/null || brew install $p"
+		done
 	elif is_command pkg; then
 		runn $SUDO pkg install -y "$packs"
 	fi
