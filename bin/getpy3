@@ -217,14 +217,15 @@ install_python() {
 		fi
 	elif is_command yum; then
 		runn $SUDO $READIES/bin/getepel
-		# runn $SUDO yum install -y epel-release
 		if [[ $FORCE_MODERN == 1 && $MODERN != 0 ]]; then
 			install_modern_python
 		else
 			if [[ $os == amzn ]]; then
+				# will get python 3.7
 				runn $SUDO yum install -y python3
 			else
-				runn $SUDO yum install -y python36
+				install_modern_python
+				# runn $SUDO yum install -y python36
 			fi
 		fi
 	elif is_command zypper; then
@@ -297,8 +298,6 @@ install_pip() {
 
 check_variants
 
-# [[ -n $MYPY && $PIP == 0 && $FORCE != 1 ]] && exit 0
-
 if [[ $CHECK == 1 ]]; then
 	# Make sure pip is installed
 	if $MYPY -m pip --version &> /dev/null; then exit 0; fi
@@ -328,10 +327,12 @@ if [[ $(uname) == Darwin ]]; then
 	fi
 fi
 
+# If might we ended up installing python, not realizing we need to force modern, so:
 FORCE_MODERN=
 check_variants
 if [[ $FORCE_MODERN == 1 && $MODERN != 0 ]]; then
 	install_modern_python
+	check_variants
 fi
 
 if ! is_command $MYPY; then
