@@ -18,7 +18,7 @@ echo "Copying $IMAGE :: $INT_ART_DIR -> $ART_DIR ..."
 
 cid=`$DOCKER create $IMAGE`
 mkdir -p $ART_DIR
-$DOCKER cp $cid:$ART_INT_DIR/. $ART_DIR/
+$DOCKER cp -q $cid:$ART_INT_DIR/. $ART_DIR/
 echo "$ART_DIR:"
 (cd $ART_DIR/; du -ah --apparent-size *)
 $DOCKER rm -v $cid > /dev/null
