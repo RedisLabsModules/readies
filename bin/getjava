@@ -104,8 +104,11 @@ if [[ $JDK == 1 ]]; then
 else
 	EXTPATH="$OPENJDK_DIR/bin"
 fi
-cat <<-END >> $tmp_profiled/openjdk.sh
-	export PATH="$EXTPATH:$PATH"
+cat <<-END>> $tmp_profiled/openjdk.sh
+	if [[ ":\$PATH:" != *":$EXTPATH:"* ]]; then
+	    export PATH="\${PATH:+"\$PATH:"}$EXTPATH"
+	fi
+
 	export JAVA_HOME="$OPENJDK_DIR"
 	END
 add_to_profile_d $tmp_profiled/openjdk.sh
