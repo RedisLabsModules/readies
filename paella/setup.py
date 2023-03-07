@@ -537,6 +537,13 @@ class Setup(OnPlatform):
             rm -rf $dir
             """, sudo=True)
 
+    def setup_dotlocal(self):
+        self.cat_to_profile_d(r'''
+                if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
+                    export PATH="$HOME/.local/bin${PATH:+":$PATH"}"
+                fi
+            ''', "dotlocal.sh")
+
     # deprecated
     def install_ubuntu_modern_gcc(self, _try=False):
         return
