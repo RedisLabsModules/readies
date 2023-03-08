@@ -29,6 +29,7 @@ endef
 
 CC_FLAGS.defs=$(foreach d,$(call flatten,$(CC_DEFS)),-D$(d))
 
+CC_INCLUDES += $(CC_INCLUDES.$(OSNICK)) $(CC_INCLUDES.$(OS))  $(CC_INCLUDES.$(ARCH))
 CC_FLAGS.includes=$(foreach d,$(call flatten,$(CC_INCLUDES)),-I$(d))
 
 CC_COMMON_H ?= $(SRCDIR)/common.h
@@ -107,6 +108,7 @@ endif
 
 define _CC_FLAGS.core
 	$(CC_FLAGS.common)
+	$(CC_FLAGS.includes)
 	$(CC_FLAGS.opt)
 	$(CC_FLAGS.warnings)
 	$(CC_FLAGS.debug)
@@ -122,7 +124,6 @@ define _CC_FLAGS
 	$(CC_FLAGS.core)
 	$(CC_FLAGS.ccdeps)
 	$(CC_FLAGS.defs)
-	$(CC_FLAGS.includes)
 endef
 CC_FLAGS += $(call flatten,$(_CC_FLAGS))
 
