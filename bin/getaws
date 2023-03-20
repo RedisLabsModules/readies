@@ -15,7 +15,7 @@ install_awscli_linux() {
 	runn $SUDO ./aws/install --update
 }
 
-install_awscli_macos() {
+install_awscli_macos_x64() {
 	if [[ -d $HOME/.local/opt/aws-cli ]]; then
 		if [[ $FORCE == 1 ]]; then
 			rm -rf $HOME/.local/opt/aws-cli
@@ -71,18 +71,25 @@ else
 fi
 
 OS=`uname -s`
+ARCH=`uname -m`
 if [[ $NO_AWSCLI != 1 ]]; then
 	if [[ $OS == Linux ]]; then
 		install_awscli_linux
 	elif [[ $OS == Darwin ]]; then
-		install_awscli_macos
+		if [[ $ARCH == arm64 ]]; then
+			xinstall awscli
+		elif [[ $ARCH == x86_64 ]]; then
+			install_awscli_macos_x64
+		else
+			echo "$ARCG: unsupported"
+		fi
 	else
 		echo "$OS: unsupported"
 	fi
 fi
 
 if [[ $OS == Darwin ]]; then
-	runn "brew install s3cmd || true"
+	xinstall s3cmd
 	if ! s3cmd --version >/dev/null 2>&1; then
 		install_s3cmd
 	fi
