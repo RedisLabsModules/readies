@@ -89,6 +89,8 @@ if [[ $NO_AWSCLI != 1 ]]; then
 fi
 
 if [[ $OS == Darwin ]]; then
+	# avoid problems caused by brew
+	python3 -m pip install --user six
 	xinstall s3cmd
 	if ! s3cmd --version >/dev/null 2>&1; then
 		install_s3cmd
