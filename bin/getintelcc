@@ -47,7 +47,7 @@ OP=""
 if [[ -n $POST || $POST != 0 ]]; then
 	runn $SUDO $READIES/bin/getget
 	shfile=$(mktemp /tmp/icx.XXXXXX)
-	runn wget -O $shfile https://registrationcenter-download.intel.com/akdlm/irc_nas/18852/l_BaseKit_p_2022.3.0.8767.sh
+	runn wget -O $shfile https://registrationcenter-download.intel.com/akdlm/irc_nas/19079/l_BaseKit_p_2023.0.0.25537.sh
 	runn $SUDO bash $shfile -a -s --eula accept --install-dir $ICX_DIR --components intel.oneapi.lin.dpcpp-cpp-compiler
 	# rm $shfile
 fi
