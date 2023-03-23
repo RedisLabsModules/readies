@@ -176,14 +176,14 @@ class RedisSourceSetup(paella.Setup):
     def ccflags_lto_patch(self):
         patch = r'''
 diff --git a/src/Makefile b/src/Makefile
-index b0727db2c..0c3fc9482 100644
+index b0727db2c..ae7f3f80a 100644
 --- a/src/Makefile
 +++ b/src/Makefile
 @@ -15,9 +15,14 @@
  release_hdr := $(shell sh -c './mkreleasehdr.sh')
  uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')
  uname_M := $(shell sh -c 'uname -m 2>/dev/null || echo not')
-+CLANG := $(findstring clang,$(shell $(CC) --version | head -1))
++CLANG := $(findstring clang,$(shell sh -c '$(CC) --version | head -1'))
  OPTIMIZATION?=-O3
  ifeq ($(OPTIMIZATION),-O3)
 -	REDIS_CFLAGS+=-flto=auto
