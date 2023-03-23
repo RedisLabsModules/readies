@@ -183,19 +183,19 @@ class RedisSourceSetup(paella.Setup):
              uname_M := $(shell sh -c 'uname -m 2>/dev/null || echo not')
              OPTIMIZATION?=-O3
              ifeq ($(OPTIMIZATION),-O3)
-            -       REDIS_CFLAGS+=-flto=auto
-            +       ifneq (,$(findstring clang,$(CC)))
-            +               REDIS_CFLAGS+=-flto=auto
-            +       else
-            +               REDIS_CFLAGS+=-flto
-            +       endif
-                    REDIS_LDFLAGS+=-flto
+            -	REDIS_CFLAGS+=-flto=auto
+            +	ifneq (,$(findstring clang,$(CC)))
+            +		REDIS_CFLAGS+=-flto=auto
+            +	else
+            +		REDIS_CFLAGS+=-flto
+            +	endif
+             	REDIS_LDFLAGS+=-flto
              endif
              DEPENDENCY_TARGETS=hiredis linenoise lua hdr_histogram fpconv
             '''
         patch_file = os.path.join(self.base_dir, 'ccflags_lto.patch')
         paella.fwrite(patch_file, str.lstrip(textwrap.dedent(patch[1:])))
-        self.run("patch -p1 -i %s" % patch_file, at=self.build_dir)
+        self.run(f"patch -p1 -i %s" % patch_file, at=self.build_dir)
 
     def install_openssl(self, version, build_args, prefix="ssl"):
         file = os.path.join(self.base_dir, 'openssl.tgz')
