@@ -1,0 +1,13 @@
+#/bin/bash
+
+COLS="$(stty size | cut -d" " -f2)"
+if [[ -z $COLS || $COLS == 0 ]]; then
+	if [[ -n $STTY_SIZE ]]; then
+		COLS="$(cut -d" " -f2 < $STTY_SIZE)"
+	fi
+fi
+if [[ -z $COLS || $COLS == 0 || $COLS == 1 ]]; then
+	COLS=80
+fi
+printf -- '-%.0s' $(seq 1 $COLS)
+echo
