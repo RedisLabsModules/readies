@@ -21,7 +21,7 @@ except:
         rows, cols = os.environ.get("STTY_SIZE", "24 80").split()
     except:
         cols = 80
-if cols == 0:
+if cols <= 1:
     cols = 80
 
 print("\n" * args.pre + "-" * (int(cols) - 1) + "\n" * args.post)
