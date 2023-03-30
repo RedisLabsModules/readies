@@ -8,9 +8,9 @@ import json
 import traceback
 
 try:
-    from urllib2 import urlopen
+    from urllib2 import urlopen, Request
 except:
-    from urllib.request import urlopen
+    from urllib.request import urlopen, Request
 
 HERE = os.path.dirname(__file__)
 READIES = os.path.abspath(os.path.join(HERE, ".."))
@@ -33,7 +33,11 @@ def read_github_versions(org, repo):
     j = []
     url = 'https://api.github.com/repos/{ORG}/{REPO}/tags?per_page=100'.format(ORG=org, REPO=repo)
     while True:
-        r = urlopen(url)
+        req = Request(url)
+        gh_token = ENV['GITHUB_TOKEN']
+        if gh_token != '':
+            req.add_header('Authorization', 'Bearer ' + gh_token)
+        r = urlopen(req)
         if r.code != 200:
             raise RuntimeError('cannot read Redis version list from guthub')
         t = r.read()
