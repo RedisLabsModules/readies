@@ -14,10 +14,13 @@ if [[ -n $W ]]; then
 	COLS="$W"
 else
 	COLS="$(stty size | cut -d" " -f2)"
-fi
-if [[ -z $COLS || $COLS == 0 ]]; then
-	if [[ -n $STTY_SIZE ]]; then
-		COLS="$(cut -d" " -f2 < $STTY_SIZE)"
+
+	if [[ -z $COLS || $COLS == 0 || $COLS == 1 ]]; then
+		if [[ $CIRCLECI == true ]]; then
+			COLS=200
+		elif [[ -n $STTY_SIZE ]]; then
+			COLS="$(cut -d" " -f2 < $STTY_SIZE)"
+		fi
 	fi
 fi
 if [[ -z $COLS || $COLS == 0 || $COLS == 1 ]]; then
