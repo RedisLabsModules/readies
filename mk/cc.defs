@@ -53,6 +53,7 @@ endef
 CC_FLAGS.debug += -g -ggdb
 ifeq ($(DEBUG),1)
 	CC_FLAGS.opt += -fno-omit-frame-pointer -O0
+	CC_FLAGS.debug += -DDEBUG -D_DEBUG
 	CC_DEFS += DEBUG _DEBUG
 else
 	ifeq ($(PROFILE),1)
