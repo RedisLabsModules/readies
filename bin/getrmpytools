@@ -93,10 +93,15 @@ class RMPyToolsSetup(paella.Setup):
             self.rltest_version = 'master'
             self.ramp_version = 'master'
 
+        self._install_ramp()
+        self._install_rltest()
+        self._install_redis_py()
+
+    def _install_redis_py(self):
         redis_py_cluster_installed = False
         if self.redispy_version is None:
             if self.modern:
-                self.pip_install("--no-cache-dir redis~=4.3.4")
+                self.pip_install("--no-cache-dir redis~=4.5.4")
             else:
                 self.pip_install("--no-cache-dir git+https://github.com/redisfab/redis-py.git@3.5")
                 self.pip_install("--no-cache-dir git+https://github.com/redisfab/redis-py-cluster@2.1")
@@ -111,50 +116,46 @@ class RMPyToolsSetup(paella.Setup):
             # self.pip_install("--no-cache-dir redis-py-cluster")
             self.pip_install("--no-cache-dir git+https://github.com/redisfab/redis-py-cluster@2.1")
 
+    def _install_rltest(self):
         if self.rltest_version is None:
             if self.modern:
-                self.pip_install("--no-cache-dir RLTest~=0.5.8")
+                self.pip_install("--no-cache-dir RLTest~=0.6.0")
             else:
                 if not self.pypi:
                     self.pip_install("--no-cache-dir git+https://github.com/RedisLabsModules/RLTest.git@0.4")
                 else:
                     self.pip_install("--no-cache-dir RLTest~=0.4.2")
         else:
-            if self.rltest_version.startswith('pypi:'):
-                pypi = True
-                self.rltest_version = self.rltest_version[5:]
-            elif self.rltest_version.startswith('github:'):
-                pypi = False
-                self.rltest_version = self.rltest_version[7:]
+            (source, version) = self.get_version(self.rltest_version)
+            if source == 'pypi':
+                self.pip_install(f"--no-cache-dir RLTest~={version}")
             else:
-                pypi = self.pypi
-            if pypi:
-                self.pip_install("--no-cache-dir RLTest~={VER}".format(VER=self.rltest_version))
-            else:
-                self.pip_install("--no-cache-dir git+https://github.com/RedisLabsModules/RLTest.git@{VER}".format(VER=self.rltest_version))
+                self.pip_install(f"--no-cache-dir git+https://github.com/RedisLabsModules/RLTest.git@{version}")
 
+    def _install_ramp(self):
         if self.ramp_version is None:
+            version = '2.5.3'
             if self.modern:
-                self.pip_install("--no-cache-dir ramp-packer~=2.5.2")
+                self.pip_install(f"--no-cache-dir ramp-packer~={version}")
             else:
                 if not self.pypi:
-                    self.pip_install("--no-cache-dir git+https://github.com/RedisLabs/RAMP@2.5.2")
+                    self.pip_install(f"--no-cache-dir git+https://github.com/RedisLabs/RAMP@v{version}")
                 else:
-                    self.pip_install("--no-cache-dir ramp-packer~=2.5.2")
+                    self.pip_install(f"--no-cache-dir ramp-packer~={version}")
         else:
-            if self.ramp_version.startswith('pypi:'):
-                pypi = True
-                self.ramp_version = self.ramp_version[5:]
-            elif self.ramp_version.startswith('github:'):
-                pypi = False
-                self.ramp_version = self.ramp_version[7:]
+            (source, version) = self.get_version(self.ramp_version)
+            if source == 'pypi':
+                self.pip_install(f"--no-cache-dir ramp-packer~={version}")
             else:
-                pypi = self.pypi
-            if pypi:
-                self.pip_install("--no-cache-dir ramp-packer~={VER}".format(VER=self.ramp_version))
-            else:
-                self.pip_install("--no-cache-dir git+https://github.com/RedisLabs/RAMP@{VER}".format(VER=self.ramp_version))
-
+                self.pip_install(f"--no-cache-dir git+https://github.com/RedisLabs/RAMP@v{version}")
+    
+    def get_version(self, verspec):
+        if verspec.startswith('pypi:'):
+            return ('pypi', verspec[5:])
+        if verspec.startswith('github:'):
+            return ('github', verspec[7:])
+        return (self.pypi, verspec)
+    
 #----------------------------------------------------------------------------------------------
 
 class RMPyToolsUninstall(paella.Setup):
