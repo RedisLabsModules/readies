@@ -93,8 +93,8 @@ class RMPyToolsSetup(paella.Setup):
             self.rltest_version = 'master'
             self.ramp_version = 'master'
 
-        self._install_ramp()
         self._install_rltest()
+        self._install_ramp()
         self._install_redis_py()
 
     def _install_redis_py(self):
