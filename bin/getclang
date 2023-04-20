@@ -79,6 +79,8 @@ class CLangSetup(paella.Setup):
             clang_ver = "12"
         elif self.osnick in ["bionic"]:
             clang_ver = "13"
+        elif self.osnick in ["focal"]:
+            clang_ver = "15"
         else:
             clang_ver = args.version if args.version is not None else CLANG_COMMON_VER
         if clang_ver == "": # "" is for auto-detect
