@@ -147,7 +147,7 @@ class RMPyToolsSetup(paella.Setup):
             if source == 'pypi':
                 self.pip_install(f"--no-cache-dir ramp-packer~={version}")
             else:
-                self.pip_install(f"--no-cache-dir git+https://github.com/RedisLabs/RAMP@v{version}")
+                self.pip_install(f"--no-cache-dir git+https://github.com/RedisLabs/RAMP@{version}")
     
     def get_version(self, verspec):
         if verspec.startswith('pypi:'):
