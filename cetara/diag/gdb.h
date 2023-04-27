@@ -7,12 +7,22 @@
 
 extern bool __via_gdb;
 
-#if defined(__arm__)
-#define BB do { if (__via_gdb) { __asm__("trap"); } } while(0)
+#if defined(__i386__) || defined(__x86_64__)
+#	define BB do { if (__via_gdb) { __asm__("int $3"); } } while(0)
+
+#elif defined(__arm__)
+#	define BB do { if (__via_gdb) { __asm__("trap"); } } while(0)
+
 #elif defined(__aarch64__)
-#define BB do { if (__via_gdb) { __builtin_debugtrap(); } } while(0)
+#	if defined(__APPLE__)
+#		define BB do { if (__via_gdb) { __builtin_debugtrap(); } } while(0)
+#	else
+#		define BB do { if (__via_gdb) { __asm__(".inst 0xd4200000"); } } while(0)
+#	endif
+
 #else
-#define BB do { if (__via_gdb) { __asm__("int $3"); } } while(0)
+#	include <signal.h>
+#	define BB do { if (__via_gdb) { raise(SIGTRAP); } } while(0)
 #endif
 
 #elif defined(READIES_ALLOW_BB)
