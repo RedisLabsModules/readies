@@ -15,7 +15,7 @@ import paella  # noqa: F401
 
 os.environ["PYTHONWARNINGS"] = 'ignore:DEPRECATION::pip._internal.cli.base_command'
 
-CLANG_COMMON_VER="17"
+CLANG_COMMON_VER="16"
 CLANG_FORMAT_VER="14"
 ARM_CLANG_FORMAT_VER="12"
 
@@ -126,8 +126,14 @@ class CLangSetup(paella.Setup):
             self.install("clang")
 
     def macos(self):
-        self.install("llvm")
         # self.install_latest_from_github()
+        self.install("llvm@16")
+		llvm_prefix = sh("brew --prefix llvm@16")
+        self.run(r"""
+            cd $HOME/.local/bin
+			ln -sf {PREFIX}/bin/clang clang
+			ln -sf {PREFIX}/bin/clang++ clang++
+            """.format(PREFIX=llvm_prefix))
 
     def common_last(self):
         pass
