@@ -128,11 +128,11 @@ class CLangSetup(paella.Setup):
     def macos(self):
         # self.install_latest_from_github()
         self.install("llvm@16")
-		llvm_prefix = sh("brew --prefix llvm@16")
+        llvm_prefix = sh("brew --prefix llvm@16")
         self.run(r"""
             cd $HOME/.local/bin
-			ln -sf {PREFIX}/bin/clang clang
-			ln -sf {PREFIX}/bin/clang++ clang++
+            ln -sf {PREFIX}/bin/clang clang
+            ln -sf {PREFIX}/bin/clang++ clang++
             """.format(PREFIX=llvm_prefix))
 
     def common_last(self):
