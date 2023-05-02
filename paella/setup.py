@@ -424,7 +424,7 @@ class Setup(OnPlatform):
 
     def cat_to_profile_d(self, text, as_file=None):
         file = paella.tempfilepath()
-        paella.fwrite(file, text)
+        paella.fwrite(file, textwrap.dedent(text))
         d = self.profile_d
         if as_file is None:
             as_file = os.path.basename(file)

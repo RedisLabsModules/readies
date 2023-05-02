@@ -129,11 +129,11 @@ class CLangSetup(paella.Setup):
         # self.install_latest_from_github()
         self.install("llvm@16")
         llvm_prefix = sh("brew --prefix llvm@16")
-        self.run(r"""
-            cd $HOME/.local/bin
-            ln -sf {PREFIX}/bin/clang clang
-            ln -sf {PREFIX}/bin/clang++ clang++
-            """.format(PREFIX=llvm_prefix))
+        self.cat_to_profile_d(r'''
+            if [[ ":$PATH:" != *":{PREFIX}/bin:"* ]]; then
+                export PATH="{PREFIX}/bin${{PATH:+":$PATH"}}"
+            fi
+            '''.format(PREFIX=llvm_prefix), "llvm-16.sh")
 
     def common_last(self):
         pass
