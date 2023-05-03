@@ -26,7 +26,12 @@ MACOS_SDK_PREFIX:=$(shell xcrun --show-sdk-path)
 export CPPFLAGS += -I$(MACOS_SDK_PREFIX)/usr/include
 export LDFLAGS += -L$(MACOS_SDK_PREFIX)/usr/lib
 
-CC_FLAGS.macos += -I$(MACOS_SDK_PREFIX)/usr/include -Wno-expansion-to-defined -Wno-nullability-completeness
+CC_FLAGS.macos += \
+	-isysroot $(MACOS_SDK_PREFIX) \
+	-I$(MACOS_SDK_PREFIX)/usr/include \
+	-Wno-expansion-to-defined \
+	-Wno-nullability-completeness
+
 LD_FLAGS.macos += -L$(MACOS_SDK_PREFIX)/usr/lib
 
 #----------------------------------------------------------------------------------------------
