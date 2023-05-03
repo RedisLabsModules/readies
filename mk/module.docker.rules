@@ -8,7 +8,7 @@ make build          # Build Docker image
   VERSION=version     # Build for give version tag
   OFFICIAL=1          # Create Docker image tags for official repo
   ARTIFACTS=1         # Copy atrifacts from container into local directory (default: 1)
-  
+
 make publish        # Push Docker image to remote repository (requires authentication)
   OSNICK=nick         # Publish for given OSNICK (default: as host)
   BRANCH=branch       # Publish for tip of given branch (default: current branch)
@@ -36,7 +36,8 @@ ARTIFACTS ?= 1
 TEST ?= 0
 
 DOCKER_ORG ?= redisfab
-DOCKER_ORG.official ?= redislabs
+DOCKER_ORG.old_official ?= redislabs
+DOCKER_ORG.official ?= redis
 
 DOCKER_TAGS=
 
@@ -100,22 +101,25 @@ ifeq ($(OFFICIAL),1)
 
 		#--------------------------------------------------------------------------------------
 		ifneq ($(VERSION),)
-			# since we cannot reliably deduce git branch from a version spec, 
+			# since we cannot reliably deduce git branch from a version spec,
 			# we assume it's 'x.y' for version 'x.y*'
 			VERSION_BRANCH:=$(shell echo "$(VERSION)" | cut -d '.' -f 1-2)
 
 			DOCKER_TAGS += $(DOCKER_ORG.official)/$(REPO):$(VERSION)
+			DOCKER_TAGS += $(DOCKER_ORG.old_official)/$(REPO):$(VERSION)
 
 			# LATEST tag - if LATEST_BRANCH in the makefile matches our ~version
 			ifeq ($(LATEST_BRANCH),$(VERSION_BRANCH))
 				# VERSPEC_SUFFIX allows for a custom latest (i.e redisai:latest-cpu)
 				DOCKER_TAGS += $(DOCKER_ORG.official)/$(REPO):latest${VERSPEC_SUFFIX}
+				DOCKER_TAGS += $(DOCKER_ORG.old_official)/$(REPO):latest${VERSPEC_SUFFIX}
 			endif
 
 			# PREVIEW tag - if PREVIEW_BRANCH in the makefile matches our ~version
 			ifeq ($(PREVIEW_BRANCH),$(VERSION_BRANCH))
 				# VERSPEC_SUFFIX allows for a custom preview (i.e redisai:latest-cpu)
 				DOCKER_TAGS += $(DOCKER_ORG.official)/$(REPO):preview$(VERSPEC_SUFFIX)
+				DOCKER_TAGS += $(DOCKER_ORG.old_official)/$(REPO):preview$(VERSPEC_SUFFIX)
 			endif
 		endif # VERSION
 
@@ -123,10 +127,12 @@ ifeq ($(OFFICIAL),1)
 		ifneq ($(BRANCH),)
 			ifeq ($(BRANCH),master)
 				DOCKER_TAGS += $(DOCKER_ORG.official)/$(REPO):edge$(VERSPEC_SUFFIX)
+				DOCKER_TAGS += $(DOCKER_ORG.old_official)/$(REPO):edge$(VERSPEC_SUFFIX)
 			endif
 
 			ifeq ($(PREVIEW_BRANCH),$(BRANCH))
 				DOCKER_TAGS += $(DOCKER_ORG.official)/$(REPO):preview$(VERSPEC_SUFFIX)
+				DOCKER_TAGS += $(DOCKER_ORG.old_official)/$(REPO):preview$(VERSPEC_SUFFIX)
 			endif
 		endif # BRANCH
 
