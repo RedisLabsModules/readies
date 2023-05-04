@@ -24,7 +24,7 @@ import paella  # noqa: F401
 
 os.environ["PYTHONWARNINGS"] = 'ignore:DEPRECATION::pip._internal.cli.base_command'
 
-DEFAULT_REDIS_VERSION = "6"
+DEFAULT_REDIS_VERSION = "7"
 DEFAULT_OPENSSL_VER = "1.1.1l"
 
 #----------------------------------------------------------------------------------------------

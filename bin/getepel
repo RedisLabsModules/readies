@@ -66,7 +66,7 @@ if [[ $os == ol ]]; then
 fi
 
 if [[ $osver == amzn2 ]]; then
-	runn amazon-linux-extras install -y epel
+	runn PYTHON=python2 amazon-linux-extras install -y epel
 	
 	runn yum install -y yum-utils
 	if ! rpm -q remi-release &> /dev/null; then
@@ -82,17 +82,17 @@ if [[ $osver == amzn2 ]]; then
 fi
 
 if is_command dnf; then
-	runn dnf install -q -y dnf-plugins-core
+	runn dnf install -y dnf-plugins-core
 	if ! rpm -q remi-release &> /dev/null; then
 		runn dnf install -y epel-release
-		# runn dnf install -q -y --allowerasing https://dl.fedoraproject.org/pub/epel/epel-release-latest-${EPEL}.noarch.rpm
-		runn dnf install -q -y http://rpms.remirepo.net/enterprise/remi-release-${EPEL}.rpm
+		# runn dnf install -y --allowerasing https://dl.fedoraproject.org/pub/epel/epel-release-latest-${EPEL}.noarch.rpm
+		runn dnf install -y http://rpms.remirepo.net/enterprise/remi-release-${EPEL}.rpm
 	fi
 	runn dnf config-manager -y --set-enabled remi powertools
 
 	# enable raven repo (i.e. pkgs.org)
 	if [[ $EPEL == 8 && $arch == x86_64 && $NO_RAVEN != 1 ]]; then
-		runn dnf install -y https://pkgs.dyn.su/el8/base/x86_64/raven-release-1.0-2.el8.noarch.rpm
+		runn dnf install -y https://pkgs.dyn.su/el8/base/x86_64/raven-release-1.0-5.el8.noarch.rpm
 	fi
 elif is_command yum; then
 	runn yum install -y epel-release yum-utils
