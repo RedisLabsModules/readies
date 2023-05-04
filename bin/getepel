@@ -91,7 +91,7 @@ if is_command dnf; then
 	runn dnf config-manager -y --set-enabled remi powertools
 
 	# enable raven repo (i.e. pkgs.org)
-	if [[ $EPEL == 8 && $arch == x86_64 && NO_RAVEN != 1 ]]; then
+	if [[ $EPEL == 8 && $arch == x86_64 && $NO_RAVEN != 1 ]]; then
 		runn dnf install -y https://pkgs.dyn.su/el8/base/x86_64/raven-release-1.0-5.el8.noarch.rpm
 	fi
 elif is_command yum; then
