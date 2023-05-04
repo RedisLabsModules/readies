@@ -53,7 +53,7 @@ else
 				sqlite sqlite-devel openssl-devel tk-devel libffi-devel xz-devel
 		elif is_command yum; then
 			xinstall git make gcc zlib-devel bzip2 bzip2-devel readline-devel sqlite \
-				sqlite-devel openssl-devel tk-devel libffi-devel xz-devel
+				sqlite-devel openssl-devel tk-devel libffi-devel xz-devel tar
 		elif is_command zypper; then
 			xinstall gcc automake bzip2 libbz2-devel xz xz-devel openssl-devel ncurses-devel \
 				readline-devel zlib-devel tk-devel libffi-devel sqlite3-devel make
