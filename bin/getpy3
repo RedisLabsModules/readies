@@ -141,9 +141,6 @@ check_variants() {
 #----------------------------------------------------------------------------------------------
 
 install_python_on_old_ubuntu() {
-	# Possible workaround - currently disabled
-	# PYTHON=1 $READIES/bin/getconda
-
 	gpg_bypass="--allow-unauthenticated"
 	
 	# ppa:deadsnakes no longer provides for xenial, trusty
@@ -181,6 +178,17 @@ install_modern_python() {
 	$OP . $(get_profile_d)/pyenv.sh
 }
 
+prepare_package_manager() {
+	if is_command apt-get; then
+		export DEBIAN_FRONTEND=noninteractive
+		runn $SUDO apt-get -qq update --fix-missing
+	elif is_command yum; then
+		runn $SUDO $READIES/bin/getepel
+	elif is_command apk; then
+		runn $SUDO apk update
+	fi
+}
+
 install_python() {
 	note "installing Python"
 
@@ -195,43 +203,34 @@ install_python() {
 		[[ $FIX != 0 ]] && FIX=1
 	fi
 
+	if [[ $osver == ubuntu14.04 || $osver == ubuntu16.04 ]]; then
+		FORCE_MODERN=1
+	elif [[ $osver == debian9 && $arch == x86_64 ]]; then
+		FORCE_MODERN=1
+	fi
+	
+	prepare_package_manager
+
+	if [[ $MODERN == 1 || $FORCE_MODERN == 1 && -n $MODERN && $MODERN != 0 ]]; then
+		install_modern_python
+		return
+	fi
+
 	if is_command apt-get; then
-		export DEBIAN_FRONTEND=noninteractive
-		runn $SUDO apt-get -qq update --fix-missing
-		if [[ $FORCE_MODERN == 1 && $MODERN != 0 ]]; then
-			install_modern_python
-		elif [[ $osver == ubuntu14.04 || $osver == ubuntu16.04 ]]; then
-			install_modern_python
-			# install_python_on_old_ubuntu
-		elif [[ $osver == debian9 && $arch == x86_64 ]]; then
-			install_modern_python
-			# install_python36_on_debian9_x64
-		else
-			runn $SUDO apt-get install --fix-missing -y python3
-		fi
+		runn $SUDO apt-get install --fix-missing -y python3
 	elif is_command dnf; then
-		if [[ $FORCE_MODERN == 1 && $MODERN != 0 ]]; then
-			install_modern_python
-		else
-			runn $SUDO dnf install -y python3
-		fi
+		runn $SUDO dnf install -y python3
 	elif is_command yum; then
-		runn $SUDO $READIES/bin/getepel
-		if [[ $FORCE_MODERN == 1 && $MODERN != 0 ]]; then
-			install_modern_python
+		if [[ $os == amzn ]]; then
+			# will get python 3.7
+			runn $SUDO yum install -y python3
 		else
-			if [[ $os == amzn ]]; then
-				# will get python 3.7
-				runn $SUDO yum install -y python3
-			else
-				install_modern_python
-				# runn $SUDO yum install -y python36
-			fi
+			install_modern_python
+			# runn $SUDO yum install -y python36
 		fi
 	elif is_command zypper; then
 		runn $SUDO zypper install -y python3
 	elif is_command apk; then
-		runn $SUDO apk update
 		runn $SUDO apk add python3 python3-dev
 	elif is_command brew; then
 		runn brew install python3
