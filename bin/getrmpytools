@@ -28,6 +28,7 @@ class RMPyToolsSetup(paella.Setup):
         self.master = args.master
         self.pypi = args.pypi
         self.modern = args.modern
+		self.legacy = args.legacy
         if args.redispy_version:
             verspec = args.redispy_version.split('/')
             if len(verspec) > 1:
@@ -101,16 +102,18 @@ class RMPyToolsSetup(paella.Setup):
         redis_py_cluster_installed = False
         if self.redispy_version is None:
             if self.modern:
-                self.pip_install("--no-cache-dir redis~=4.5.4")
-            else:
+                self.pip_install("--no-cache-dir redis~=5.0.0")
+            elif self.legacy:
                 self.pip_install("--no-cache-dir git+https://github.com/redisfab/redis-py.git@3.5")
                 self.pip_install("--no-cache-dir git+https://github.com/redisfab/redis-py-cluster@2.1")
                 redis_py_cluster_installed = True
+			else:
+				self.pip_install("--no-cache-dir redis~=4.5.5")
         else:
             self.pip_install("--no-cache-dir git+https://github.com/{ORG}/redis-py.git@{VER}".\
                              format(ORG=self.redispy_org, VER=self.redispy_version))
 
-        if not self.master and not self.modern and not redis_py_cluster_installed:
+        if self.legacy:  # not self.master and not self.modern and not redis_py_cluster_installed:
             # redis-py-cluster should be installed from git due to redis-py dependency
             # self.pip_install("--no-cache-dir git+https://github.com/Grokzen/redis-py-cluster.git@master")
             # self.pip_install("--no-cache-dir redis-py-cluster")
@@ -119,12 +122,14 @@ class RMPyToolsSetup(paella.Setup):
     def _install_rltest(self):
         if self.rltest_version is None:
             if self.modern:
-                self.pip_install("--no-cache-dir RLTest~=0.6.0")
-            else:
+                self.pip_install("--no-cache-dir RLTest~=0.7.0")
+            elif self.legacy:
                 if not self.pypi:
                     self.pip_install("--no-cache-dir git+https://github.com/RedisLabsModules/RLTest.git@0.4")
                 else:
                     self.pip_install("--no-cache-dir RLTest~=0.4.2")
+			else:
+				self.pip_install("--no-cache-dir RLTest~=0.6.0")
         else:
             (source, version) = self.get_version(self.rltest_version)
             if source == 'pypi':
@@ -172,6 +177,7 @@ parser.add_argument('--no-reinstall', action="store_true", default=False, help='
 parser.add_argument('--reinstall', action="store_true", default=False, help='Reinstall everything')
 parser.add_argument('--remove', action="store_true", default=False, help='Uninstall everything')
 parser.add_argument('--modern', action="store_true", default=False, help='Install modern versions of redis-py (4.x), RLTest, and RAMP')
+parser.add_argument('--legacy', action="store_true", default=False, help='Install legacy versions of redis-py (3.5), redis-py-cluster, etc')
 parser.add_argument('--master', action="store_true", default=False, help='Install redis-py, RLTest, RAMP from master')
 parser.add_argument('--pypi', action="store_true", default=False, help='Install via PyPI')
 parser.add_argument('--redispy-version', metavar='VER', type=str, default=None, help="redis-py github version: version or branch or org/branch")
