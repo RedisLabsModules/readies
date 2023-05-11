@@ -28,7 +28,7 @@ class RMPyToolsSetup(paella.Setup):
         self.master = args.master
         self.pypi = args.pypi
         self.modern = args.modern
-		self.legacy = args.legacy
+        self.legacy = args.legacy
         if args.redispy_version:
             verspec = args.redispy_version.split('/')
             if len(verspec) > 1:
@@ -107,8 +107,8 @@ class RMPyToolsSetup(paella.Setup):
                 self.pip_install("--no-cache-dir git+https://github.com/redisfab/redis-py.git@3.5")
                 self.pip_install("--no-cache-dir git+https://github.com/redisfab/redis-py-cluster@2.1")
                 redis_py_cluster_installed = True
-			else:
-				self.pip_install("--no-cache-dir redis~=4.5.5")
+            else:
+                self.pip_install("--no-cache-dir redis~=4.5.5")
         else:
             self.pip_install("--no-cache-dir git+https://github.com/{ORG}/redis-py.git@{VER}".\
                              format(ORG=self.redispy_org, VER=self.redispy_version))
@@ -128,8 +128,8 @@ class RMPyToolsSetup(paella.Setup):
                     self.pip_install("--no-cache-dir git+https://github.com/RedisLabsModules/RLTest.git@0.4")
                 else:
                     self.pip_install("--no-cache-dir RLTest~=0.4.2")
-			else:
-				self.pip_install("--no-cache-dir RLTest~=0.6.0")
+            else:
+                self.pip_install("--no-cache-dir RLTest~=0.6.0")
         else:
             (source, version) = self.get_version(self.rltest_version)
             if source == 'pypi':
