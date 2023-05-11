@@ -102,7 +102,7 @@ class RMPyToolsSetup(paella.Setup):
         redis_py_cluster_installed = False
         if self.redispy_version is None:
             if self.modern:
-                self.pip_install("--no-cache-dir redis~=5.0.0")
+                self.pip_install("--no-cache-dir redis~=5.0.0b3")
             elif self.legacy:
                 self.pip_install("--no-cache-dir git+https://github.com/redisfab/redis-py.git@3.5")
                 self.pip_install("--no-cache-dir git+https://github.com/redisfab/redis-py-cluster@2.1")
@@ -113,7 +113,7 @@ class RMPyToolsSetup(paella.Setup):
             self.pip_install("--no-cache-dir git+https://github.com/{ORG}/redis-py.git@{VER}".\
                              format(ORG=self.redispy_org, VER=self.redispy_version))
 
-        if self.legacy:  # not self.master and not self.modern and not redis_py_cluster_installed:
+        if self.legacy and not redis_py_cluster_installed:
             # redis-py-cluster should be installed from git due to redis-py dependency
             # self.pip_install("--no-cache-dir git+https://github.com/Grokzen/redis-py-cluster.git@master")
             # self.pip_install("--no-cache-dir redis-py-cluster")
@@ -139,14 +139,7 @@ class RMPyToolsSetup(paella.Setup):
 
     def _install_ramp(self):
         if self.ramp_version is None:
-            version = '2.5.3'
-            if self.modern:
-                self.pip_install(f"--no-cache-dir ramp-packer~={version}")
-            else:
-                if not self.pypi:
-                    self.pip_install(f"--no-cache-dir git+https://github.com/RedisLabs/RAMP@v{version}")
-                else:
-                    self.pip_install(f"--no-cache-dir ramp-packer~={version}")
+            self.pip_install(f"--no-cache-dir ramp-packer~=2.5.4")
         else:
             (source, version) = self.get_version(self.ramp_version)
             if source == 'pypi':
@@ -159,7 +152,7 @@ class RMPyToolsSetup(paella.Setup):
             return ('pypi', verspec[5:])
         if verspec.startswith('github:'):
             return ('github', verspec[7:])
-        return (self.pypi, verspec)
+        return ('pypi' if self.pypi else 'github', verspec)
     
 #----------------------------------------------------------------------------------------------
 
@@ -173,6 +166,7 @@ class RMPyToolsUninstall(paella.Setup):
 parser = argparse.ArgumentParser(description='Install RedisLabs Modules Python tools')
 parser.add_argument('-n', '--nop', action="store_true", help='no operation')
 parser.add_argument('-v', '--verbose', action="store_true", help='Display installed versions')
+parser.add_argument('--show', action="store_true", help='Display installed versions and exit')
 parser.add_argument('--no-reinstall', action="store_true", default=False, help='Not not reinstall everything')
 parser.add_argument('--reinstall', action="store_true", default=False, help='Reinstall everything')
 parser.add_argument('--remove', action="store_true", default=False, help='Uninstall everything')
@@ -186,14 +180,15 @@ parser.add_argument('--ramp-version', metavar='VER', type=str, default=None, hel
 args = parser.parse_args()
 
 try:
-    if args.modern and sys.version_info < (3, 6):
-        fatal("Cannot use redis-py 4.0 with Python 2")
-    if args.remove:
-        RMPyToolsUninstall(args).setup()
-    else:
-        RMPyToolsSetup(args).setup()
-    if args.verbose:
-        os.system("{PYTHON} -m pip list | grep -e 'redis\|redis-py\|rltest\|ramp'".format(PYTHON=sys.executable))
+    if not args.show:
+        if args.modern and sys.version_info < (3, 6):
+            fatal("Cannot use redis-py 4.0 with Python 2")
+        if args.remove:
+            RMPyToolsUninstall(args).setup()
+        else:
+            RMPyToolsSetup(args).setup()
+    if args.verbose or args.show:
+        os.system("{PYTHON} -m pip list | grep -Ei 'redis|redis-py|rltest|ramp|psutil'".format(PYTHON=sys.executable))
 except Exception as x:
     traceback.print_exc()
     fatal(str(x))
