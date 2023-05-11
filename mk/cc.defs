@@ -147,11 +147,11 @@ CC_CXX_FLAGS=$(call flatten,$(_CC_CXX_FLAGS))
 #--------------------------------------------------------------------------------------- Linker
 
 ifeq ($(CC_STATIC_LIBSTDCXX),1)
-LD_LINKER_FLAGS.common += -static-libstdc++
+LD_FLAGS.common += -static-libstdc++
 endif
 
 ifeq ($(CC_STATIC_LIBGCC),1)
-LD_LINKER_FLAGS.common += -static-libgcc
+LD_FLAGS.common += -static-libgcc
 endif
 
 #----------------------------------------------------------------------------------------------
