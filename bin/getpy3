@@ -223,7 +223,8 @@ install_python() {
 	elif is_command yum; then
 		if [[ $os == amzn ]]; then
 			# will get python 3.7
-			runn $SUDO yum install -y python3
+			# runn $SUDO yum install -y python3
+			install_modern_python
 		else
 			install_modern_python
 			# runn $SUDO yum install -y python36
