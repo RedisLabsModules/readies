@@ -12,7 +12,7 @@ READIES=$ROOT/readies
 
 export HOMEBREW_NO_AUTO_UPDATE=1
 
-MODERN_PYTHON_VER=3.9.16
+MODERN_PYTHON_VER=${MODERN_PYTHON_VER:-3.9.16}
 
 #----------------------------------------------------------------------------------------------
 
@@ -21,18 +21,19 @@ if [[ $1 == --help || $1 == help || $HELP == 1 ]]; then
 		[ARGVARS...] getpy3 [--help|help]
 
 		Argument variables:
-		MODERN=0|1   Whether to install a modern Python (>3.6)
-		MYPY=path    Use specific Python interpreter (install pip & requirements)
-		CHECK=1      Only check and report, do not install
-		PIP=0        Avoid installing pip
-		PIP=version  Also install pip of the specified version
-		VENV=1       Install virtualenv
-		VENV=dir     Install virtualenv, create one in `dir`
-		FORCE=1      Install even if present
-		FIX=1        Create /usr/local/bin/python3 symlink (default on macOS)
-		VERBOSE=n    Verbosity level (1: print commands, 2: print results)
-		NOP=1        Print commands, don't execute
-		HELP=1       Print help
+		MODERN=0|1              Whether to install a modern Python (>3.6)
+		MODERN_PYTHON_VER=ver   Install given modern (i.e. pyenv) Python version
+		MYPY=path               Use specific Python interpreter (install pip & requirements)
+		CHECK=1                 Only check and report, do not install
+		PIP=0                   Avoid installing pip
+		PIP=version             Also install pip of the specified version
+		VENV=1                  Install virtualenv
+		VENV=dir                Install virtualenv, create one in `dir`
+		FORCE=1                 Install even if present
+		FIX=1                   Create /usr/local/bin/python3 symlink (default on macOS)
+		VERBOSE=n               Verbosity level (1: print commands, 2: print results)
+		NOP=1                   Print commands, don't execute
+		HELP=1                  Print help
 
 	END
 	exit 0
