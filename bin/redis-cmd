@@ -67,7 +67,8 @@ if [[ $RUN != 0 ]]; then
 		exit 1
 	fi
 elif [[ -n $DOCKER ]]; then
-	[[ -n $PORT ]] && docker_args+=" -p $PORT:6379"
+	[[ -n $PORT ]] && PORT=6379
+	docker_args+=" -p $PORT:6379"
 	docker_idfile=$(mktemp /tmp/docker.XXXXX)
 	docker run -d $docker_args $DOCKER > $docker_idfile
 	docker_id=$(cat $docker_idfile)
