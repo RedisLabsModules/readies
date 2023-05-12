@@ -8,6 +8,7 @@ make build          # Build Docker image
   VERSION=version     # Build for give version tag
   OFFICIAL=1          # Create Docker image tags for official repo
   ARTIFACTS=1         # Copy atrifacts from container into local directory (default: 1)
+  TAGFILE=file        # Output image names tags info `file`
   
 make publish        # Push Docker image to remote repository (requires authentication)
   OSNICK=nick         # Publish for given OSNICK (default: as host)
@@ -52,6 +53,12 @@ ART_DIR ?= $(ROOT)/bin/artifacts
 ART_INT_DIR ?= /var/opt/redislabs/artifacts
 export ART_DIR
 export ART_INT_DIR
+
+ifneq ($(TAGFILE),)
+ifeq ($(filter /%,$(TAGFILE)),)
+override TAGFILE:=$(ROOT)/$(TAGFILE)
+endif
+endif
 
 #----------------------------------------------------------------------------------------------
 
@@ -188,6 +195,9 @@ endef
 build:
 	@mkdir -p $(ART_DIR)/tests && echo 0 > $(ART_DIR)/tests/status
 	@$(DOCKERAMA_CMD)
+ifneq ($(TAGFILE),)
+	echo "$(DEFAULT_TAG) $(DOCKER_TAGS)" | tr " " "\n" > $(TAGFILE)
+endif
 ifeq ($(ARTIFACTS),1)
 	@IMAGE=$(DEFAULT_TAG) $(MK)/docker-collect-artifacts
 	@set -e ;\
