@@ -84,12 +84,12 @@ elif [[ -n $DOCKER ]]; then
 fi
 
 if [[ $NOP != 1 ]]; then
-	{ redis-cli $cli_args ping > /dev/null 2>&1; (( E |= $? )); } || true
+	{ redis-cli $cli_args ping > /dev/null 2>&1; (( E=$? )); } || true
 	n=0
-	while [[ $E != 0 && $n < 3 ]]; do
+	while (( E != 0 && n < 10 )); do
 		n=$((n+1))
 		sleep 0.1
-		{ redis-cli $cli_args ping > /dev/null 2>&1; (( E |= $? )); } || true
+		{ redis-cli $cli_args ping > /dev/null 2>&1; (( E=$? )); } || true
 	done
 else
 	$OP "redis-cli $cli_args ping"
