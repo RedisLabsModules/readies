@@ -226,9 +226,9 @@ index b0727db2c..ae7f3f80a 100644
             elif platform.arch == 'x86':
                 arch = 'x86'
             elif platform.arch == 'arm64v8':
-                arch = 'arm64'
+                arch = 'aarch64'
             elif platform.arch == 'arm32v7':
-                arch = 'arm'
+                arch = 'armv4'
             openssl_platform = 'linux-{}'.format(arch) if arch != '' else 'gcc'
         elif platform.os == 'macos':
             if platform.arch == 'x64':
