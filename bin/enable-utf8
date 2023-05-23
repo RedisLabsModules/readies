@@ -44,7 +44,7 @@ if [[ -z $__language ]]; then
 fi
 
 # cat prevents grep from failing
-utf8_loc=$(locale -a | grep -w "$__language" | grep -i utf | grep 8 | cat)
+utf8_loc=$(locale -a | grep -w "$__language" | grep -i utf | grep 8 | cat | head -1)
 if [[ -n $utf8_loc ]]; then
 	__utf8=$(echo "$utf8_loc" | cut -d. -f2)
 else
