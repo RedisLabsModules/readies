@@ -21,7 +21,7 @@ endif
 
 #----------------------------------------------------------------------------------------------
 
-$(TARGET): $(MISSING_DEPS) $(MK_MAKEFILES) __force
+$(TARGET): $(MISSING_DEPS) $(MK_MAKEFILES) #__force
 	@echo
 	@echo Building $(TARGET) ...
 ifneq ($(DRY_RUN),1)
