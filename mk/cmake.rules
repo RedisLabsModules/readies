@@ -21,13 +21,19 @@ endif
 
 #----------------------------------------------------------------------------------------------
 
-$(TARGET): $(MISSING_DEPS) $(MK_MAKEFILES) #__force
+ifneq ($(HELP),1)
+
+# TODO: __force triggers build even when in HELP=1 mode -> fix this
+
+$(TARGET): $(MISSING_DEPS) $(MK_MAKEFILES) __force
 	@echo
 	@echo Building $(TARGET) ...
 ifneq ($(DRY_RUN),1)
 	$(SHOW)$(MAKE) -C $(BINDIR) $(MAKE_J) $(CMAKE_TARGETS)
 else
 	@make -C $(BINDIR) $(MAKE_J) $(CMAKE_TARGETS)
+endif
+
 endif
 
 #----------------------------------------------------------------------------------------------
