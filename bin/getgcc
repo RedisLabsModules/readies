@@ -13,9 +13,9 @@ import paella
 #----------------------------------------------------------------------------------------------
 
 class SystemSetup(paella.Setup):
-    def __init__(self, nop=False, modern=False):
-        paella.Setup.__init__(self, nop)
-        self.modern = modern
+    def __init__(self, args):
+        paella.Setup.__init__(self, args.nop)
+        self.modern = args.modern
 
     def ubuntu(self):
         self.install("build-essential")
@@ -80,7 +80,10 @@ class SystemSetup(paella.Setup):
                 self.cp_to_profile_d("/opt/rh/devtoolset-11/enable", "scl-devtoolset-11.sh")
 
     def fedora(self):
-        self.group_install("'Development Tools'")
+        self.group_install("'C Development Tools and Libraries'")
+
+    def archlinux(self):
+        self.install("gcc")
 
     def alpine(self):
         self.install("build-base musl-dev gcc g++")
@@ -110,5 +113,4 @@ parser.add_argument('-n', '--nop', action="store_true", help='no operation')
 parser.add_argument('--modern', action="store_true", help="Install modern GCC version")
 
 args = parser.parse_args()
-
-SystemSetup(nop = args.nop, modern=args.modern).setup()
+SystemSetup(args).setup()
