@@ -42,6 +42,7 @@ class RedisSourceSetup(paella.Setup):
         self.version = args.version
         self.branch = args.branch
         
+        self.debug = args.debug
         self.valgrind = args.valgrind
         self.libc_malloc = args.libc_malloc
         self.clang_asan = args.clang_asan
@@ -108,7 +109,7 @@ class RedisSourceSetup(paella.Setup):
         self.redis_versions = list(map(lambda v: v['name'], j))
 
     def wget(self, url, file):
-        self.run('wget -O {FILE} {URL}'.format(FILE=file, URL=url))
+        self.run(f'wget -O {file} {url}')
 
     def get_requested_redis_versions(self):
         self.read_redis_versions()
@@ -122,9 +123,9 @@ class RedisSourceSetup(paella.Setup):
             return [version]
 
         if sv.minor is None:
-            br='{}'.format(sv.major)
+            br=f'{sv.major}'
         else:
-            br = '{}.{}'.format(sv.major, sv.minor)
+            br = f'{sv.major}.{sv.minor}'
         # select the latest version of the major.minor branch
         return list(filter(lambda v: v.startswith(br + '.'), self.redis_versions))
 
@@ -211,12 +212,12 @@ index b0727db2c..ae7f3f80a 100644
 
     def install_openssl(self, version, build_args, prefix="ssl"):
         file = os.path.join(self.base_dir, 'openssl.tgz')
-        self.wget('https://www.openssl.org/source/openssl-{VER}.tar.gz'.format(VER=version), file)
-        ssl_dir = '{DIR}/openssl'.format(DIR=self.base_dir)
-        ssl_srcdir = '{DIR}/openssl-{VER}'.format(DIR=self.base_dir, VER=version)
-        self.run('tar -C {DIR} -xzf {FILE}'.format(DIR=self.base_dir, FILE=file))
+        self.wget(f'https://www.openssl.org/source/openssl-{version}.tar.gz', file)
+        ssl_dir = f'{self.base_dir}/openssl'
+        ssl_srcdir = f'{self.base_dir}/openssl-{version}')
+        self.run(f'tar -C {self.base_dir} -xzf {file}')
         paella.mkdir_p(ssl_dir)
-        prefix_dir = '{DIR}/{PREFIX}'.format(DIR=self.base_dir, PREFIX=prefix)
+        prefix_dir = f'{self.base_dir}/{prefix}'
         
         platform = paella.Platform()
         arch = ''
@@ -229,7 +230,7 @@ index b0727db2c..ae7f3f80a 100644
                 arch = 'aarch64'
             elif platform.arch == 'arm32v7':
                 arch = 'armv4'
-            openssl_platform = 'linux-{}'.format(arch) if arch != '' else 'gcc'
+            openssl_platform = f'linux-{arch}' if arch != '' else 'gcc'
         elif platform.os == 'macos':
             if platform.arch == 'x64':
                 openssl_platform = 'darwin64-x86_64-cc'
@@ -274,11 +275,11 @@ index b0727db2c..ae7f3f80a 100644
                 raise RuntimeError('no version matches request')
             version = versions[0]
 
-            file = os.path.join(self.base_dir, 'redis-{}.tgz'.format(str(version)))
-            self.wget('https://github.com/redis/redis/archive/{}.tar.gz'.format(str(version)), file)
-            self.run('tar -C {DIR} -xzf {FILE}'.format(DIR=self.base_dir, FILE=file))
+            file = os.path.join(self.base_dir, f'redis-{version}.tgz')
+            self.wget(f'https://github.com/redis/redis/archive/{version}.tar.gz', file)
+            self.run(f'tar -C {self.base_dir} -xzf {file}')
             with paella.cwd(self.base_dir):
-                shutil.move('redis-{}'.format(version), 'redis')
+                shutil.move(f'redis-{version}', 'redis')
         if self.branch is not None:
             try:
                 sv = paella.Version(self.branch, partial=True)
@@ -286,16 +287,16 @@ index b0727db2c..ae7f3f80a 100644
                     raise RuntimeError('branch can only include major/minor numbers')
                 if sv.minor is None:
                     sv.minor = 0
-                branch = '{}.{}'.format(sv.major, sv.minor)
+                branch = f'{sv.major}.{sv.minor}'
             except:
                 branch = self.branch
-            self.run('cd {DIR}; git clone https://github.com/redis/redis.git --branch {BRA}'.format(DIR=self.base_dir, BRA=branch))
+            self.run(f'cd "{self.base_dir}"; git clone https://github.com/redis/redis.git --branch {branch}')
         self.build_dir = os.path.join(self.base_dir, 'redis')
 
     def patch_redis(self):
         if self.suffix:
             try:
-                paella.sh('grep -rl PROG_SUFFIX {DIR}/* &> /dev/null'.format(DIR=self.base_dir))
+                paella.sh(f'grep -rl PROG_SUFFIX {self.base_dir}/* &> /dev/null')
             except:
                 self.prog_suffix_patch()
         if not args.safe:
@@ -317,6 +318,7 @@ index b0727db2c..ae7f3f80a 100644
             self.cc = "gcc"
 
         build_args = []
+        build_args += ['OPTIMIZATION="-O0"'] if self.debug else ''
         build_args += ['valgrind'] if self.valgrind else ''
         build_args += ['MALLOC=libc'] if self.libc_malloc else ''
         build_args += ['BUILD_TLS=yes'] if self.tls else ''
@@ -370,7 +372,7 @@ index b0727db2c..ae7f3f80a 100644
 #                     ('-Wl,-rpath=%s/lib ' % llvm_dir) +
 #                     ('-L%s/lib ' % llvm_dir) +
 #                     '-lc++abi ' +
-#                     ('-I{base}/include -I{base}/include/c++/v1 '.format(base=llvm_dir)) +
+#                     (f'-I{base}/include -I{llvm_dir}/include/c++/v1 ') +
                      '"',
                 'LDFLAGS="-fsanitize=memory"',
                 ]
@@ -386,7 +388,7 @@ index b0727db2c..ae7f3f80a 100644
         if self.own_openssl:
             openssl_build_args += ['-j', '`%s/bin/nproc`' % ROOT]
             self.install_openssl(version=self.openssl_ver, build_args=openssl_build_args, prefix="ssl")
-            build_args += ['OPENSSL_PREFIX={DIR}/ssl'.format(DIR=self.base_dir) if self.own_openssl else '']
+            build_args += [f'OPENSSL_PREFIX={self.base_dir}/ssl' if self.own_openssl else '']
 
         #install_args = []
         #install_args += ['BUILD_TLS=yes'] if self.tls else ''
@@ -480,8 +482,8 @@ index b0727db2c..ae7f3f80a 100644
 #----------------------------------------------------------------------------------------------
 
 class RedisRepoSetup(paella.Setup):
-    def __init__(self, nop=False):
-        paella.Setup.__init__(self, nop)
+    def __init__(self, args):
+        paella.Setup.__init__(self, nop=args.nop, verbose=args.verbose)
 
     def common_first(self):
         pass
@@ -514,36 +516,55 @@ class RedisRepoSetup(paella.Setup):
 
 #----------------------------------------------------------------------------------------------
 
-parser = argparse.ArgumentParser(description='Set up system for build.')
-parser.add_argument('-n', '--nop', action="store_true", help='no operation')
+parser = argparse.ArgumentParser(description='Build and install Redis.')
+
+g = parser.add_argument_group('Source/version')
 parser.add_argument('-s', '--source', action="store_true", help="Build from source")
-parser.add_argument('-v', '--version', type=str, help='Redis version (e.g. 6, 6.0, 6.0.1, or "unstable")')
-parser.add_argument('-b', '--branch', type=str, help='Redis branch (e.g. 6, 6.0, unstable)')
-parser.add_argument('--valgrind', action="store_true", help="Build a Valgdind-compatible Redis (i.e. with libc & -O0)")
-parser.add_argument('--clang-asan', action="store_true", help="Build with Clang address sanitizer")
-parser.add_argument('--clang-msan', action="store_true", help="Build with Clang memory sanitizer")
-parser.add_argument('--clang-san-blacklist', type=str, help="Clang sanitizer blacklist filename")
-parser.add_argument('--llvm-dir', type=str, help="LLVM directory for memory sanitizer build")
-parser.add_argument('--libc-malloc', action="store_true", help="Build with libc malloc instead of jemalloc")
-parser.add_argument('--no-tls', action="store_true", help="Do not support TLS")
-parser.add_argument('--own-openssl', action="store_true", help="Link statically to OpenSSL")
-parser.add_argument('--own-openssl-version', type=str, default=DEFAULT_OPENSSL_VER, help="OpenSSL version (implies --own-openssl)")
-parser.add_argument('--repo', action="store_true", help='Install from package repo')
-parser.add_argument('--safe', action="store_true", help='Do not patch redis configuration to enable sensitive commands')
+g.add_argument('-v', '--version', type=str, help='Redis version (e.g. 6, 6.0, 6.0.1, or "unstable")')
+g.add_argument('-b', '--branch', type=str, help='Redis branch (e.g. 6, 6.0, unstable)')
+g.add_argument('--repo', action="store_true", help='Install from package repo')
+g.add_argument('--with-github-token', action="store_true", help='Use GITHUB_TOKEN env var')
+
+g = parser.add_argument_group('Behavior')
+g.add_argument('--safe', action="store_true", help='Do not patch redis configuration to enable sensitive commands')
+
+g = parser.add_argument_group('Allocators')
+g.add_argument('--libc-malloc', action="store_true", help="Build with libc malloc instead of jemalloc")
+g.add_argument('--jemalloc', action="store_true", help="Build with jemalloc (default for Linux)")
+
+g = parser.add_argument_group('OpenSSL')
+g.add_argument('--no-tls', action="store_true", help="Do not support TLS")
+g.add_argument('--own-openssl', action="store_true", help="Link statically to OpenSSL")
+g.add_argument('--own-openssl-version', type=str, default=DEFAULT_OPENSSL_VER, help="OpenSSL version (implies --own-openssl)")
+
+g = parser.add_argument_group('Build')
+g.add_argument('--prepare', action="store_true", help="Only install prerequisites, do not build")
+g.add_argument('--no-prepare', action="store_true", help="Do not install prerequisites, just build")
+g.add_argument('--keep', action="store_true", help="Do not remove source files and build artifacts")
+g.add_argument('--workdir', type=str, help='Directory in which to extract and build')
+g.add_argument('--suffix', type=str, help='Add suffix to Redis programs')
+
+g = parser.add_argument_group('Installation')
 parser.add_argument('--force', action="store_true", help="Install even if redis-server is present")
-parser.add_argument('--prepare', action="store_true", help="Only install prerequisites, do not build")
-parser.add_argument('--no-prepare', action="store_true", help="Do not install prerequisites, just build")
 parser.add_argument('--no-install', action="store_true", help="Build but don't install")
 parser.add_argument('--no-run', action="store_true", help="Do not run redis-server after installation")
-parser.add_argument('-p', '--just-print-version', action="store_true", help="Jump print version, do not install")
-parser.add_argument('--keep', action="store_true", help="Do not remove source files and build artifacts")
-parser.add_argument('--workdir', type=str, help='Directory in which to extract and build')
-parser.add_argument('--info-file', type=str, help='Information file path')
-parser.add_argument('--suffix', type=str, help='Add suffix to Redis programs')
 parser.add_argument('--into', type=str, help='Copy artifacts to DIR')
-parser.add_argument('--with-github-token', action="store_true", help='Use GITHUB_TOKEN env var')
-parser.add_argument('-V', '--verbose', action="store_true", help="Verbose operation")
+parser.add_argument('--info-file', type=str, help='Information file path')
+
+g = parser.add_argument_group('Diagnostic modes')
+g.add_argument('--debug', action="store_true", help="Build for debug")
+g.add_argument('--valgrind', action="store_true", help="Build a Valgdind-compatible Redis (i.e. with libc & -O0)")
+g.add_argument('--clang-asan', action="store_true", help="Build with Clang address sanitizer")
+g.add_argument('--clang-msan', action="store_true", help="Build with Clang memory sanitizer")
+g.add_argument('--clang-san-blacklist', type=str, help="Clang sanitizer blacklist filename")
+parser.add_argument('--llvm-dir', type=str, help="LLVM directory for memory sanitizer build")
+
+g = parser.add_argument_group('Misc')
+g.add_argument('-p', '--just-print-version', action="store_true", help="Jump print version, do not install")
+g.add_argument('-n', '--nop', action="store_true", help='no operation')
+g.add_argument('-V', '--verbose', action="store_true", help="Verbose operation")
 # parser.add_argument('--strict', action="store_true", help="Verify we get the Redis version we ask for")
+
 args = parser.parse_args()
 
 if args.source and args.repo:
@@ -575,14 +596,14 @@ if args.suffix:
     redis_server += "-%s" % args.suffix
 if paella.Setup.has_command(redis_server) and not args.force and not args.no_install:
     vermsg = sh('%s --version' % redis_server)
-    eprint("{} is present:\n{}".format(redis_server, vermsg))
+    eprint(f"{redis_server} is present:\n{vermsg}")
     exit(0)
 
 try:
     if args.source:
         RedisSourceSetup(args).setup()
     else:
-        RedisRepoSetup(nop=args.nop).setup()
+        RedisRepoSetup(args).setup()
 except Exception as x:
     traceback.print_exc()
     fatal(str(x))
