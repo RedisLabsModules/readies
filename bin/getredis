@@ -214,7 +214,7 @@ index b0727db2c..ae7f3f80a 100644
         file = os.path.join(self.base_dir, 'openssl.tgz')
         self.wget(f'https://www.openssl.org/source/openssl-{version}.tar.gz', file)
         ssl_dir = f'{self.base_dir}/openssl'
-        ssl_srcdir = f'{self.base_dir}/openssl-{version}')
+        ssl_srcdir = f'{self.base_dir}/openssl-{version}'
         self.run(f'tar -C {self.base_dir} -xzf {file}')
         paella.mkdir_p(ssl_dir)
         prefix_dir = f'{self.base_dir}/{prefix}'
