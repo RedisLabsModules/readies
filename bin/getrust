@@ -14,7 +14,7 @@ if [[ -f $HOME/.cargo/env ]]; then
 	source $HOME/.cargo/env
 fi
 if ! is_command rustup; then
-	runn $SUDO $READIES/bin/getget
+	runn $READIES/bin/getget
 	runn "curl --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/rust-lang/rustup/master/rustup-init.sh -sSf | sh -s -- -y"
 	source $HOME/.cargo/env
 elif ! runn rustup update stable; then
