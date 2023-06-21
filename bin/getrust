@@ -22,7 +22,6 @@ elif ! runn rustup update stable; then
 	runn rustup toolchain install stable
 fi
 
-
 runn rustup toolchain uninstall nightly
 if [[ -n $GOOD_NIGHTLY ]]; then
 	# workaround for nightly install issues https://github.com/rust-lang/rls/issues/623
@@ -36,10 +35,10 @@ else
 	runn rustup component add --toolchain nightly rust-src
 fi
 
-if [[ $OS == Darwin && $ARCH == x86_64 ]]; then
-	runn rustup toolchain install 1.66.1
-	runn rustup default 1.66.1
-fi
+# if [[ $OS == Darwin && $ARCH == x86_64 ]]; then
+# 	runn rustup toolchain install 1.66.1
+# 	runn rustup default 1.66.1
+# fi
 
 rustup show
 
