@@ -27,6 +27,7 @@ fi
 #----------------------------------------------------------------------------------------------
 
 os="$(source /etc/os-release; echo $ID;)"
+osverid="$(source /etc/os-release; echo "${VERSION_ID}")"
 osver="$(source /etc/os-release; echo "${ID}${VERSION_ID}")"
 arch=$(uname -m)
 
@@ -92,7 +93,12 @@ if is_command dnf; then
 
 	# enable raven repo (i.e. pkgs.org)
 	if [[ $EPEL == 8 && $arch == x86_64 && $NO_RAVEN != 1 ]]; then
-		runn dnf install -y https://pkgs.dyn.su/el8/base/x86_64/raven-release-1.0-5.el8.noarch.rpm
+		# runn dnf install -y https://pkgs.dyn.su/el8/base/x86_64/raven-release-1.0-5.el8.noarch.rpm
+		runn @ <<-EOF
+			wget --no-check-certificate -O /tmp/raven-release-1.0-5.el8.noarch.rpm https://pkgs.dyn.su/el8/base/x86_64/raven-release-1.0-5.el8.noarch.rpm
+			dnf install -y /tmp/raven-release-1.0-5.el8.noarch.rpm
+			rm -f /tmp/raven-release-1.0-5.el8.noarch.rpm
+			EOF
 	fi
 elif is_command yum; then
 	runn yum install -y epel-release yum-utils
