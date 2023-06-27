@@ -2,6 +2,8 @@
 import sys
 import inspect
 import os.path
+from collections import namedtuple
+import dataclasses
 
 if sys.version_info > (3, 0):
     from .utils3 import *
@@ -37,5 +39,22 @@ class Env:
 
 def dict_to_nt(name, d):
     if not d:
-         return namedtuple(name, {})()
+        return namedtuple(name, {})()
+    if type(d) is not dict:
+        raise TypeError("Not a dict")
     return namedtuple(name, d.keys())(**d)
+
+def to_namedtuple(name, d):
+    if not d:
+        return namedtuple(name, {})()
+    if type(d) is not dict:
+        raise TypeError("Not a dict")
+    return namedtuple(name, d.keys())(**d)
+
+def to_dataclass(name, d):
+    if not d:
+        d = {}
+    elif type(d) is not dict:
+        raise TypeError("Not a dict")
+    D = dataclasses.make_dataclass(name, d)
+    return D(**d)
