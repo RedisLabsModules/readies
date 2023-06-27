@@ -56,6 +56,7 @@ USER_MYPY="$MYPY"
 
 if [[ -f /etc/os-release ]]; then
 	os=$(source /etc/os-release; echo "${ID}")
+	osverid=$(source /etc/os-release; echo "${VERSION_ID}")
 	osver=$(source /etc/os-release; echo "${ID}${VERSION_ID}")
 fi
 arch=$(uname -m)
@@ -184,7 +185,9 @@ prepare_package_manager() {
 		export DEBIAN_FRONTEND=noninteractive
 		runn $SUDO apt-get -qq update --fix-missing
 	elif is_command yum; then
-		runn $SUDO $READIES/bin/getepel
+		if [[ $os != fedora ]]; then
+			runn $SUDO $READIES/bin/getepel
+		fi
 	elif is_command apk; then
 		runn $SUDO apk update
 	fi
