@@ -96,6 +96,7 @@ if is_command dnf; then
 		# runn dnf install -y https://pkgs.dyn.su/el8/base/x86_64/raven-release-1.0-5.el8.noarch.rpm
 		
 		# jun-2023: workaround for raven CA certificates problems - remove when resolved
+		$READIES/bin/getget
 		runn @ <<-EOF
 			wget --no-check-certificate -O /tmp/raven-release-1.0-5.el8.noarch.rpm https://pkgs.dyn.su/el8/base/x86_64/raven-release-1.0-5.el8.noarch.rpm
 			dnf install -y /tmp/raven-release-1.0-5.el8.noarch.rpm
