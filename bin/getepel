@@ -101,9 +101,9 @@ if is_command dnf; then
 			dnf install -y /tmp/raven-release-1.0-5.el8.noarch.rpm
 			rm -f /tmp/raven-release-1.0-5.el8.noarch.rpm
 			EOF
-		dnf config-manager --save --setopt=raven sslverify=false
-		dnf config-manager --save --setopt=raven-modular sslverify=false
-		dnf config-manager --save --setopt=raven-multimedia sslverify=false
+		dnf config-manager --save --setopt=raven.sslverify=false
+		dnf config-manager --save --setopt=raven-modular.sslverify=false
+		dnf config-manager --save --setopt=raven-multimedia.sslverify=false
 	fi
 elif is_command yum; then
 	runn yum install -y epel-release yum-utils
