@@ -1,5 +1,4 @@
-#!/bin/sh
-''''[ ! -z $VIRTUAL_ENV ] && exec python -u -- "$0" ${1+"$@"}; command -v python3 > /dev/null && exec python3 -u -- "$0" ${1+"$@"}; exec python2 -u -- "$0" ${1+"$@"} # '''
+#!/usr/bin/env python3
 
 import sys
 import os
@@ -16,31 +15,30 @@ class SystemSetup(paella.Setup):
     def __init__(self, args):
         paella.Setup.__init__(self, args.nop)
         self.modern = args.modern
+        self.os_ver = self.os_version[0]
 
     def ubuntu(self):
         self.install("build-essential")
         if self.modern:
-            if self.platform.is_arm64():
+            if self.os_ver < 20 or self.os_ver >= 22 or self.platform.is_arm64():
+                self.run(r'''bash -c "echo 'APT::Acquire::Retries \"7\";' > /etc/apt/apt.conf.d/80-retries"''', sudo=True)
                 self.add_repo("ppa:ubuntu-toolchain-r/test")
-                self.install("gcc-11 g++-11", output=False, _try=True)
-                self.run("update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 60 --slave /usr/bin/g++ g++ /usr/bin/g++-11", sudo=True)
+            if self.os_ver >= 22 or self.platform.is_arm64():
+                gcc_ver = 13
             else:
-                if self.os_version[0] < 20:
-                    self.run(r'''bash -c "echo 'APT::Acquire::Retries \"7\";' > /etc/apt/apt.conf.d/80-retries"''', sudo=True)
-                    self.add_repo("ppa:ubuntu-toolchain-r/test")
-                if self.install("gcc-10 g++-10", output=False, _try=True) == 0:
-                    self.run("update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 60 --slave /usr/bin/g++ g++ /usr/bin/g++-10", sudo=True)
-                else:
-                    self.install("gcc-9 g++-9")
-                    self.run("update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-9", sudo=True)
+                gcc_ver = 10
+            if self.install(f"gcc-{gcc_ver} g++-{gcc_ver}", output=False, _try=True) == 0:
+                self.install("gcc-9 g++-9", output=False)
+                gcc_ver = 9
+            self.run(f"update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-{gc_ver} 60 --slave /usr/bin/g++ g++ /usr/bin/g++-{gc_ver}", sudo=True)
 
     def debian(self):
-        if not self.modern or self.os_version[0] > 10:
+        if not self.modern or self.os_ver > 10:
             self.install("build-essential")
         else:
             eprint("cannot install modern gcc for {}".format(self.osnick))
             sys.exit(1)
-#            if self.os_version[0] < 10:
+#            if self.os_ver < 10:
 #                eprint("cannot install modern gcc for {}".format(self.osnick))
 #                sys.exit(1)
 #            self.install("gcc") # workaround for testing repo installations
@@ -56,27 +54,27 @@ class SystemSetup(paella.Setup):
         if not self.has_command("sudo"):
             self.install("sudo") # needed due to SCL sudo script
         if self.modern:
-            if self.dist in ['centos', 'ol'] and self.os_version[0] == 8:
+            if self.dist in ['centos', 'ol'] and self.os_ver == 8:
                 self.install("gcc-toolset-11-gcc gcc-toolset-11-gcc-c++")
                 self.install("gcc-toolset-11-libatomic-devel")
                 self.run("rm -f {}/gcc-toolset-*.sh".format(self.profile_d), sudo=True)
                 self.cp_to_profile_d("/opt/rh/gcc-toolset-11/enable", "gcc-toolset-11.sh")
-            elif self.dist == 'amzn' and self.os_version[0] == 2:
+            elif self.dist == 'amzn' and self.os_ver == 2:
                 self.install("devtoolset-11-gcc devtoolset-11-gcc-c++ devtoolset-11-make")
                 # self.install("devtoolset-11-libatomic-devel")
-                self.run("rm -f {}/scl-devtoolset-*.sh".format(self.profile_d), sudo=True)
+                self.run(f"rm -f {self.profile_d}/scl-devtoolset-*.sh", sudo=True)
                 self.cp_to_profile_d("/opt/rh/devtoolset-11/enable", "scl-devtoolset-11.sh")
             elif self.arch == 'arm64v8':
                 self.install("centos-release-scl")
                 self.install("devtoolset-10")
                 self.install("devtoolset-10-libatomic-devel")
-                self.run("rm -f {}/scl-devtoolset-*.sh".format(self.profile_d), sudo=True)
+                self.run(f"rm -f {self.profile_d}/scl-devtoolset-*.sh", sudo=True)
                 self.cp_to_profile_d("/opt/rh/devtoolset-10/enable", "scl-devtoolset-10.sh")
             else:
                 self.install("centos-release-scl")
                 self.install("devtoolset-11")
                 self.install("devtoolset-11-libatomic-devel")
-                self.run("rm -f {}/scl-devtoolset-*.sh".format(self.profile_d), sudo=True)
+                self.run(f"rm -f {self.profile_d}/scl-devtoolset-*.sh", sudo=True)
                 self.cp_to_profile_d("/opt/rh/devtoolset-11/enable", "scl-devtoolset-11.sh")
 
     def fedora(self):
@@ -90,16 +88,17 @@ class SystemSetup(paella.Setup):
 
     def macos(self):
         if self.modern:
-            self.install("gcc@11")
-            gccdir = sh("brew --prefix gcc@11")
-            self.run(f"ln -sf {gccdir}/bin/gcc-11 $HOME/.local/bin/gcc-11")
-            self.run(f"ln -sf {gccdir}/bin/g++-11 $HOME/.local/bin/g++-11")
-            self.run(f"ln -sf {gccdir}/bin/cpp-11 $HOME/.local/bin/cpp-11")
-            self.run(f"cd $HOME/.local/bin; ln -sf gcc-11 gcc")
-            self.run(f"cd $HOME/.local/bin; ln -sf g++-11 g++")
-            self.run(f"cd $HOME/.local/bin; ln -sf cpp-11 cpp")
-            self.run(f"cd $HOME/.local/bin; ln -sf gcc-11 cc")
-            self.run(f"cd $HOME/.local/bin; ln -sf gcc-11 c++")
+            gcc_ver = 11
+            self.install(f"gcc@{gcc_ver}")
+            gccdir = sh(f"brew --prefix gcc@{gcc_ver}")
+            self.run(f"ln -sf {gccdir}/bin/gcc-{gcc_ver} $HOME/.local/bin/gcc-{gcc_ver}")
+            self.run(f"ln -sf {gccdir}/bin/g++-{gcc_ver} $HOME/.local/bin/g++-{gcc_ver}")
+            self.run(f"ln -sf {gccdir}/bin/cpp-{gcc_ver} $HOME/.local/bin/cpp-{gcc_ver}")
+            self.run(f"cd $HOME/.local/bin; ln -sf gcc-{gcc_ver} gcc")
+            self.run(f"cd $HOME/.local/bin; ln -sf g++-{gcc_ver} g++")
+            self.run(f"cd $HOME/.local/bin; ln -sf cpp-{gcc_ver} cpp")
+            self.run(f"cd $HOME/.local/bin; ln -sf gcc-{gcc_ver} cc")
+            self.run(f"cd $HOME/.local/bin; ln -sf gcc-{gcc_ver} c++")
         else:
             if sh('xcode-select -p') == '':
                 fatal("Xcode tools are not installed. Please run xcode-select --install.")
