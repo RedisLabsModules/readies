@@ -93,13 +93,13 @@ class RMPyToolsSetup(paella.Setup):
         redis_py_cluster_installed = False
         if self.redispy_version is None:
             if self.modern:
-                self.pip_install("--no-cache-dir redis~=5.0.0b3")
+                self.pip_install("--no-cache-dir redis==5.0.0b4") # redis~=5.0.0 / redis~=5.0.0rc1
             elif self.legacy:
                 self.pip_install("--no-cache-dir git+https://github.com/redisfab/redis-py.git@3.5")
                 self.pip_install("--no-cache-dir git+https://github.com/redisfab/redis-py-cluster@2.1")
                 redis_py_cluster_installed = True
             else:
-                self.pip_install("--no-cache-dir redis~=4.5.5")
+                self.pip_install("--no-cache-dir redis~=4.6.0")
         else:
             verspec = self.redispy_version.split('/')
             if len(verspec) > 1:
