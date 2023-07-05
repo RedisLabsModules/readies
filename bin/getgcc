@@ -21,7 +21,9 @@ class SystemSetup(paella.Setup):
         self.install("build-essential")
         if self.modern:
             if self.os_ver < 20 or self.os_ver >= 22 or self.platform.is_arm64():
-                self.run(r'''bash -c "echo 'APT::Acquire::Retries \"7\";' > /etc/apt/apt.conf.d/80-retries"''', sudo=True)
+                self.run(r'''
+                    echo 'APT::Acquire::Retries "7";' > /etc/apt/apt.conf.d/80-retries
+                    ''', sudo=True)
                 self.add_repo("ppa:ubuntu-toolchain-r/test")
             if self.os_ver >= 22 or self.platform.is_arm64():
                 gcc_ver = 13
