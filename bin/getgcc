@@ -13,7 +13,7 @@ import paella
 
 class SystemSetup(paella.Setup):
     def __init__(self, args):
-        paella.Setup.__init__(self, args.nop)
+        paella.Setup.__init__(self, nop=args.nop, verbose=args.verbose)
         self.modern = args.modern
         self.os_ver = self.os_version[0]
 
@@ -27,10 +27,10 @@ class SystemSetup(paella.Setup):
                 gcc_ver = 13
             else:
                 gcc_ver = 10
-            if self.install(f"gcc-{gcc_ver} g++-{gcc_ver}", output=False, _try=True) == 0:
+            if self.install(f"gcc-{gcc_ver} g++-{gcc_ver}", output=False, _try=True) != 0:
                 self.install("gcc-9 g++-9", output=False)
                 gcc_ver = 9
-            self.run(f"update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-{gc_ver} 60 --slave /usr/bin/g++ g++ /usr/bin/g++-{gc_ver}", sudo=True)
+            self.run(f"update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-{gcc_ver} 60 --slave /usr/bin/g++ g++ /usr/bin/g++-{gcc_ver}", sudo=True)
 
     def debian(self):
         if not self.modern or self.os_ver > 10:
@@ -108,8 +108,9 @@ class SystemSetup(paella.Setup):
 #----------------------------------------------------------------------------------------------
 
 parser = argparse.ArgumentParser(description='Set up GCC build environemnt.')
-parser.add_argument('-n', '--nop', action="store_true", help='no operation')
 parser.add_argument('--modern', action="store_true", help="Install modern GCC version")
+parser.add_argument('-n', '--nop', action="store_true", help='no operation')
+parser.add_argument('-V', '--verbose', action="store_true", help="Verbose operation")
 
 args = parser.parse_args()
 SystemSetup(args).setup()
