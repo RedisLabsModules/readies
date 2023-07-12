@@ -26,7 +26,7 @@ class SystemSetup(paella.Setup):
                     ''', sudo=True)
                 self.add_repo("ppa:ubuntu-toolchain-r/test")
             if self.os_ver >= 22 or self.platform.is_arm64():
-                gcc_ver = 13
+                gcc_ver = 11
             else:
                 gcc_ver = 10
             if self.install(f"gcc-{gcc_ver} g++-{gcc_ver}", output=False, _try=True) != 0:
