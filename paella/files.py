@@ -48,7 +48,12 @@ def wget(url, dest="", tempdir=False):
         if dest == "":
             dest = tempfilepath()
         elif tempdir:
-            dest = os.path.join('/tmp', dest)
+            dir = tempfilepath()
+            dest = os.path.join(dir, dest)
+    else:
+        if tempdir:
+            dir = tempfile.mkdtemp()
+            dest = os.path.join(dir, dest)
     ufile = urlopen(url)
     data = ufile.read()
     with open(dest, "wb") as file:
@@ -83,7 +88,9 @@ def mkdir_p(dir):
 
 #----------------------------------------------------------------------------------------------
 
-def rm_rf(path):
+def rm_rf(path, careful=True):
+    if careful and os.path.normpath(path) in [".", "..", "/", "//", ""]:
+        return
     if os.path.isdir(path) and not os.path.islink(path):
         shutil.rmtree(path)
     elif os.path.exists(path):
