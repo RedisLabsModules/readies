@@ -15,6 +15,7 @@ class SystemSetup(paella.Setup):
     def __init__(self, args):
         paella.Setup.__init__(self, nop=args.nop, verbose=args.verbose)
         self.modern = args.modern
+        self.update_libstdcxx = args.update_libstdcxx
         self.os_ver = self.os_version[0]
 
     def ubuntu(self):
@@ -78,6 +79,17 @@ class SystemSetup(paella.Setup):
                 self.install("devtoolset-11-libatomic-devel")
                 self.run(f"rm -f {self.profile_d}/scl-devtoolset-*.sh", sudo=True)
                 self.cp_to_profile_d("/opt/rh/devtoolset-11/enable", "scl-devtoolset-11.sh")
+                if self.dist == "centos" and self.os_ver == 7:
+                    tar = paella.wget(f"https://redismodules.s3.amazonaws.com/gnu/libstdc%2B%2B.so.6.0.25-linux-{self.arch}.tgz",
+                                      dest='libstdcxx.tgz', tempdir=True)
+                    dir = os.path.dirname(tar)
+                    self.run(f'''
+                        tar -C {dir} -xzf {tar}
+                        mv {dir}/libstdc++.so.6.0.25 /lib64
+                        cd /lib64
+                        ln -sf libstdc++.so.6.0.25 libstdc++.so.6
+                        ''', sudo=True)
+                    paella.rm_rf(dir)
 
     def fedora(self):
         self.group_install("'C Development Tools and Libraries'")
@@ -111,7 +123,8 @@ class SystemSetup(paella.Setup):
 
 parser = argparse.ArgumentParser(description='Set up GCC build environemnt.')
 parser.add_argument('--modern', action="store_true", help="Install modern GCC version")
-parser.add_argument('-n', '--nop', action="store_true", help='no operation')
+parser.add_argument('--update-libstdc++', dest="update_libstdcxx", action="store_true", help="If required, update ilbstdc++")
+parser.add_argument('-n', '--nop', action="store_true", help='No operation')
 parser.add_argument('-V', '--verbose', action="store_true", help="Verbose operation")
 
 args = parser.parse_args()
