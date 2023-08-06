@@ -84,12 +84,16 @@ fi
 
 if is_command dnf; then
 	runn dnf install -y dnf-plugins-core
+	REMI=""
 	if ! rpm -q remi-release &> /dev/null; then
 		runn dnf install -y epel-release
 		# runn dnf install -y --allowerasing https://dl.fedoraproject.org/pub/epel/epel-release-latest-${EPEL}.noarch.rpm
-		runn dnf install -y http://rpms.remirepo.net/enterprise/remi-release-${EPEL}.rpm
+		if [[ $EPEL != 8 || $arch != aarch64 ]]; then
+			runn dnf install -y http://rpms.remirepo.net/enterprise/remi-release-${EPEL}.rpm
+			REMI="remi"
+		fi
 	fi
-	runn dnf config-manager -y --set-enabled remi powertools
+	runn dnf config-manager -y --set-enabled powertools $REMI
 
 	# enable raven repo (i.e. pkgs.org)
 	if [[ $EPEL == 8 && $arch == x86_64 && $NO_RAVEN != 1 ]]; then
