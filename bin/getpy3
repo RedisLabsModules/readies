@@ -236,13 +236,10 @@ install_python() {
 	elif is_command dnf; then
 		runn $SUDO dnf install -y python3
 	elif is_command yum; then
-		if [[ $os == amzn ]]; then
-			# will get python 3.7
-			# runn $SUDO yum install -y python3
-			install_modern_python
+		if (( os == amzn && osver > 2 )); then
+			xinstall python3
 		else
 			install_modern_python
-			# runn $SUDO yum install -y python36
 		fi
 	elif is_command zypper; then
 		runn $SUDO zypper install -y python3
