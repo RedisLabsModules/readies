@@ -18,6 +18,8 @@ OS.focal=ubuntu:focal
 OS.bionic=ubuntu:bionic
 OS.xenial=ubuntu:xenial
 OS.trusty=ubuntu:trusty
+OS.sid=debian:sid
+OS.bookworm=debian:bookworm
 OS.bullseye=debian:bullseye-slim
 OS.buster=debian:buster-slim
 OS.stretch=debian:stretch
@@ -38,7 +40,6 @@ OS.jammy=ubuntu:jammy
 OS.amzn2=amazonlinux:2
 OS.amzn2022=amazonlinux:2022
 OS.amzn2023=amazonlinux:2023
-
 
 endif # OS
 
