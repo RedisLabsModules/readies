@@ -10,6 +10,7 @@ ROOT=$(cd $HERE/../.. && pwd)
 READIES=$ROOT/readies
 . $READIES/shibumi/defs
 
+export DEBIAN_FRONTEND=noninteractive
 export HOMEBREW_NO_AUTO_UPDATE=1
 
 MODERN_PYTHON_VER=${MODERN_PYTHON_VER:-3.9.16}
@@ -106,6 +107,7 @@ check_variants() {
 		PYTHON3="$USER_MYPY"
 		return
 	fi
+	
 	PYTHON=$(command -v python)
 	PYTHON3=$(command -v python3)
 
@@ -118,7 +120,7 @@ check_variants() {
 	fi
 
 	if [[ -n $PYTHON3 ]]; then
-		MYPY=$PYTHON3
+		MYPY="$PYTHON3"
 		note "using $MYPY"
 	fi
 
@@ -138,6 +140,16 @@ check_variants() {
 	fi
 
 	if [[ -n $FIX ]]; then fix_variants; fi
+	
+	if (( MINOR >= 11 )); then
+		PEP_668=1
+		if [[ -f $HOME/.venv/bin/activate ]]; then
+			. $HOME/.venv/bin/activate
+			PYTHON3=$(command -v python3)
+			MYPY="$PYTHON3"
+		fi
+
+	fi
 }
 
 #----------------------------------------------------------------------------------------------
@@ -182,7 +194,6 @@ install_modern_python() {
 
 prepare_package_manager() {
 	if is_command apt-get; then
-		export DEBIAN_FRONTEND=noninteractive
 		runn $SUDO apt-get -qq update --fix-missing
 	elif is_command yum; then
 		if [[ $os != fedora ]]; then
@@ -252,15 +263,37 @@ install_pip() {
 	note "installing pip"
 
 	if [[ $FORCE != 1 ]]; then
-		[[ $($MYPY -m pip --version > /dev/null 2>&1; echo $?) == 0 ]] && return
+		if (( MINOR < 11 )); then
+			[[ $($MYPY -m pip --version > /dev/null 2>&1; echo $?) == 0 ]] && return
+		fi
 	fi
 	pipspec=""
 	[[ $PIP != 1 ]] && pipspec="pip==$PIP"
 
+	if (( MINOR >= 11 )); then
+		xinstall python3-pip || xinstall python-pip
+		xinstall python3-virtualenv || xinstall python-virtualenv
+		runn $MYPY -m virtualenv $HOME/.venv
+		. $HOME/.venv/bin/activate
+		PYTHON3=$(command -v python3)
+		MYPY="$PYTHON3"
+		runn $MYPY -m pip install --upgrade pip
+		
+		tmp_profiled=$(mktemp -d)
+		cat <<-'END' > $tmp_profiled/python3-std-venv.sh
+			if [[ -f $HOME/.venv/bin/activate ]]; then
+				VIRTUAL_ENV_DISABLE_PROMPT=1
+				. $HOME/.venv/bin/activate
+				unset VIRTUAL_ENV_DISABLE_PROMPT
+			fi
+			END
+		add_to_profile_d $tmp_profiled/python3-std-venv.sh
+		return
+	fi
+
 	local packs="ca-certificates wget"
 
 	if is_command apt-get; then
-		export DEBIAN_FRONTEND=noninteractive
 		runn $SUDO apt-get -qq update --fix-missing
 		runn $SUDO apt-get install --fix-missing -y $packs
 		runn @ <<-EOF
@@ -284,7 +317,8 @@ install_pip() {
 		runn $SUDO pacman -Syy --noconfirm $packs
 	fi
 
-	$MYPY -c 'import sys; print("{major}.{minor}".format(major=sys.version_info.major, minor=sys.version_info.minor))' | grep '3.6' &>/dev/null
+	$MYPY -c 'import sys; print("{major}.{minor}".format(major=sys.version_info.major, minor=sys.version_info.minor))' | \
+		grep '3.6' &>/dev/null
 	if [[ $? == 0 ]]; then
 		pypi_url='https://bootstrap.pypa.io/pip/3.6/get-pip.py'
 	else
@@ -295,6 +329,7 @@ install_pip() {
 	# `python3 -m pip --version` will fail to find pip
 	runn "$MYPY /tmp/get-pip.py $pipspec || true"
 	runn rm -f /tmp/get-pip.py
+	
 	runn $MYPY -m pip install $PIP_USER --upgrade pip
 }
 
@@ -344,13 +379,13 @@ if ! is_command $MYPY; then
 	exit 1
 fi
 
-if [[ -z $VIRTUAL_ENV ]]; then
+if [[ -z $VIRTUAL_ENV && $PEP_668 != 1 ]]; then
 	PIP_USER="--user"
 else
 	PIP_USER=""
 fi
 
-[[ $PIP != 0 ]] && install_pip
+[[ $PIP != 0 || $PEP_668 ]] && install_pip
 
 REQ=$READIES/paella/requirements.txt
 if [[ -n $VENV && $VENV != 0 ]]; then

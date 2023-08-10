@@ -61,7 +61,7 @@ else
 			xinstall git bash build-base libffi-dev openssl-dev bzip2-dev zlib-dev \
 				xz-dev readline-dev sqlite-dev tk-dev linux-headers 
 		elif is_command pacman; then
-			xinstall base-devel openssl zlib xz tk
+			xinstall base-devel openssl zlib xz tk git gcc glibc
 		elif is_command brew; then
 			xinstall openssl readline sqlite3 xz zlib tcl-tk
 		fi

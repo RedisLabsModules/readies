@@ -130,7 +130,7 @@ fixterm() {
 #----------------------------------------------------------------------------------------------
 
 is_command() {
-        command -v $1 &> /dev/null
+	command -v $1 &> /dev/null
 }
 
 #----------------------------------------------------------------------------------------------
@@ -205,6 +205,31 @@ add_to_profile_d() {
 	done
 }
 
+read_profile_d() {
+	local d="$(get_profile_d)"
+	local f
+	if [[ -d $d ]]; then
+		if [[ -n `ls $d/*.sh 2> /dev/null` ]]; then
+			for f in $d/*.sh; do
+				if [[ -r $f ]]; then
+					. $f
+				fi
+			done
+		fi
+	fi
+	hash -r
+}
+
+activate_python() {
+	local d="$(get_profile_d)"
+	if [[ -f $d/pyenv.sh ]]; then
+		. $d/pyenv.sh
+	elif [[ -f $d/python3-std-venv.sh ]]; then
+		. $d/python3-std-venv.sh
+	fi
+	hash -r
+}
+
 #----------------------------------------------------------------------------------------------
 
 xinstall() {
@@ -252,3 +277,5 @@ trim() {
 is_abspath() {
 	case $1 in (/*) pathchk -- "$1";; (*) ! : ;; esac
 }
+
+#----------------------------------------------------------------------------------------------
