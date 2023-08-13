@@ -21,7 +21,7 @@ class SystemSetup(paella.Setup):
     def ubuntu(self):
         self.install("build-essential")
         if self.modern:
-            if self.os_ver < 20 or self.os_ver >= 22 or self.platform.is_arm64():
+            if self.os_ver <= 20 or self.os_ver >= 22 or self.platform.is_arm64():
                 self.run(r'''
                     echo 'APT::Acquire::Retries "7";' > /etc/apt/apt.conf.d/80-retries
                     ''', sudo=True)
@@ -36,60 +36,61 @@ class SystemSetup(paella.Setup):
             self.run(f"update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-{gcc_ver} 60 --slave /usr/bin/g++ g++ /usr/bin/g++-{gcc_ver}", sudo=True)
 
     def debian(self):
-        if not self.modern or self.os_ver > 10:
-            self.install("build-essential")
-        else:
+        if self.modern and self.os_ver < 11:
             eprint("cannot install modern gcc for {}".format(self.osnick))
             sys.exit(1)
-#            if self.os_ver < 10:
-#                eprint("cannot install modern gcc for {}".format(self.osnick))
-#                sys.exit(1)
-#            self.install("gcc") # workaround for testing repo installations
-#            paella.fwrite('/etc/apt/apt.conf.d/80-retries', 'APT::Acquire::Retries "3";')
-#            self.run("echo 'deb http://deb.debian.org/debian testing main' > /etc/apt/sources.list.d/testing.list", sudo=True)
-#            self.run("apt-get update -qq, sudo=True")
-#            self.run("apt-get install -y -t testing build-essential", sudo=True)
-#            self.run("update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 10", sudo=True)
-#            self.run("update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 10", sudo=True)
+        self.install("build-essential")
 
     def redhat_compat(self):
         self.group_install("'Development Tools'")
-        if not self.has_command("sudo"):
-            self.install("sudo") # needed due to SCL sudo script
-        if self.modern:
-            if self.dist in ['centos', 'ol'] and self.os_ver == 8:
+        if not self.modern:
+            return
+        if self.os_ver == 9:
+            self.install("gcc-toolset-12")
+            self.install("gcc-toolset-12-libatomic-devel")
+            self.run(f"rm -f {self.profile_d}/gcc-devtoolset-*.sh", sudo=True)
+            self.cp_to_profile_d("/opt/rh/gcc-toolset-12/enable", "gcc-devtoolset-12.sh")
+        elif self.os_ver == 8:
+            if self.dist in ['centos', 'ol']:
                 self.install("gcc-toolset-11-gcc gcc-toolset-11-gcc-c++")
                 self.install("gcc-toolset-11-libatomic-devel")
                 self.run("rm -f {}/gcc-toolset-*.sh".format(self.profile_d), sudo=True)
                 self.cp_to_profile_d("/opt/rh/gcc-toolset-11/enable", "gcc-toolset-11.sh")
-            elif self.dist == 'amzn' and self.os_ver == 2:
-                self.install("devtoolset-11-gcc devtoolset-11-gcc-c++ devtoolset-11-make")
-                # self.install("devtoolset-11-libatomic-devel")
-                self.run(f"rm -f {self.profile_d}/scl-devtoolset-*.sh", sudo=True)
-                self.cp_to_profile_d("/opt/rh/devtoolset-11/enable", "scl-devtoolset-11.sh")
-            elif self.arch == 'arm64v8':
-                self.install("centos-release-scl")
+        elif self.os_ver == 7:
+            if not self.has_command("sudo"):
+                self.install("sudo") # needed due to SCL sudo script
+            self.install("centos-release-scl")
+            if self.arch == 'arm64v8':
                 self.install("devtoolset-10")
                 self.install("devtoolset-10-libatomic-devel")
                 self.run(f"rm -f {self.profile_d}/scl-devtoolset-*.sh", sudo=True)
                 self.cp_to_profile_d("/opt/rh/devtoolset-10/enable", "scl-devtoolset-10.sh")
             else:
-                self.install("centos-release-scl")
                 self.install("devtoolset-11")
                 self.install("devtoolset-11-libatomic-devel")
                 self.run(f"rm -f {self.profile_d}/scl-devtoolset-*.sh", sudo=True)
                 self.cp_to_profile_d("/opt/rh/devtoolset-11/enable", "scl-devtoolset-11.sh")
-                if self.dist == "centos" and self.os_ver == 7:
-                    tar = paella.wget(f"https://redismodules.s3.amazonaws.com/gnu/libstdc%2B%2B.so.6.0.25-linux-{self.arch}.tgz",
-                                      dest='libstdcxx.tgz', tempdir=True)
-                    dir = os.path.dirname(tar)
-                    self.run(f'''
-                        tar -C {dir} -xzf {tar}
-                        mv {dir}/libstdc++.so.6.0.25 /lib64
-                        cd /lib64
-                        ln -sf libstdc++.so.6.0.25 libstdc++.so.6
-                        ''', sudo=True)
-                    paella.rm_rf(dir)
+                if self.dist != "centos":
+                    return
+                tar = paella.wget(f"https://redismodules.s3.amazonaws.com/gnu/libstdc%2B%2B.so.6.0.25-linux-{self.arch}.tgz",
+                                  dest='libstdcxx.tgz', tempdir=True)
+                dir = os.path.dirname(tar)
+                self.run(f'''
+                    tar -C {dir} -xzf {tar}
+                    mv {dir}/libstdc++.so.6.0.25 /lib64
+                    cd /lib64
+                    ln -sf libstdc++.so.6.0.25 libstdc++.so.6
+                    ''', sudo=True)
+                paella.rm_rf(dir)
+
+    def amzn(self):
+        if not self.modern:
+            return
+        if self.os_ver == 2:
+            self.install("devtoolset-11-gcc devtoolset-11-gcc-c++ devtoolset-11-make")
+            # self.install("devtoolset-11-libatomic-devel")
+            self.run(f"rm -f {self.profile_d}/scl-devtoolset-*.sh", sudo=True)
+            self.cp_to_profile_d("/opt/rh/devtoolset-11/enable", "scl-devtoolset-11.sh")
 
     def fedora(self):
         self.group_install("'C Development Tools and Libraries'")
