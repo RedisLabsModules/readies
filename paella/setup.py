@@ -477,7 +477,9 @@ class Setup(OnPlatform):
     def install_downloaders(self, _try=False):
         if self.os == 'linux':
             self.install("ca-certificates", _try=_try)
-        self.install("curl wget unzip", _try=_try)
+        if self.platform.is_redhat_compat() and self.platform.os_version[0] < 9:
+            self.install("curl", _try=_try)
+        self.install("wget unzip", _try=_try)
 
     def install_git_lfs_on_linux(self, _try=False):
         if self.arch == 'x64':
