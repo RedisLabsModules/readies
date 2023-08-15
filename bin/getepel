@@ -5,19 +5,93 @@ HERE="$(cd "$(dirname "$PROGNAME")" &>/dev/null && pwd)"
 READIES=$(cd $HERE/.. && pwd)
 . $READIES/shibumi/defs
 
-# Relevant platforms: centos7, (quay.io/centos/centos:stream8), (quay.io/centos/centos:stream9),
-#                     rocky8, rocky9, (alma8), (alma9), ol7, ol8, ol9, amzn2, amzn2022, amzn2023
+#----------------------------------------------------------------------------------------------
 
-# Rocky Linux repos (https://wiki.rockylinux.org/rocky/repo):
-# baseos, appstream, powertools(8), crb(9), highavailibility, resilientstorage
+# Distributions: 
+# centos:7, (quay.io/centos/centos:stream8), (quay.io/centos/centos:stream9)
+# rockylinux:8, rockylinux:9, (almalinux:8), (almalinux:9)
+# oraclelinux:7, oraclelinux:8, oraclelinux:9
+# amazonlinux:2, amazonlinux:2022, amazonlinux:202
 
 # EPEL          https://docs.fedoraproject.org/en-US/epel
 # raven         https://rhel.pkgs.org/9/raven-x86_64/
-# powertools
+# powertools    https://wiki.rockylinux.org/rocky/repo
+# crb           https://wiki.rockylinux.org/rocky/repo
 # REMI
 # SCL           https://wiki.centos.org/AdditionalResources/Repositories/SCL
-# RHSCL         https://developers.redhat.com/products/red-hat-software-collections/overview
+#               https://github.com/sclorg/centos-release-scl
+#               https://developers.redhat.com/products/red-hat-software-collections/overview
 
+#             centos7  centos8  centos9  rocky8  rocky9  ol7  ol8  ol9  amzn2  amzn2022  amzn2023
+# EPEL        v        v        v        v       v       v    v    v    v      v         v
+# raven       -        v        v        v       v       -    ?    ?
+# powertools  v        v        -        v       -       v    v    -    v      v         v
+# crb         -        -        ?        -       v       -    -    ?    -      -         ?
+# REMI        v        v        v        v       v       -    -    -    
+# SCL         v        -        -        -       -       ?    -    -    v      -         -
+
+# Notes:
+# - Rocky Linux repos (https://wiki.rockylinux.org/rocky/repo):
+#   baseos, appstream, powertools(8), crb(9), highavailibility, resilientstorage
+
+#----------------------------------------------------------------------------------------------
+
+install_raven() {
+	# enable raven repo (i.e. pkgs.org)
+	if (( EPEL < 8 || arch != x86_64 || NO_RAVEN == 1 )); then
+		return
+	fi
+
+	# the following may be broken due to CA certificates problems:
+	runn dnf install -y https://pkgs.dyn.su/el${EPEL}/base/x86_64/raven-release.el${EPEL}.noarch.rpm
+	
+	# jun-2023: workaround for raven CA certificates problems - remove when resolved
+	# $READIES/bin/getget
+	# runn @ <<-EOF
+	# 	wget --no-check-certificate -O /tmp/raven-release-1.0-5.el8.noarch.rpm https://pkgs.dyn.su/el8/base/x86_64/raven-release-1.0-5.el8.noarch.rpm
+	# 	dnf install -y /tmp/raven-release-1.0-5.el8.noarch.rpm
+	# 	rm -f /tmp/raven-release-1.0-5.el8.noarch.rpm
+	# 	EOF
+	# dnf config-manager --save --setopt=raven.sslverify=false
+	# dnf config-manager --save --setopt=raven-modular.sslverify=false
+	# dnf config-manager --save --setopt=raven-multimedia.sslverify=false
+}
+
+install_scl() {
+	if (( EPEL > 7 )); then
+		return
+	fi
+
+	if [[ $osver == amzn2 ]]; then
+		runn yum-config-manager -y --enable rhel-server-rhscl-7-rpms
+
+		runn yum install -y http://mirror.centos.org/centos/7/extras/x86_64/Packages/centos-release-scl-rh-2-3.el7.centos.noarch.rpm || true
+		runn yum install -y http://mirror.centos.org/centos/7/extras/x86_64/Packages/centos-release-scl-2-3.el7.centos.noarch.rpm || true
+		return
+	fi
+
+	runn yum install -y centos-release-scl
+	runn yum-config-manager -y --enable rhel-server-rhscl-7-rpms
+}
+
+install_remi() {
+	if (( arch == aarch64 && EPEL < 9 )); then
+		echo "REMI: does not support aarch64"
+		return
+	fi
+
+	if is_command dnf; then
+		if ! rpm -q remi-release &> /dev/null; then
+			runn dnf install -y http://rpms.remirepo.net/enterprise/remi-release-${EPEL}.rpm
+		fi
+		runn dnf config-manager -y --set-enabled remi
+	elif is_command yum; then
+		if ! rpm -q remi-release &> /dev/null; then
+			runn yum install -y http://rpms.remirepo.net/enterprise/remi-release-${EPEL}.rpm
+		fi
+		runn yum-config-manager -y --enable remi
+	fi
+}
 
 #----------------------------------------------------------------------------------------------
 
@@ -45,14 +119,20 @@ osverid="$(source /etc/os-release; echo "${VERSION_ID}")"
 osver="$(source /etc/os-release; echo "${ID}${VERSION_ID}")"
 arch=$(uname -m)
 
+if [[ $os == fedora ]]; then
+	exit 0
+fi
+
 if [[ ! -f /etc/redhat-release && $os != amzn ]]; then
 	eprint "Not an EPEL-compatible OS."
 	exit 1
 fi
 
 if [[ -z $EPEL ]]; then
-	if [[ $os != amzn ]]; then
+	if [[ $os != amzn* ]]; then
 		EPEL="$(source /etc/os-release; echo $VERSION_ID;)"
+	elif [[ $os == fedora ]]; then
+		EPEL=9
 	elif [[ $osver == amzn2 ]]; then
 		EPEL=7
 	elif [[ $osver == amzn2022 ]]; then
@@ -69,71 +149,52 @@ if [[ $EPEL != 7 && $EPEL != 8 && $EPEL != 9 ]]; then
 	exit 1
 fi
 
+#----------------------------------------------------------------------------------------------
+
 if [[ $os == ol ]]; then
     tee /etc/yum.repos.d/ol${EPEL}-epel.repo<<-EOF
-		[ol_developer_EPEL]
+		[ol${EPEL}_developer_EPEL]
 		name= Oracle Linux \$releasever EPEL (\$basearch)
 		baseurl=https://yum.oracle.com/repo/OracleLinux/OL${EPEL}/developer/EPEL/\$basearch/
 		gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-oracle
 		gpgcheck=1
 		enabled=1
 		EOF
-    runn dnf makecache
+    runn yum makecache
     exit 0
 fi
 
+#----------------------------------------------------------------------------------------------
+
 if [[ $osver == amzn2 ]]; then
-	runn PYTHON=python2 amazon-linux-extras install -y epel
-	
 	runn yum install -y yum-utils
-	if ! rpm -q remi-release &> /dev/null; then
-		runn yum install -y http://rpms.remirepo.net/enterprise/remi-release-${EPEL}.rpm
-	fi
-	runn yum-config-manager -y --enable remi
-	runn yum-config-manager -y --enable rhel-server-rhscl-7-rpms
+	runn PYTHON=python2 amazon-linux-extras install -y epel
 
-	runn yum install -y http://mirror.centos.org/centos/7/extras/x86_64/Packages/centos-release-scl-rh-2-3.el7.centos.noarch.rpm || true
-	runn yum install -y http://mirror.centos.org/centos/7/extras/x86_64/Packages/centos-release-scl-2-3.el7.centos.noarch.rpm || true
-
+	install_remi
+	install_scl
 	exit 0
 fi
 
+#----------------------------------------------------------------------------------------------
+
 if is_command dnf; then
 	runn dnf install -y dnf-plugins-core
-	REMI=""
-	if ! rpm -q remi-release &> /dev/null; then
-		runn dnf install -y epel-release
-		# runn dnf install -y --allowerasing https://dl.fedoraproject.org/pub/epel/epel-release-latest-${EPEL}.noarch.rpm
-		if [[ $EPEL != 8 || $arch != aarch64 ]]; then
-			runn dnf install -y http://rpms.remirepo.net/enterprise/remi-release-${EPEL}.rpm
-			REMI="remi"
-		fi
-	fi
-	runn dnf config-manager -y --set-enabled powertools $REMI
 
-	# enable raven repo (i.e. pkgs.org)
-	if [[ $EPEL == 8 && $arch == x86_64 && $NO_RAVEN != 1 ]]; then
-		# the following is broken due to CA certificates problems:
-		# runn dnf install -y https://pkgs.dyn.su/el8/base/x86_64/raven-release-1.0-5.el8.noarch.rpm
-		
-		# jun-2023: workaround for raven CA certificates problems - remove when resolved
-		$READIES/bin/getget
-		runn @ <<-EOF
-			wget --no-check-certificate -O /tmp/raven-release-1.0-5.el8.noarch.rpm https://pkgs.dyn.su/el8/base/x86_64/raven-release-1.0-5.el8.noarch.rpm
-			dnf install -y /tmp/raven-release-1.0-5.el8.noarch.rpm
-			rm -f /tmp/raven-release-1.0-5.el8.noarch.rpm
-			EOF
-		dnf config-manager --save --setopt=raven.sslverify=false
-		dnf config-manager --save --setopt=raven-modular.sslverify=false
-		dnf config-manager --save --setopt=raven-multimedia.sslverify=false
+	runn dnf config-manager -y --set-enabled powertools
+	if (( EPEL > 8 )); then
+		runn dnf config-manager -y --set-enabled crb
 	fi
+
+	runn dnf install -y epel-release
+	# runn dnf install -y --allowerasing https://dl.fedoraproject.org/pub/epel/epel-release-latest-${EPEL}.noarch.rpm
+
+	install_remi
+	install_raven
+
 elif is_command yum; then
-	runn yum install -y epel-release yum-utils
-	runn yum install -y centos-release-scl
-
-	if ! rpm -q remi-release &> /dev/null; then
-		runn yum install -y http://rpms.remirepo.net/enterprise/remi-release-${EPEL}.rpm
-	fi
-	runn yum-config-manager -y --enable remi
-	runn yum-config-manager -y --enable rhel-server-rhscl-7-rpms
+	runn yum install -y yum-utils
+	
+	runn yum install -y epel-release
+	install_remi
+	install_scl
 fi
