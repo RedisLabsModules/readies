@@ -39,7 +39,7 @@ jobs:
         ./bin/getpy3
     - name: Setup repositories
       run: |
-        ./bin/getepel
+        V=1 ./bin/getepel
     - name: Installations
       run: |
         ./bin/getgcc --modern
