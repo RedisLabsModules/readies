@@ -1,0 +1,36 @@
+name: Build on Linux Platforms
+
+on:
+  workflow_dispatch:
+    inputs:
+      platforms:
+        description: 'Platforms'
+        default: '["centos:7", "rockylinux:8", "rockylinux:9", "oraclelinux:7", "oraclelinux:8", 
+                   "oraclelinux:9", "amazonlinux:2", "amazonlinux:2022", "amazonlinux:2023"]'
+
+jobs:
+  build-linux-matrix:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l -eo pipefail {0}
+    strategy:
+      matrix:
+        OS: ${{ fromJson(inputs.platforms) }}
+      fail-fast: false
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: true
+    - run: |
+        git config --global --add safe.directory '*'
+        git submodule update --init --recursive
+    - name: Python
+      run: |
+        ./bin/getpy3
+    - name: Setup repositories
+      run: |
+        ./bin/getepel
+    - name: GCC
+      run: |
+        ./bin/getgcc --modern

@@ -5,6 +5,20 @@ HERE="$(cd "$(dirname "$PROGNAME")" &>/dev/null && pwd)"
 READIES=$(cd $HERE/.. && pwd)
 . $READIES/shibumi/defs
 
+# Relevant platforms: centos7, (quay.io/centos/centos:stream8), (quay.io/centos/centos:stream9),
+#                     rocky8, rocky9, (alma8), (alma9), ol7, ol8, ol9, amzn2, amzn2022, amzn2023
+
+# Rocky Linux repos (https://wiki.rockylinux.org/rocky/repo):
+# baseos, appstream, powertools(8), crb(9), highavailibility, resilientstorage
+
+# EPEL          https://docs.fedoraproject.org/en-US/epel
+# raven         https://rhel.pkgs.org/9/raven-x86_64/
+# powertools
+# REMI
+# SCL           https://wiki.centos.org/AdditionalResources/Repositories/SCL
+# RHSCL         https://developers.redhat.com/products/red-hat-software-collections/overview
+
+
 #----------------------------------------------------------------------------------------------
 
 if [[ $1 == --help || $1 == help || $HELP == 1 ]]; then
@@ -14,7 +28,7 @@ if [[ $1 == --help || $1 == help || $HELP == 1 ]]; then
 		[ARGVARS...] getepel [--help|help]
 
 		Argument variables:
-		EPEL=ver     EPEL version (7/8)
+		EPEL=ver     EPEL version (7/8/9)
 		NO_RAVEN=1   Do not install Raven repo
 
 		VERBOSE=1    Print commands
@@ -38,11 +52,13 @@ fi
 
 if [[ -z $EPEL ]]; then
 	if [[ $os != amzn ]]; then
-		EPEL=$(source /etc/os-release; echo $VERSION_ID;)
+		EPEL="$(source /etc/os-release; echo $VERSION_ID;)"
 	elif [[ $osver == amzn2 ]]; then
 		EPEL=7
 	elif [[ $osver == amzn2022 ]]; then
 		EPEL=8
+	elif [[ $osver == amzn2023 ]]; then
+		EPEL=9
 	fi
 fi
 [[ $EPEL == 7* ]] && EPEL=7
@@ -54,10 +70,10 @@ if [[ $EPEL != 7 && $EPEL != 8 && $EPEL != 9 ]]; then
 fi
 
 if [[ $os == ol ]]; then
-    tee /etc/yum.repos.d/ol8-epel.repo<<-EOF
-		[ol8_developer_EPEL]
+    tee /etc/yum.repos.d/ol${EPEL}-epel.repo<<-EOF
+		[ol_developer_EPEL]
 		name= Oracle Linux \$releasever EPEL (\$basearch)
-		baseurl=https://yum.oracle.com/repo/OracleLinux/OL8/developer/EPEL/\$basearch/
+		baseurl=https://yum.oracle.com/repo/OracleLinux/OL${EPEL}/developer/EPEL/\$basearch/
 		gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-oracle
 		gpgcheck=1
 		enabled=1
@@ -97,6 +113,7 @@ if is_command dnf; then
 
 	# enable raven repo (i.e. pkgs.org)
 	if [[ $EPEL == 8 && $arch == x86_64 && $NO_RAVEN != 1 ]]; then
+		# the following is broken due to CA certificates problems:
 		# runn dnf install -y https://pkgs.dyn.su/el8/base/x86_64/raven-release-1.0-5.el8.noarch.rpm
 		
 		# jun-2023: workaround for raven CA certificates problems - remove when resolved
