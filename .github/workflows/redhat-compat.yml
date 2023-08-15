@@ -5,8 +5,11 @@ on:
     inputs:
       platforms:
         description: 'Platforms'
-        default: '["centos:7", "rockylinux:8", "rockylinux:9", "oraclelinux:7", "oraclelinux:8", 
-                   "oraclelinux:9", "amazonlinux:2", "amazonlinux:2022", "amazonlinux:2023"]'
+        default: '["centos:7",
+                   "rockylinux:8", "rockylinux:9",
+                   "oraclelinux:7", "oraclelinux:8", "oraclelinux:9",
+                   "amazonlinux:2", "amazonlinux:2022", "amazonlinux:2023",
+                   "fedora:latest"]'
 
 jobs:
   redhat-compat-matrix:
@@ -34,6 +37,11 @@ jobs:
     - name: Setup repositories
       run: |
         ./bin/getepel
-    - name: GCC
+    - name: Installations
       run: |
         ./bin/getgcc --modern
+    - name: Verify
+      run: |
+        python3 --version
+        python3 -m pip list -v
+        gcc --version
