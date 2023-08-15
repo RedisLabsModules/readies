@@ -152,10 +152,15 @@ fi
 #----------------------------------------------------------------------------------------------
 
 if [[ $os == ol ]]; then
+	if [[ $EPEL == 7 ]]; then
+		baseurl="https://yum.oracle.com/repo/OracleLinux/OL${EPEL}/developer_EPEL/\$basearch/"
+	else
+		baseurl="https://yum.oracle.com/repo/OracleLinux/OL${EPEL}/developer/EPEL/\$basearch/"
+	fi
     tee /etc/yum.repos.d/ol${EPEL}-epel.repo<<-EOF
 		[ol${EPEL}_developer_EPEL]
 		name= Oracle Linux \$releasever EPEL (\$basearch)
-		baseurl=https://yum.oracle.com/repo/OracleLinux/OL${EPEL}/developer/EPEL/\$basearch/
+		baseurl=${baseurl}
 		gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-oracle
 		gpgcheck=1
 		enabled=1
@@ -180,10 +185,8 @@ fi
 if is_command dnf; then
 	runn dnf install -y dnf-plugins-core
 
-	runn dnf config-manager -y --set-enabled powertools
-	if (( EPEL > 8 )); then
-		runn dnf config-manager -y --set-enabled crb
-	fi
+	(( EPEL < 9 )) && runn dnf config-manager -y --set-enabled powertools
+	(( EPEL > 8 )) && runn dnf config-manager -y --set-enabled crb
 
 	runn dnf install -y epel-release
 	# runn dnf install -y --allowerasing https://dl.fedoraproject.org/pub/epel/epel-release-latest-${EPEL}.noarch.rpm
