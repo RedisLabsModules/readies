@@ -45,6 +45,7 @@ class SystemSetup(paella.Setup):
         self.group_install("'Development Tools'")
         if not self.modern:
             return
+        self.run(f"{READIES}/bin/getepel")
         if self.os_ver == 9:
             self.install("gcc-toolset-12")
             self.install("gcc-toolset-12-libatomic-devel")
@@ -57,9 +58,6 @@ class SystemSetup(paella.Setup):
                 self.run("rm -f {}/gcc-toolset-*.sh".format(self.profile_d), sudo=True)
                 self.cp_to_profile_d("/opt/rh/gcc-toolset-11/enable", "gcc-toolset-11.sh")
         elif self.os_ver == 7:
-            if not self.has_command("sudo"):
-                self.install("sudo") # needed due to SCL sudo script
-            self.install("centos-release-scl")
             if self.arch == 'arm64v8':
                 self.install("devtoolset-10")
                 self.install("devtoolset-10-libatomic-devel")

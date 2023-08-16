@@ -27,7 +27,7 @@ READIES=$(cd $HERE/.. && pwd)
 # raven       -        v        v        v       v       -    v    v    -      v         v
 # powertools  v        v        -        v       -       -    -    -    -      -         -
 # crb         -        -        v        -       v       -    -    -    -      -         -
-# REMI        v        v        v        v       v       v    v    v    v      v         v
+# REMI        v        v        v        v       v       v    v    v    v      -         -
 # SCL         v        -        -        -       -       v    -    -    v      -         -
 
 # Notes:
@@ -175,7 +175,6 @@ if [[ $os == ol ]]; then
     runn $SUDO yum makecache
 
 	install_raven
-	install_remi
     exit 0
 fi
 
