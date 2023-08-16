@@ -79,6 +79,9 @@ install_scl() {
 }
 
 install_remi() {
+	if [[ $os != ol ]]; then
+		return
+	fi
 	if [[ $arch == aarch64 ]]; then
 		if (( EPEL < 9 )); then
 			echo "REMI: does not support aarch64"

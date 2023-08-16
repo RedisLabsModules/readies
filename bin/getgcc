@@ -45,7 +45,7 @@ class SystemSetup(paella.Setup):
         self.group_install("'Development Tools'")
         if not self.modern:
             return
-        self.run(f"{READIES}/bin/getepel")
+        self.run(f"{ROOT}/bin/getepel")
         if self.os_ver == 9:
             self.install("gcc-toolset-12")
             self.install("gcc-toolset-12-libatomic-devel")
