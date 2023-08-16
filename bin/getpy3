@@ -236,6 +236,7 @@ install_python() {
 	elif is_command dnf; then
 		runn $SUDO dnf install -y python3
 	elif is_command yum; then
+		xinstall bc
 		if [[ $os == amzn && $(echo "$osverid > 2" | bc -l) == 1 ]]; then
 			xinstall python3
 		else

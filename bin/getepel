@@ -23,10 +23,10 @@ READIES=$(cd $HERE/.. && pwd)
 #               https://developers.redhat.com/products/red-hat-software-collections/overview
 
 #             centos7  centos8  centos9  rocky8  rocky9  ol7  ol8  ol9  amzn2  amzn2022  amzn2023
-# EPEL        v        v        v        v       v       v    v    v    v      v         v
-# raven       -        v        v        v       v       -    v    v    v      v         v
+# EPEL        v        v        v        v       v       v    v    v    v      -         -
+# raven       -        v        v        v       v       -    v    v    -      v         v
 # powertools  v        v        -        v       -       -    -    -    -      -         -
-# crb         -        -        ?        -       v       -    -    -    -      -         -
+# crb         -        -        v        -       v       -    -    -    -      -         -
 # REMI        v        v        v        v       v       v    v    v    v      v         v
 # SCL         v        -        -        -       -       v    -    -    v      -         -
 
@@ -72,6 +72,7 @@ install_scl() {
 	fi
 
 	if [[ $osevr != ol7* ]]; then
+		xinstall sudo
 		xinstall centos-release-scl
 		runn $SUDO yum-config-manager -y --enable rhel-server-rhscl-7-rpms
 	fi
@@ -85,15 +86,14 @@ install_remi() {
 		fi
 	fi
 
+	if ! rpm -q remi-release &> /dev/null; then
+		xinstall http://rpms.remirepo.net/enterprise/remi-release-${EPEL}.rpm
+	else
+		echo "REMI: already installed"
+	fi
 	if is_command dnf; then
-		if ! rpm -q remi-release &> /dev/null; then
-			xinstall http://rpms.remirepo.net/enterprise/remi-release-${EPEL}.rpm
-		fi
 		runn $SUDO dnf config-manager -y --set-enabled remi
 	elif is_command yum; then
-		if ! rpm -q remi-release &> /dev/null; then
-			xinstall http://rpms.remirepo.net/enterprise/remi-release-${EPEL}.rpm
-		fi
 		runn $SUDO yum-config-manager -y --enable remi
 	fi
 }
@@ -173,6 +173,9 @@ if [[ $os == ol ]]; then
 		EOF
 	runn $SUDO mv $repo_tmp /etc/yum.repos.d/ol${EPEL}-epel.repo
     runn $SUDO yum makecache
+
+	install_raven
+	install_remi
     exit 0
 fi
 
@@ -195,13 +198,13 @@ if is_command dnf; then
 	if [[ $os != amzn* ]]; then
 		(( EPEL < 9 )) && runn $SUDO dnf config-manager -y --set-enabled powertools
 		(( EPEL > 8 )) && runn $SUDO dnf config-manager -y --set-enabled crb
+
+		xinstall epel-release
+		# xinstall --allowerasing https://dl.fedoraproject.org/pub/epel/epel-release-latest-${EPEL}.noarch.rpm
 	fi
 
-	xinstall epel-release
-	# xinstall --allowerasing https://dl.fedoraproject.org/pub/epel/epel-release-latest-${EPEL}.noarch.rpm
-
-	install_remi
 	install_raven
+	install_remi
 
 elif is_command yum; then
 	xinstall -y yum-utils
