@@ -21,6 +21,7 @@ READIES=$(cd $HERE/.. && pwd)
 # SCL           https://wiki.centos.org/AdditionalResources/Repositories/SCL
 #               https://github.com/sclorg/centos-release-scl
 #               https://developers.redhat.com/products/red-hat-software-collections/overview
+# SCL/ol        https://docs.oracle.com/en/operating-systems/oracle-linux/scl-user/#Oracle-Linux
 
 #             centos7  centos8  centos9  rocky8  rocky9  ol7  ol8  ol9  amzn2  amzn2022  amzn2023
 # EPEL        v        v        v        v       v       v    v    v    v      -         -
@@ -28,12 +29,13 @@ READIES=$(cd $HERE/.. && pwd)
 # powertools  v        v        -        v       -       -    -    -    -      -         -
 # crb         -        -        v        -       v       -    -    -    -      -         -
 # REMI        v        v        v        v       v       v    v    v    v      -         -
-# SCL         v        -        -        -       -       v    -    -    v      -         -
+# SCL         v        -        -        -       -       v*   -    -    v      -         -
 
 # Notes:
 # - rockylinux and almalinux are compatible
 # - Rocky Linux repos (https://wiki.rockylinux.org/rocky/repo):
 #   baseos, appstream, powertools(8), crb(9), highavailibility, resilientstorage
+# - for Oracle Linux 7. SCL/ol should be used instead of SCL
 
 #----------------------------------------------------------------------------------------------
 
@@ -71,11 +73,17 @@ install_scl() {
 		return
 	fi
 
-	if [[ $osevr != ol7* ]]; then
-		xinstall sudo
-		xinstall centos-release-scl
-		runn $SUDO yum-config-manager -y --enable rhel-server-rhscl-7-rpms
+	if [[ $osver == ol7* ]]; then
+		runn $SUDO yum-config-manager --enable ol7_software_collections
+		runn $SUDO yum-config-manager --enable ol7_latest ol7_optional_latest
+		xinstall scl-utils
+		xinstall oracle-softwarecollection-release-el7
+		return
 	fi
+
+	xinstall sudo
+	xinstall centos-release-scl
+	runn $SUDO yum-config-manager -y --enable rhel-server-rhscl-7-rpms
 }
 
 install_remi() {
@@ -177,6 +185,7 @@ if [[ $os == ol ]]; then
 	runn $SUDO mv $repo_tmp /etc/yum.repos.d/ol${EPEL}-epel.repo
     runn $SUDO yum makecache
 
+	install_scl
 	install_raven
     exit 0
 fi
@@ -212,6 +221,6 @@ elif is_command yum; then
 	xinstall -y yum-utils
 	
 	xinstall epel-release
-	install_remi
 	install_scl
+	install_remi
 fi
