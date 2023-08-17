@@ -47,4 +47,7 @@ jobs:
       run: |
         python3 --version
         python3 -m pip list -v
-        gcc --version
+        echo "System gcc: $(/usr/bin/gcc --version | head -1)"
+        echo "gcc: $(gcc --version | head -1)"
+        echo "glibc: $(./bin/glibcver)"
+        echo "libstdc++: $(./bin/libstdc++ver)"
