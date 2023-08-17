@@ -4,9 +4,8 @@ OSNICK=$(call cached-shell,OSNICK,$(READIES)/bin/platform --osnick)
 ifeq ($(OS.custom),)
 
 OS.centos7=centos:7
-OS.centos7.8=centos:7.8.2003
-OS.centos8=centos:8
-OS.centos8.3=centos:8.2011
+OS.centos8=quay.io/centos/centos:stream8
+OS.centos9=quay.io/centos/centos:stream9
 OS.fedora=fedora:latest
 OS.fedora37=fedora:37
 OS.fedora33=fedora:33
