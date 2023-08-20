@@ -21,10 +21,10 @@ jobs:
     container:
       image: ${{ matrix.os }}
       options: --cpus 2
-    steps:
-    - name: Prerequisites
-      run: |
-        yum install -y tar gzip
+#    steps:
+#    - name: Prerequisites
+#      run: |
+#        yum install -y tar gzip
     - uses: actions/checkout@v3
       with:
         submodules: false
