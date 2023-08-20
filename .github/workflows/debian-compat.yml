@@ -6,7 +6,7 @@ on:
       platforms:
         description: 'Platforms'
         default: '["debian:10", "debian:11", "debian:12","debian:sid",
-                   "ubuntu:14.04", "ubuntu:16.04", "ubuntu:18.04", "ubuntu:20.04", "ubuntu:22.04", "ubuntu:23.04"] # "elementary/docker:stable"
+                   "ubuntu:14.04", "ubuntu:16.04", "ubuntu:18.04", "ubuntu:20.04", "ubuntu:22.04", "ubuntu:23.04"]' # "elementary/docker:stable"
 
 jobs:
   redhat-compat-matrix:
