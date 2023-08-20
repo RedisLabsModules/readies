@@ -9,7 +9,7 @@ on:
                    "ubuntu:14.04", "ubuntu:16.04", "ubuntu:18.04", "ubuntu:20.04", "ubuntu:22.04", "ubuntu:23.04"]' # "elementary/docker:stable"
 
 jobs:
-  redhat-compat-matrix:
+  debian-compat-matrix:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -21,10 +21,10 @@ jobs:
     container:
       image: ${{ matrix.os }}
       options: --cpus 2
-#    steps:
+    steps:
 #    - name: Prerequisites
 #      run: |
-#        yum install -y tar gzip
+#        apt-get install -y tar gzip
     - uses: actions/checkout@v3
       with:
         submodules: false
