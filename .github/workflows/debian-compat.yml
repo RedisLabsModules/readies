@@ -1,4 +1,4 @@
-name: Test Redhat-compatible platforms
+name: Test Debian-compatible platforms
 
 on:
   workflow_dispatch:
