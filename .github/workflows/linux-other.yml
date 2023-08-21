@@ -1,15 +1,15 @@
-name: Test Debian-compatible platforms
+name: Test Linux platforms
 
 on:
   workflow_dispatch:
     inputs:
       platforms:
         description: 'Platforms'
-        default: '["debian:10", "debian:11", "debian:12","debian:sid",
-                   "ubuntu:14.04", "ubuntu:16.04", "ubuntu:18.04", "ubuntu:20.04", "ubuntu:22.04", "ubuntu:23.04"]' # "elementary/docker:stable"
+        default: '["opensuse/leap:15", "opensuse/tumbleweed:latest",
+                   "archlinux:latest"]' # "alpine:3"
 
 jobs:
-  debian-compat-matrix:
+  linux-matrix:
     runs-on: ubuntu-latest
     defaults:
       run:
