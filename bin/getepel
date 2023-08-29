@@ -234,7 +234,6 @@ if is_command dnf; then
 
 	install_raven
 	install_remi
-	install_centos_stream_appstream
 
 elif is_command yum; then
 	xinstall -y yum-utils

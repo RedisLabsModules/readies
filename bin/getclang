@@ -116,7 +116,7 @@ class CLangSetup(paella.Setup):
             return
         self.run("%s/bin/getepel" % READIES, sudo=True)
         if self.dist == 'centos' and self.os_version[0] == 8:
-            self.install("llvm-toolset-15*")
+            self.install("llvm-toolset")
         elif self.dist in ['centos', 'ol'] and self.os_version[0] >= 8:
             self.install("llvm-toolset")
         else:

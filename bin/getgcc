@@ -42,7 +42,7 @@ class SystemSetup(paella.Setup):
         self.install("build-essential")
 
     def redhat_compat(self):
-        self.group_install("'Development Tools' --skip-broken")
+        self.group_install("'Development Tools'")
         if not self.modern:
             return
         self.run(f"{ROOT}/bin/getepel")
