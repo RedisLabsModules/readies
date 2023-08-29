@@ -459,7 +459,7 @@ index b0727db2c..ae7f3f80a 100644
     def redhat_compat(self):
         if self.no_prepare:
             return
-        self.group_install("'Development Tools'")
+        self.group_install("'Development Tools' --skip-broken")
         self.install("openssl-devel")
 
     def fedora(self):

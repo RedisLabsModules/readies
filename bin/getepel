@@ -109,6 +109,24 @@ install_remi() {
 	fi
 }
 
+install_centos_stream_appstream() {
+	if [[ $osver != rocky8* && $osver != alamlinux8* ]]; then
+		return
+	fi
+
+	tmp_yumd=$(mktemp -d)
+	cat <<-'END' > $tmp_yumd/CentOS-Stream-AppStream.repo
+		[centos-appstream]
+		name=CentOS Stream $releasever - AppStream
+		mirrorlist=http://mirrorlist.centos.org/?release=$stream&arch=$basearch&repo=AppStream&infra=$infra
+		gpgcheck=0
+		enabled=1
+		END
+	runn $SUDO mv $tmp_yumd/CentOS-Stream-AppStream.repo /etc/yum.repos.d/
+	runn rm -rf $tmp_yumd
+	runn $SUDO dnf makecache
+}
+
 #----------------------------------------------------------------------------------------------
 
 if [[ $1 == --help || $1 == help || $HELP == 1 ]]; then
@@ -216,6 +234,7 @@ if is_command dnf; then
 
 	install_raven
 	install_remi
+	install_centos_stream_appstream
 
 elif is_command yum; then
 	xinstall -y yum-utils
