@@ -117,8 +117,8 @@ install_centos_stream_appstream() {
 	tmp_yumd=$(mktemp -d)
 	cat <<-'END' > $tmp_yumd/CentOS-Stream-AppStream.repo
 		[centos-appstream]
-		name=CentOS Stream $releasever - AppStream
-		mirrorlist=http://mirrorlist.centos.org/?release=$stream&arch=$basearch&repo=AppStream&infra=$infra
+		name=CentOS Stream 8 - AppStream
+		mirrorlist=http://mirrorlist.centos.org/?release=8-stream&arch=$basearch&repo=AppStream&infra=$infra
 		gpgcheck=0
 		enabled=1
 		END
