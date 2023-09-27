@@ -109,7 +109,8 @@ class RedisSourceSetup(paella.Setup):
         self.redis_versions = list(map(lambda v: v['name'], j))
 
     def wget(self, url, file):
-        self.run(f'wget -O {file} {url}')
+        # self.run(f'wget -O {file} {url}')
+        self.run(f'curl -L -o {file} {url}')
 
     def get_requested_redis_versions(self):
         self.read_redis_versions()
