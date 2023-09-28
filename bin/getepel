@@ -226,7 +226,7 @@ if is_command dnf; then
 
 	if [[ $os != amzn* ]]; then
 		(( EPEL < 9 )) && runn $SUDO dnf config-manager -y --set-enabled powertools
-		if [[$os != rhel ]]; then
+		if [[ $os != rhel ]]; then
 			(( EPEL > 8 )) && runn $SUDO dnf config-manager -y --set-enabled crb
 		fi
 
