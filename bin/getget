@@ -22,7 +22,8 @@ elif is_command yum; then
 elif is_command brew; then
 	packs=${packs/ca-certificates/}
 fi
-if [[ $os == rocky && $(echo "$osver >= 9.0" | bc -l) ]]; then
+
+if is_command curl; then
 	packs=${packs/curl/}
 fi
 

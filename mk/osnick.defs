@@ -35,6 +35,7 @@ OS.alma8=almalinux:8
 OS.alma9=almalinux:9
 OS.rocky8=rockylinux:8
 OS.rocky9=rockylinux:9
+OS.rhel9=redhat/ubi9
 OS.jammy=ubuntu:jammy
 OS.amzn2=amazonlinux:2
 OS.amzn2022=amazonlinux:2022

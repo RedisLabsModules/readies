@@ -226,7 +226,9 @@ if is_command dnf; then
 
 	if [[ $os != amzn* ]]; then
 		(( EPEL < 9 )) && runn $SUDO dnf config-manager -y --set-enabled powertools
-		(( EPEL > 8 )) && runn $SUDO dnf config-manager -y --set-enabled crb
+		if [[ $os != rhel ]]; then
+			(( EPEL > 8 )) && runn $SUDO dnf config-manager -y --set-enabled crb
+		fi
 
 		xinstall epel-release
 		# xinstall --allowerasing https://dl.fedoraproject.org/pub/epel/epel-release-latest-${EPEL}.noarch.rpm
