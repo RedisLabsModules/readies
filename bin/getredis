@@ -459,7 +459,8 @@ index b0727db2c..ae7f3f80a 100644
     def redhat_compat(self):
         if self.no_prepare:
             return
-        self.run(f"{ROOT}/bin/getgcc --modern")
+        if shutil.which('gcc') is None:
+            self.run(f"{ROOT}/bin/getgcc --modern")
         self.install("openssl-devel")
 
     def fedora(self):
