@@ -140,7 +140,7 @@ class RMPyToolsSetup(paella.Setup):
 
     def _install_ramp(self):
         if self.ramp_version is None:
-            self.pip_install(f"--no-cache-dir ramp-packer~=2.5.5")
+            self.pip_install(f"--no-cache-dir ramp-packer~=2.5.6")
         else:
             (source, version) = self.get_version(self.ramp_version)
             if source == 'pypi':
