@@ -37,6 +37,13 @@ READIES=$(cd $HERE/.. && pwd)
 #   baseos, appstream, powertools(8), crb(9), highavailibility, resilientstorage
 # - for Oracle Linux 7. SCL/ol should be used instead of SCL
 
+# Useful commands and locations:
+# dnf repolist [--all]
+# dnf groupinfo GROUP
+# dnf info PACKAGE
+# dnf makecache
+# /etc/yum.repos.d
+
 #----------------------------------------------------------------------------------------------
 
 install_raven() {
@@ -109,7 +116,7 @@ install_remi() {
 	fi
 }
 
-install_centos_stream_appstream() {
+install_centos_stream_repos() {
 	if [[ $osver != rocky8* && $osver != alamlinux8* ]]; then
 		return
 	fi
@@ -121,6 +128,7 @@ install_centos_stream_appstream() {
 		mirrorlist=http://mirrorlist.centos.org/?release=8-stream&arch=$basearch&repo=AppStream&infra=$infra
 		gpgcheck=0
 		enabled=1
+		priority=100
 		END
 	runn $SUDO mv $tmp_yumd/CentOS-Stream-AppStream.repo /etc/yum.repos.d/
 	runn rm -rf $tmp_yumd
@@ -234,7 +242,8 @@ if is_command dnf; then
 
 	install_raven
 	install_remi
-
+	# install_centos_stream_repos
+	
 elif is_command yum; then
 	xinstall -y yum-utils
 	
