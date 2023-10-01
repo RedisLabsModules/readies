@@ -22,8 +22,11 @@ elif is_command yum; then
 elif is_command brew; then
 	packs=${packs/ca-certificates/}
 fi
-if [[ $os == rocky && $(echo "$osver >= 9.0" | bc -l) ]]; then
-	packs=${packs/curl/}
+if [[ $os == rocky || $os == almalinux || $os == rhel ]]; then
+	# has curl-minimal which conflicts with curl
+	if [[ $(echo "$osver >= 9.0" | bc -l) ]]; then
+		packs=${packs/curl/}
+	fi
 fi
 
 if [[ $FORCE != 1 ]]; then
