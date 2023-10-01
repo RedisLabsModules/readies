@@ -366,7 +366,7 @@ class Platform:
         return self.dist in ['redhat', 'rhel', 'centos', 'rocky', 'alma', 'almalinux', 'amzn', 'ol']
 
     def redhat_compat_version(self):
-        if self.dist in ['redhat', 'rhel', 'centos', 'rocky', 'alma', 'almalinux', 'amzn', 'ol']:
+        if self.dist in ['redhat', 'rhel', 'centos', 'rocky', 'alma', 'almalinux', 'ol']:
             return self.os_version[0]
         elif self.dist == 'amzn':
             amzn_vers = { 2: 7, 2022: 8, 2023: 9 }
