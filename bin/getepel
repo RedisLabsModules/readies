@@ -129,6 +129,7 @@ install_centos_stream_appstream() {
 		mirrorlist=http://mirrorlist.centos.org/?release=8-stream&arch=$basearch&repo=AppStream&infra=$infra
 		gpgcheck=0
 		enabled=1
+		priority=100
 		END
 	runn $SUDO mv $tmp_yumd/CentOS-Stream-AppStream.repo /etc/yum.repos.d/
 	runn rm -rf $tmp_yumd
@@ -341,7 +342,7 @@ if is_command dnf; then
 
 	install_raven
 	install_remi
-	install_centos_stream_appstream
+	# install_centos_stream_appstream
 	
 elif is_command yum; then
 	xinstall -y yum-utils
