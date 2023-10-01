@@ -65,6 +65,7 @@ MACOS_VERSIONS = {
     "bigsur":       "11",
     "monterey":     "12",
     "ventura":      "13",
+    "sonoma":       "14",
 }
 
 DARWIN_VERSIONS = {
@@ -87,6 +88,7 @@ DARWIN_VERSIONS = {
     "bigsur":       "20",
     "monterey":     "21",
     "ventura":      "22",
+    "sonoma":       "23",
 }
 
 MACOS_VERSIONS_NICKS = {v: k for k, v in MACOS_VERSIONS.items()}
