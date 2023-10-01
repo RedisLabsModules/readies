@@ -371,7 +371,7 @@ class Platform:
         elif self.dist == 'amzn':
             amzn_vers = { 2: 7, 2022: 8, 2023: 9 }
             try:
-                return amzn_vers[os_version[0]]
+                return amzn_vers[self.os_version[0]]
             except:
                 raise Error("unknown amazonlinux version")
         else:
