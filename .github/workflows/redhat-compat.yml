@@ -6,6 +6,7 @@ on:
       platforms:
         description: 'Platforms'
         default: '["centos:7", "quay.io/centos/centos:stream8", "quay.io/centos/centos:stream9",
+                   "redhat/ubi9:latest",
                    "rockylinux:8", "rockylinux:9",
                    "oraclelinux:7", "oraclelinux:8", "oraclelinux:9",
                    "amazonlinux:2", "amazonlinux:2022", "amazonlinux:2023",
@@ -48,9 +49,12 @@ jobs:
         echo "/etc/os-release:"; cat /etc/os-release
         echo "/etc/redhat-release:"; cat /etc/redhat-release || true
         echo "uname -a: $(uname -a)"
-        echo "python: $(python3 --version)"
+        echo "bash: $BASH_VERSION"
+        echo "System Python: $(/usr/bin/python3 --version)"
+        echo "Python: $(python3 --version)"
         echo "pip list:"; python3 -m pip list -v
         echo "System gcc: $(/usr/bin/gcc --version | head -1)"
         echo "gcc: $(gcc --version | head -1)"
         echo "glibc: $(./bin/glibcver)"
         echo "libstdc++: $(./bin/libstdc++ver)"
+        echo "binutils: $(ld --version | head -1)"

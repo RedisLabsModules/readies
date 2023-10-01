@@ -136,12 +136,12 @@ class PackageManager(object):
     @staticmethod
     def detect(platform, runner):
         if platform.os == 'linux':
-            if platform.dist == 'fedora' or platform.dist == 'centos' and platform.os_version[0] == 8:
-                return Dnf(runner)
-            elif platform.is_debian_compat():
+            if platform.is_debian_compat():
                 return Apt(runner)
             elif platform.is_redhat_compat():
-                return Yum(runner)
+                return Yum(runner) if platform.redhat_compat_version() == 7 else Dnf(runner)
+            elif platform.dist == 'fedora':
+               return Dnf(runner)
             elif platform.dist == 'suse':
                 return Zypper(runner)
             elif platform.dist == 'arch':
@@ -477,7 +477,8 @@ class Setup(OnPlatform):
     def install_downloaders(self, _try=False):
         if self.os == 'linux':
             self.install("ca-certificates", _try=_try)
-        if self.platform.is_redhat_compat() and self.platform.os_version[0] < 9:
+        if not (self.platform.is_redhat_compat() and self.platform.os_version[0] >= 9):
+            # has curl-minimal which conflicts with curl
             self.install("curl", _try=_try)
         self.install("wget unzip", _try=_try)
 

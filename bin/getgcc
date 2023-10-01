@@ -42,11 +42,7 @@ class SystemSetup(paella.Setup):
         self.install("build-essential")
 
     def redhat_compat(self):
-        if((self.dist == "redhat" or self.dist == "centos") and self.os_ver == 9):
-            pass
-        else:
-            self.group_install("'Development Tools'")
-
+        self.group_install("'Development Tools'")
         if not self.modern:
             return
         self.run(f"{ROOT}/bin/getepel")
