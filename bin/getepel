@@ -45,13 +45,6 @@ READIES=$(cd $HERE/.. && pwd)
 # dnf makecache
 # /etc/yum.repos.d
 
-# Useful commands and locations:
-# dnf repolist [--all]
-# dnf groupinfo GROUP
-# dnf info PACKAGE
-# dnf makecache
-# /etc/yum.repos.d
-
 #----------------------------------------------------------------------------------------------
 
 install_raven() {
@@ -124,24 +117,11 @@ install_remi() {
 	fi
 }
 
-install_centos_stream_repos() {
-	if [[ $osver != rocky8* && $osver != alamlinux8* ]]; then
-		return
-	fi
-
-	tmp_yumd=$(mktemp -d)
-	cat <<-'END' > $tmp_yumd/CentOS-Stream-AppStream.repo
-		[centos-appstream]
-		name=CentOS Stream 8 - AppStream
-		mirrorlist=http://mirrorlist.centos.org/?release=8-stream&arch=$basearch&repo=AppStream&infra=$infra
-		gpgcheck=0
-		enabled=1
-		priority=100
-		END
-	runn $SUDO mv $tmp_yumd/CentOS-Stream-AppStream.repo /etc/yum.repos.d/
-	runn rm -rf $tmp_yumd
-	runn $SUDO dnf makecache
-}
+# As redhat/ubi lack full non-commercial package repos, we use the ones provided by rocky linux
+# Rocky epo configuration is from rockylinux:9 image (/etc/yum.repos.d/rocky.repo, rocky-extras.repo),
+# with slight modifications (esp. adding rocky- prefix).
+# Repo priority is set to 100 in hope to avoid collisions with ubi9 repos, not sure it is effective.
+# Repo signature file is also taken from rockylinux:9.
 
 install_rocky_repos() {
 	if [[ $osver != rhel9* ]]; then
@@ -199,7 +179,7 @@ install_rocky_repos() {
 		priority=100
 		END
 
-	cat <<-'END' > $tmp_yumd/RPM-GPG-KEY
+	cat <<-'END' > $tmp_yumd/RPM-GPG-KEY-Rocky-9
 		-----BEGIN PGP PUBLIC KEY BLOCK-----
 		Version: resf.keykeeper.v1
 		Comment: Keykeeper
@@ -234,7 +214,26 @@ install_rocky_repos() {
 		END
 
 	runn $SUDO mv $tmp_yumd/rocky.repo /etc/yum.repos.d/
-	runn $SUDO mv $tmp_yumd/RPM-GPG-KEY /etc/pki/rpm-gpg/RPM-GPG-KEY-Rocky-9
+	runn $SUDO mv $tmp_yumd/RPM-GPG-KEY-Rocky-9 /etc/pki/rpm-gpg/
+	runn rm -rf $tmp_yumd
+	runn $SUDO dnf makecache
+}
+
+install_centos_stream_repos() {
+	if [[ $osver != rocky8* && $osver != alamlinux8* ]]; then
+		return
+	fi
+
+	tmp_yumd=$(mktemp -d)
+	cat <<-'END' > $tmp_yumd/CentOS-Stream-AppStream.repo
+		[centos-appstream]
+		name=CentOS Stream 8 - AppStream
+		mirrorlist=http://mirrorlist.centos.org/?release=8-stream&arch=$basearch&repo=AppStream&infra=$infra
+		gpgcheck=0
+		enabled=1
+		priority=100
+		END
+	runn $SUDO mv $tmp_yumd/CentOS-Stream-AppStream.repo /etc/yum.repos.d/
 	runn rm -rf $tmp_yumd
 	runn $SUDO dnf makecache
 }
