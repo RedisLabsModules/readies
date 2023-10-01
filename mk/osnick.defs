@@ -27,6 +27,7 @@ OS.leap15.2=opensuse/leap:15.2
 OS.leap15.3=opensuse/leap:15.3
 OS.tumbleweed=opensuse/tumbleweed
 OS.archlinux=archlinux:latest
+OS.manjaro=manjarolinux/base:latest
 OS.alpine3=alpine:latest
 OS.ol7=oraclelinux:7
 OS.ol8=oraclelinux:8
