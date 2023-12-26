@@ -268,6 +268,8 @@ class Platform:
             pass
         elif dist == 'ubuntu':
             pass
+        elif dist == 'mariner':
+            pass
         elif dist.startswith('rocky') or dist.startswith('almalinux') or dist.startswith('redhat') or dist == 'rhel':
             if not self.brand_mode:
                 dist = 'centos'
