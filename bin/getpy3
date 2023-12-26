@@ -235,6 +235,8 @@ install_python() {
 		runn $SUDO apt-get install --fix-missing -y python3
 	elif is_command dnf; then
 		runn $SUDO dnf install -y python3
+	elif is_command tdnf; then
+		runn $SUDO tdnf install -y python3
 	elif is_command yum; then
 		xinstall bc
 		if [[ $os == amzn && $(echo "$osverid > 2" | bc -l) == 1 ]]; then

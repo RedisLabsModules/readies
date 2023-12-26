@@ -460,6 +460,8 @@ class OnPlatform:
                     self.alpine()
                 elif dist == 'raspbian':
                     self.raspbian()
+                elif dist == 'mariner':
+                    pass
                 else:
                     assert(False), "Cannot determine installer"
 
