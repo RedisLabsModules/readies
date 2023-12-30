@@ -73,6 +73,11 @@ if [[ $(id -u) != 0 ]]; then
 	fi
 fi
 
+# awk is not installed by default on mariner
+if [[ $os == mariner ]]; then
+	tdnf install -q -y awk
+fi
+
 # (This is suspended and remains here for the next time pip is broken.)
 # pip 20.x is broken is the sense that it will not respect virtualenv's system-site-packages
 # thus requiring packages to be built from source in order to be installed.

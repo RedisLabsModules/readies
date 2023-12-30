@@ -51,6 +51,9 @@ else
 		elif is_command dnf; then
 			xinstall git findutils make gcc zlib-devel bzip2 bzip2-devel readline-devel \
 				sqlite sqlite-devel openssl-devel tk-devel libffi-devel xz-devel
+		elif is_command tdnf; then
+			xinstall git findutils make gcc zlib-devel bzip2 bzip2-devel readline-devel \
+				openssl-devel
 		elif is_command yum; then
 			xinstall git make gcc zlib-devel bzip2 bzip2-devel readline-devel sqlite \
 				sqlite-devel openssl-devel tk-devel libffi-devel xz-devel tar
