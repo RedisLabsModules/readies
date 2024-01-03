@@ -13,7 +13,7 @@ OP=""
 cd /tmp
 vg_dir=$(mktemp -d)
 cd $vg_dir
-$OP wget -q -O valgrind.tar.bz2 https://sourceware.org/pub/valgrind/valgrind-${VALGRIND_VER}.tar.bz2
+$OP wget -q -O valgrind.tar.bz2 https://valgrind.org/pub/valgrind/valgrind-${VALGRIND_VER}.tar.bz2
 $OP tar xjf valgrind.tar.bz2
 cd valgrind-${VALGRIND_VER}
 runn ./configure
@@ -33,6 +33,9 @@ if is_command apt-get; then
 	export DEBIAN_FRONTEND=noninteractive
 	runn apt-get update -qq
 	runn apt-get install --fix-missing -y libc6-dbg
+elif is_command tdnf; then
+	# TODO: Mariner2.0 does not provides glibc-debuginfo in standar repos."
+	# runn tdnf install -y glibc-debuginfo
 elif is_command yum; then
 	runn yum install -y glibc-debuginfo
 elif is_command zypper; then
