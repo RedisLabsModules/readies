@@ -35,7 +35,7 @@ if is_command apt-get; then
 	runn apt-get install --fix-missing -y libc6-dbg
 elif is_command tdnf; then
 	# TODO: Mariner2.0 does not provides glibc-debuginfo in standar repos."
-	# runn tdnf install -y glibc-debuginfo
+	: # runn tdnf install -y glibc-debuginfo
 elif is_command yum; then
 	runn yum install -y glibc-debuginfo
 elif is_command zypper; then
