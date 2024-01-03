@@ -268,6 +268,8 @@ class Platform:
             pass
         elif dist == 'ubuntu':
             pass
+        elif dist == 'mariner':
+            pass
         elif dist.startswith('rocky') or dist.startswith('almalinux') or dist.startswith('redhat') or dist == 'rhel':
             if not self.brand_mode:
                 dist = 'centos'
@@ -458,6 +460,8 @@ class OnPlatform:
                     self.alpine()
                 elif dist == 'raspbian':
                     self.raspbian()
+                elif dist == 'mariner':
+                    self.mariner()
                 else:
                     assert(False), "Cannot determine installer"
 
@@ -542,4 +546,7 @@ class OnPlatform:
         pass
 
     def raspbian(self):
+        pass
+
+    def mariner(self):
         pass

@@ -41,6 +41,7 @@ OS.jammy=ubuntu:jammy
 OS.amzn2=amazonlinux:2
 OS.amzn2022=amazonlinux:2022
 OS.amzn2023=amazonlinux:2023
+OS.mariner2.0=mcr.microsoft.com/cbl-mariner/base/core:2.0
 
 endif # OS
 

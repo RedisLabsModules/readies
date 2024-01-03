@@ -140,6 +140,8 @@ class PackageManager(object):
                 return Apt(runner)
             elif platform.is_redhat_compat():
                 return Yum(runner) if platform.redhat_compat_version() == 7 else Dnf(runner)
+            elif platform.dist == 'mariner':
+                return TDnf(runner)
             elif platform.dist == 'fedora':
                return Dnf(runner)
             elif platform.dist == 'suse':
@@ -220,6 +222,29 @@ class Dnf(PackageManager):
         if self.run("dnf config-manager 2>/dev/null", output=output, _try=True):
             return self.install("dnf-plugins-core", _try=_try)
         return self.run("dnf config-manager -y --add-repo {}".format(repourl), output=output, _try=_try, sudo=True)
+
+#----------------------------------------------------------------------------------------------
+
+class TDnf(PackageManager):
+    def __init__(self, runner):
+        super(TDnf, self).__init__(runner)
+
+    def install(self, packs, group=False, output="on_error", _try=False):
+        if not group:
+            return self.run("tdnf install -q -y " + packs, output=output, _try=_try, sudo=True)
+        else:
+            return self.run("tdnf groupinstall -y " + packs, output=output, _try=_try, sudo=True)
+
+    def uninstall(self, packs, group=False, output="on_error", _try=False):
+        if not group:
+            return self.run("tdnf remove -q -y " + packs, output=output, _try=_try, sudo=True)
+        else:
+            return self.run("tdnf group remove -y " + packs, output=output, _try=_try, sudo=True)
+
+    def add_repo(self, repourl, repo="", output="on_error", _try=False):
+        if self.run("tdnf config-manager 2>/dev/null", output=output, _try=True):
+            return self.install("tdnf-plugins-core", _try=_try)
+        return self.run("tdnf config-manager -y --add-repo {}".format(repourl), output=output, _try=_try, sudo=True)
 
 #----------------------------------------------------------------------------------------------
 

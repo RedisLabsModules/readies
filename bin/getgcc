@@ -118,8 +118,10 @@ class SystemSetup(paella.Setup):
                 # install brew (which will install Xcode command line tools):
                 # self.run("/bin/bash -c '$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)'", sudo=True)
 
-#----------------------------------------------------------------------------------------------
+    def mariner(self):
+        self.install("build-essential")
 
+#----------------------------------------------------------------------------------------------
 parser = argparse.ArgumentParser(description='Set up GCC build environemnt.')
 parser.add_argument('--modern', action="store_true", help="Install modern GCC version")
 parser.add_argument('--update-libstdc++', dest="update_libstdcxx", action="store_true", help="If required, update ilbstdc++")
