@@ -49,7 +49,7 @@ READIES=$(cd $HERE/.. && pwd)
 
 install_raven() {
 	# enable raven repo (i.e. pkgs.org)
-	if (( EPEL < 8 || arch != x86_64 || NO_RAVEN == 1 )); then
+	if (( EPEL < 8 )) || [[ $arch != x86_64 ]] || (( NO_RAVEN == 1 )); then
 		return
 	fi
 
