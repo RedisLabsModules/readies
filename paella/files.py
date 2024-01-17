@@ -48,7 +48,7 @@ def wget(url, dest="", tempdir=False):
         if dest == "":
             dest = tempfilepath()
         elif tempdir:
-            dir = tempfilepath()
+            dir = tempfile.mkdtemp()
             dest = os.path.join(dir, dest)
     else:
         if tempdir:
