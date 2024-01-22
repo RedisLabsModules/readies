@@ -25,7 +25,11 @@ import paella  # noqa: F401
 os.environ["PYTHONWARNINGS"] = 'ignore:DEPRECATION::pip._internal.cli.base_command'
 
 DEFAULT_REDIS_VERSION = "7"
-DEFAULT_OPENSSL_VER = "1.1.1w"  #Todo: use newer version that wont brake every time a new patch is released
+# Todo: currently, this version is located in the expected path from which for extract the version.
+# However, when a new path is released, this will be moved into a different path (.../source/old/1.1.1/1.1.1w).
+# we should try using newer version that won't brake every time a new patch is released (currently new version
+# are non-compatible)
+DEFAULT_OPENSSL_VER = "1.1.1w"
 
 #----------------------------------------------------------------------------------------------
 
