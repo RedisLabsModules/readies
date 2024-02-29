@@ -50,6 +50,7 @@ class SystemSetup(paella.Setup):
 #            self.run("apt-get install -y -t testing build-essential", sudo=True)
 #            self.run("update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 10", sudo=True)
 #            self.run("update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 10", sudo=True)
+#
 
     def redhat_compat(self):
         self.group_install("'Development Tools'")
@@ -61,6 +62,8 @@ class SystemSetup(paella.Setup):
                 self.install("gcc-toolset-11-libatomic-devel")
                 self.run("rm -f {}/gcc-toolset-*.sh".format(self.profile_d), sudo=True)
                 self.cp_to_profile_d("/opt/rh/gcc-toolset-11/enable", "gcc-toolset-11.sh")
+            elif self.osnick == 'centos9':
+                self.install("gcc-toolset-12-gcc gcc-toolset-12-gcc-c++ gcc-toolset-12-libatomic-devel autoconf automake libtool")
             elif self.dist == 'amzn' and self.os_version[0] == 2:
                 self.install("devtoolset-11-gcc devtoolset-11-gcc-c++ devtoolset-11-make")
                 # self.install("devtoolset-11-libatomic-devel")

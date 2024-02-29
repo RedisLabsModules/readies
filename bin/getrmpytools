@@ -86,7 +86,7 @@ class RMPyToolsSetup(paella.Setup):
         self.install("git")
         if self.reinstall:
             self.pip_uninstall("redis redis-py-cluster ramp-packer RLTest")
-            
+
         if self.master:
             self.redispy_org = 'redis'
             self.redispy_version = 'master'

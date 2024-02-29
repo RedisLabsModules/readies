@@ -41,7 +41,7 @@ class RedisSourceSetup(paella.Setup):
             raise RuntimeError('conflicting arguments: version, branch')
         self.version = args.version
         self.branch = args.branch
-        
+
         self.valgrind = args.valgrind
         self.libc_malloc = args.libc_malloc
         self.clang_asan = args.clang_asan
@@ -181,7 +181,7 @@ class RedisSourceSetup(paella.Setup):
         self.run('tar -C {DIR} -xzf {FILE}'.format(DIR=self.base_dir, FILE=file))
         paella.mkdir_p(ssl_dir)
         prefix_dir = '{DIR}/{PREFIX}'.format(DIR=self.base_dir, PREFIX=prefix)
-        
+
         platform = paella.Platform()
         arch = ''
         if platform.os == 'linux':
@@ -286,7 +286,7 @@ class RedisSourceSetup(paella.Setup):
         if self.cc == "gcc":
             build_args += ['LDFLAGS="-static-libgcc"']
         openssl_build_args = []
-        
+
         if args.clang_san_blacklist is not None:
             blacklist_arg = '-fsanitize-blacklist=%s' % args.clang_san_blacklist
         else:
@@ -299,7 +299,7 @@ class RedisSourceSetup(paella.Setup):
                 'MALLOC="libc"',
                 'CFLAGS="-fsanitize=address ' +
                     '-fno-omit-frame-pointer -fno-optimize-sibling-calls -fsanitize-address-use-after-scope ' +
-                    blacklist_arg + ' ' + 
+                    blacklist_arg + ' ' +
                     '"',
                 'LDFLAGS="-fsanitize=address"',
                 ]
@@ -308,7 +308,7 @@ class RedisSourceSetup(paella.Setup):
                 'LD=clang',
                 'CFLAGS="-O1 -fsanitize=address ' +
                     '-fno-omit-frame-pointer -fno-optimize-sibling-calls -fsanitize-address-use-after-scope ' +
-                    blacklist_arg + ' ' + 
+                    blacklist_arg + ' ' +
                     '"',
                 'LDFLAGS="-fsanitize=address"',
                 ]
@@ -324,8 +324,8 @@ class RedisSourceSetup(paella.Setup):
                 'OPTIMIZATION="-O2"',
                 'MALLOC=libc',
                 'CFLAGS="-fsanitize=memory ' +
-                    '-fno-omit-frame-pointer -fPIC -fsanitize-memory-track-origins ' + 
-                    blacklist_arg + ' ' + 
+                    '-fno-omit-frame-pointer -fPIC -fsanitize-memory-track-origins ' +
+                    blacklist_arg + ' ' +
 #                    '-stdlib=libc++ ' +
 #                     ('-Wl,-rpath=%s/lib ' % llvm_dir) +
 #                     ('-L%s/lib ' % llvm_dir) +
@@ -338,8 +338,8 @@ class RedisSourceSetup(paella.Setup):
                 'CC=clang',
                 'LD=clang',
                 'CFLAGS="-O2 -fsanitize=memory ' +
-                    '-fno-omit-frame-pointer -fPIC -fsanitize-memory-track-origins ' + 
-                    blacklist_arg + ' ' + 
+                    '-fno-omit-frame-pointer -fPIC -fsanitize-memory-track-origins ' +
+                    blacklist_arg + ' ' +
                      '"',
                 'LDFLAGS="-fsanitize=memory"']
 
@@ -378,7 +378,7 @@ class RedisSourceSetup(paella.Setup):
                     self.redis_server = os.path.join(into_bindir, 'redis-server-' + self.suffix)
                 else:
                     self.redis_server = os.path.join(into_bindir, 'redis-server')
-                    
+
         if not self.keep:
             paella.rm_rf(self.base_dir)
         if self.info_file is not None:
@@ -388,11 +388,13 @@ class RedisSourceSetup(paella.Setup):
             """.format(base_dir=os.path.abspath(self.base_dir), build_dir=os.path.abspath(self.build_dir))
             info = textwrap.dedent(info).split("\n", 1)[1]
             paella.fwrite(self.info_file, info)
-    
+
     #------------------------------------------------------------------------------------------
-    
+
     def common_first(self):
         if self.no_prepare:
+            return
+        if self.osnick == 'centos9':
             return
         self.install_downloaders()
         self.install("git")
@@ -435,7 +437,7 @@ class RedisSourceSetup(paella.Setup):
             self.build_redis()
             if not self.no_run:
                 self.run("%s --version" % self.redis_server)
-                
+
 
 #----------------------------------------------------------------------------------------------
 
@@ -460,7 +462,7 @@ class RedisRepoSetup(paella.Setup):
 
     def fedora(self):
         self.install("dnf-plugins-core")
-        
+
         self.install("--allowerasing https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm")
         self.install("http://rpms.remirepo.net/enterprise/remi-release-7.rpm")
         self.run("dnf config-manager -y --set-enabled remi", sudo=True)
