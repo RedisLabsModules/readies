@@ -116,7 +116,8 @@ class CLangSetup(paella.Setup):
             return
         self.run("%s/bin/getepel" % READIES, sudo=True)
         if self.dist in ['centos', 'ol'] and self.os_version[0] >= 8:
-            self.install("clang llvm-toolset")
+            self.install("clang")
+            self.install("llvm-toolset")
         else:
             self.install("llvm-toolset-7.0")
             self.cp_to_profile_d("/opt/rh/llvm-toolset-7.0/enable", "llvm-toolset-7.0.sh")
