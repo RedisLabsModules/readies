@@ -18,23 +18,25 @@ else ifeq ($(OSNICK),bigsur)
 OSX_MIN_SDK_VER=11.00
 else ifeq ($(OSNICK),catalina)
 OSX_MIN_SDK_VER=10.15
+else ifeq ($(OSNICK),sonoma)
+OSX_MIN_SDK_VER=14.2
 endif
 
 CC_FLAGS.macos += -mmacosx-version-min=$(OSX_MIN_SDK_VER)
 CMAKE_FLAGS += -DCMAKE_OSX_DEPLOYMENT_TARGET=$(OSX_MIN_SDK_VER)
 
-MACOS_SDK_PREFIX:=$(shell xcrun --show-sdk-path)
+ MACOS_SDK_PREFIX:=$(shell xcrun --show-sdk-path)
 
-export CPPFLAGS += -I$(MACOS_SDK_PREFIX)/usr/include
-export LDFLAGS += -L$(MACOS_SDK_PREFIX)/usr/lib
+ export CPPFLAGS += -I$(MACOS_SDK_PREFIX)/usr/include
+ export LDFLAGS += -L$(MACOS_SDK_PREFIX)/usr/lib
 
-CC_FLAGS.macos += \
+ CC_FLAGS.macos += \
 	-isysroot $(MACOS_SDK_PREFIX) \
 	-I$(MACOS_SDK_PREFIX)/usr/include \
 	-Wno-expansion-to-defined \
 	-Wno-nullability-completeness
 
-LD_FLAGS.macos += -L$(MACOS_SDK_PREFIX)/usr/lib
+ LD_FLAGS.macos += -L$(MACOS_SDK_PREFIX)/usr/lib
 
 #----------------------------------------------------------------------------------------------
 
