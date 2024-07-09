@@ -16,6 +16,7 @@ if is_command apt-get; then
 	runn apt-get upgrade -yqq
 	runn rm -rf /var/cache/apt
 elif is_command dnf; then
+
 	if [[ $DIST == centos8 && $DIST_NAME != "CentOS Stream" ]]; then
 		sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-Linux-* &> /dev/null || true
 		sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.epel.cloud|g' /etc/yum.repos.d/CentOS-Linux-* &> /dev/null || true
@@ -24,7 +25,7 @@ elif is_command dnf; then
     runn rm -rf /var/cache/dnf
 elif is_command yum; then
 	runn yum update -y
-    runn rm -rf /var/cache/yum
+	runn rm -rf /var/cache/yum
 elif is_command zypper; then
 	runn zypper update -y
 	runn rm -rf /var/cache/zypp

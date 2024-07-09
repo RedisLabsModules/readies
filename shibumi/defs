@@ -49,3 +49,18 @@ fi
 if [[ $_SUDO == 1 && -n $SUDO ]]; then
 	$SUDO echo -n
 fi
+
+if [[ -f /etc/os-release ]]; then
+	DIST="$(source /etc/os-release; echo ${ID}${VERSION_ID};)"
+fi
+
+if [[ $DIST == centos7 || $DIST == amzn2 ]]; then
+    if grep -q -r "mirror.centos.org" "/etc/yum.repos.d/"; then
+        # http://mirror.centos.org/centos/7/ is deprecated, so we have to disable mirrorlists
+        # and change the baseurl in the repo file to the working mirror (from mirror.centos.org to vault.centos.org)
+        sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo &> /dev/null || true
+        sed -i s/^#.*baseurl=http/baseurl=http/g /etc/yum.repos.d/*.repo &> /dev/null || true
+        sed -i s/^mirrorlist=http/#mirrorlist=http/g /etc/yum.repos.d/*.repo &> /dev/null || true
+        yum upgrade -y &> /dev/null
+    fi
+fi
