@@ -77,8 +77,8 @@ class RMPyToolsSetup(paella.Setup):
     def common_last(self):
         self.install("git")
         if self.reinstall:
-            self.pip_uninstall("redis redis-py-cluster ramp-packer==2.5.8 RLTest")
-            
+            self.pip_uninstall("redis redis-py-cluster ramp-packer=2.5.8 RLTest")
+
         if self.master:
             self.redispy_org = 'redis'
             self.redispy_version = 'master'
@@ -107,7 +107,7 @@ class RMPyToolsSetup(paella.Setup):
             else:
                 self.redispy_org = "redis"
                 self.redispy_version = verspec[0]
-        
+
             (source, version) = self.get_version(self.redispy_version)
             if source == 'pypi':
                 self.pip_install(f"--no-cache-dir redis=={version}")
@@ -140,27 +140,27 @@ class RMPyToolsSetup(paella.Setup):
 
     def _install_ramp(self):
         if self.ramp_version is None:
-            self.pip_install(f"--no-cache-dir ramp-packer==2.5.8")
+            self.pip_install(f"--no-cache-dir ramp-packer=2.5.8")
         else:
             (source, version) = self.get_version(self.ramp_version)
             if source == 'pypi':
-                self.pip_install(f"--no-cache-dir ramp-packer=={version}")
+                self.pip_install(f"--no-cache-dir ramp-packer==2.5.8")
             else:
-                self.pip_install(f"--no-cache-dir git+https://github.com/RedisLabs/RAMP@{version}")
-    
+                self.pip_install(f"--no-cache-dir git+https://github.com/RedisLabs/RAMP@2.5.8")
+
     def get_version(self, verspec):
         if verspec.startswith('pypi:'):
             return ('pypi', verspec[5:])
         if verspec.startswith('github:'):
             return ('github', verspec[7:])
         return ('pypi' if self.pypi else 'github', verspec)
-    
+
 #----------------------------------------------------------------------------------------------
 
 class RMPyToolsUninstall(paella.Setup):
     def __init__(self, args):
         paella.Setup.__init__(self, nop=args.nop)
-        self.pip_uninstall("redis redis-py-cluster ramp-packer==2.5.8 RLTest")
+        self.pip_uninstall("redis redis-py-cluster ramp-packer=2.5.8 RLTest")
 
 #----------------------------------------------------------------------------------------------
 
