@@ -30,6 +30,18 @@
 *.pyc
 *.pyo
 
+# Distribution / packaging
+bin/
+build/
+develop-eggs/
+dist/
+eggs/
+parts/
+sdist/
+*.egg-info/
+.installed.cfg
+*.egg
+
 # CMake
 CMakeFiles/
 *.cmake
@@ -39,4 +51,9 @@ CMakeCache.txt
 .cproject
 .project
 
+# VScode
+.vscode/
+
 venv/
+.venv/
+
