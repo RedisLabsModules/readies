@@ -346,7 +346,7 @@ if is_command dnf; then
 		# xinstall --allowerasing https://dl.fedoraproject.org/pub/epel/epel-release-latest-${EPEL}.noarch.rpm
 	fi
 
-	install_raven
+	# install_raven
 	install_remi
 	# install_centos_stream_repos
 	
