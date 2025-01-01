@@ -346,6 +346,10 @@ if is_command dnf; then
 		# xinstall --allowerasing https://dl.fedoraproject.org/pub/epel/epel-release-latest-${EPEL}.noarch.rpm
 	fi
 
+	# install_raven comments:
+	# The URL https://pkgs.dyn.su/el${EPEL}/base/x86_64/raven-release.el${EPEL}.noarch.rpm is no longer available.
+	# We may need to find an alternative source. However, for the context of JSONHDT, it is not needed.
+	# Therefore, it has been commented out
 	# install_raven
 	install_remi
 	# install_centos_stream_repos
