@@ -28,7 +28,7 @@ define COVERAGE_RESET
 $(SHOW)set -e ;\
 echo "Starting coverage analysys." ;\
 mkdir -p $(COV_DIR) ;\
-lcov --directory $(BINROOT) --base-directory $(SRCDIR) -z > /dev/null 2>&1
+lcov --directory $(BINROOT) --base-directory $(SRCDIR) -z
 endef
 
 define COVERAGE_RESET.llvm
