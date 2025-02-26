@@ -15,7 +15,6 @@ export LLVM_PROFILE_FILE=$(COV_DIR)/cov-%p-%m.profraw
 #----------------------------------------------------------------------------------------------
 
 COV_EXCLUDE += \
-	'/Applications/*' \
 	'/usr/*'
 
 COV_EXCLUDE.llvm += \
