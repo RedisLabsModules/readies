@@ -71,7 +71,7 @@ endef
 define COVERAGE_REPORT
 $(SHOW)set -e ;\
 lcov -l $(COV_INFO) ;\
-genhtml --legend --ignore-errors source -o $(COV_DIR) $(COV_INFO) ;\
+genhtml --legend --ignore-errors source -o $(COV_DIR) $(COV_INFO) --ignore-errors gcov,inconsistent,format,mismatch,unused,unsupported;\
 echo "Coverage info at $$(realpath $(COV_DIR))/index.html"
 endef
 
