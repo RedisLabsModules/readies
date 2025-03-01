@@ -241,7 +241,6 @@ LD_LIBS += \
 #---------------------------------------------------------------------------------------- CMake
 
 export CMAKE_CC_FLAGS=\
-	-UNDEBUG \
 	$(CC_FLAGS.core)
 
 export CMAKE_CC_C_FLAGS=$(CC_C_FLAGS)
