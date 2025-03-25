@@ -46,9 +46,9 @@ define PYERROR
 Cannot find python$(MK.pyver) interpreter.
 You can install one by running 'make setup'.
 endef
-$(error $(PYERROR))
+# $(error $(PYERROR))
 endif
-__NO_PYTHON=1
+__NO_PYTHON=0
 endif
 
 ifneq ($(HELP),1)
