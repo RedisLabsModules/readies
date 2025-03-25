@@ -298,7 +298,7 @@ class Pacman(PackageManager):
         else:
             if os.path.isfile("/usr/bin/yay"):
                 aurbin = "yay"
-            if os.path.isfile("/usr/bin/trizen"):
+            elif os.path.isfile("/usr/bin/trizen"):
                 aurbin = "trizen"
             else:
                 raise FileNotFoundError("Failed to find yay or trizen, for aur package installation.")
