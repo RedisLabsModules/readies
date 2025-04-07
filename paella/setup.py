@@ -142,6 +142,8 @@ class PackageManager(object):
                 return Yum(runner) if platform.redhat_compat_version() == 7 else Dnf(runner)
             elif platform.dist == 'mariner':
                 return TDnf(runner)
+            elif platform.dist == 'azurelinux':
+                return TDnf(runner)
             elif platform.dist == 'fedora':
                return Dnf(runner)
             elif platform.dist == 'suse':

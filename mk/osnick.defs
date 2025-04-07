@@ -42,6 +42,7 @@ OS.amzn2=amazonlinux:2
 OS.amzn2022=amazonlinux:2022
 OS.amzn2023=amazonlinux:2023
 OS.mariner2.0=mcr.microsoft.com/cbl-mariner/base/core:2.0
+OS.azurelinux3.0=mcr.microsoft.com/azurelinux/base/core:3.0
 
 endif # OS
 

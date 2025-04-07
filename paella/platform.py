@@ -272,6 +272,8 @@ class Platform:
             pass
         elif dist == 'mariner':
             pass
+        elif dist == 'azurelinux':
+            pass
         elif dist.startswith('rocky') or dist.startswith('almalinux') or dist.startswith('redhat') or dist == 'rhel':
             if not self.brand_mode:
                 dist = 'centos'
@@ -464,6 +466,8 @@ class OnPlatform:
                     self.raspbian()
                 elif dist == 'mariner':
                     self.mariner()
+                elif dist == 'azurelinux':
+                    self.azurelinux()
                 else:
                     assert(False), "Cannot determine installer"
 
@@ -551,4 +555,7 @@ class OnPlatform:
         pass
 
     def mariner(self):
+        pass
+
+    def azurelinux(self):
         pass

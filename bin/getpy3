@@ -74,7 +74,7 @@ if [[ $(id -u) != 0 ]]; then
 fi
 
 # awk is not installed by default on mariner
-if [[ $os == mariner ]]; then
+if [[ $os == mariner || $os == azurelinux ]]; then
 	tdnf install -q -y awk
 fi
 
