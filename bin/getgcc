@@ -121,6 +121,9 @@ class SystemSetup(paella.Setup):
     def mariner(self):
         self.install("build-essential")
 
+    def azurelinux(self):
+        self.install("build-essential")
+
 #----------------------------------------------------------------------------------------------
 parser = argparse.ArgumentParser(description='Set up GCC build environemnt.')
 parser.add_argument('--modern', action="store_true", help="Install modern GCC version")
