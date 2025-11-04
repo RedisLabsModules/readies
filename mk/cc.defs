@@ -180,6 +180,7 @@ endef
 
 define SO_LD_FLAGS.macos +=
 	-dynamiclib
+	-undefined dynamic_lookup
 endef
 
 LINK_SO_INTERNAL_BINDING ?= 1
