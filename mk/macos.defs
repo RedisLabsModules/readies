@@ -8,7 +8,9 @@ ifeq ($(OS),macos)
 
 #----------------------------------------------------------------------------------------------
 
-ifeq ($(OSNICK),sequoia)
+ifeq ($(OSNICK),tahoe)
+OSX_MIN_SDK_VER=26.0
+else ifeq ($(OSNICK),sequoia)
 OSX_MIN_SDK_VER=15.0
 else ifeq ($(OSNICK),sonoma)
 OSX_MIN_SDK_VER=14.0
