@@ -124,9 +124,9 @@ class CMakeSetup(paella.Setup):
                 make -j`nproc`
                 """.format(DIR=dir, CMAKE_VER=CMAKE_VER))
             self.run(r"""
-                make -C {DIR} install
+                make -C {DIR}/CMake-{CMAKE_VER} install
                 rm -rf {DIR}
-                """.format(DIR=dir), sudo=True)
+                """.format(DIR=dir, CMAKE_VER=CMAKE_VER), sudo=True)
 
 #----------------------------------------------------------------------------------------------
 
