@@ -213,7 +213,8 @@ index b0727db2c..ae7f3f80a 100644
             '''
         patch_file = os.path.join(self.base_dir, 'ccflags_lto.patch')
         paella.fwrite(patch_file, str.lstrip(textwrap.dedent(patch[1:])))
-        self.run(f"patch -p1 -i %s" % patch_file, at=self.build_dir)
+        if self.run(f"patch -p1 --dry-run -i %s" % patch_file, at=self.build_dir, _try=True) == 0:
+            self.run(f"patch -p1 -i %s" % patch_file, at=self.build_dir)
 
     def install_openssl(self, version, build_args, prefix="ssl"):
         file = os.path.join(self.base_dir, 'openssl.tgz')
